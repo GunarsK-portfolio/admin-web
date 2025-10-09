@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":separateMajorReleases",
+    ":combinePatchMinorReleases",
+    ":label(frontend)"
+  ],
+  "timezone": "Europe/Riga",
+  "schedule": ["before 6am on monday"],
+
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "groupName": "Frontend dependencies",
+      "automerge": false,
+      "labels": ["frontend", "dependencies"]
+    },
+    {
+      "matchPackagePatterns": ["eslint", "prettier", "vite", "typescript"],
+      "groupName": "Frontend tooling",
+      "automerge": false,
+      "labels": ["tooling"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "automerge": true,
+      "labels": ["ci"]
+    }
+  ],
+
+  "rangeStrategy": "bump",
+  "prHourlyLimit": 5,
+  "prConcurrentLimit": 10,
+  "rebaseWhen": "behind-base-branch"
+}
