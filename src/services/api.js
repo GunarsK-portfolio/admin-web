@@ -4,11 +4,11 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8083'
 const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:8084'
 
 const api = axios.create({
-  baseURL: `${API_URL}/api/v1`
+  baseURL: API_URL
 })
 
 const authApi = axios.create({
-  baseURL: `${AUTH_URL}/api/v1`
+  baseURL: AUTH_URL
 })
 
 // Add auth token to requests
@@ -23,11 +23,11 @@ api.interceptors.request.use(config => {
 export default {
   // Auth
   login(username, password) {
-    return authApi.post('/auth/login', { username, password })
+    return authApi.post('/login', { username, password })
   },
   logout() {
     const token = localStorage.getItem('access_token')
-    return authApi.post('/auth/logout', {}, {
+    return authApi.post('/logout', {}, {
       headers: { Authorization: `Bearer ${token}` }
     })
   },

@@ -51,8 +51,13 @@ npm run dev
 The `.env` file contains:
 
 ```bash
+# For standalone development
 VITE_API_URL=http://localhost:8083
 VITE_AUTH_URL=http://localhost:8084
+
+# When running via docker-compose infrastructure (recommended)
+VITE_API_URL=http://localhost:81/api/v1
+VITE_AUTH_URL=http://localhost:81/auth/v1
 ```
 
 Vite automatically loads environment variables from `.env` files.
@@ -122,9 +127,16 @@ docker build -t admin-web .
 ### Run Container
 
 ```bash
+# Standalone mode
 docker run -p 8081:80 \
   -e VITE_API_URL=http://localhost:8083 \
   -e VITE_AUTH_URL=http://localhost:8084 \
+  admin-web
+
+# With Traefik reverse proxy (see infrastructure repo)
+docker run -p 8081:80 \
+  -e VITE_API_URL=http://localhost:81/api/v1 \
+  -e VITE_AUTH_URL=http://localhost:81/auth/v1 \
   admin-web
 ```
 
