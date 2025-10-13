@@ -40,6 +40,6 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     isAuthenticated,
     login,
-    logout
+    logout,
   }
 })

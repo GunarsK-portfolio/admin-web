@@ -4,7 +4,8 @@ import fs from 'fs'
 import path from 'path'
 
 // Certificate configuration from environment variables
-const certDir = process.env.VITE_CERT_DIR || path.resolve(__dirname, '../infrastructure/docker/traefik/certs')
+const certDir =
+  process.env.VITE_CERT_DIR || path.resolve(__dirname, '../infrastructure/docker/traefik/certs')
 const certFile = process.env.VITE_CERT_FILE || 'localhost.crt'
 const keyFile = process.env.VITE_KEY_FILE || 'localhost.key'
 
@@ -17,9 +18,11 @@ export default defineConfig({
   server: {
     port: 8081,
     host: true,
-    https: certExists ? {
-      key: fs.readFileSync(keyPath),
-      cert: fs.readFileSync(certPath)
-    } : false
-  }
+    https: certExists
+      ? {
+          key: fs.readFileSync(keyPath),
+          cert: fs.readFileSync(certPath),
+        }
+      : false,
+  },
 })

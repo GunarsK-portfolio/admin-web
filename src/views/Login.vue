@@ -30,12 +30,7 @@
           {{ error }}
         </n-alert>
 
-        <n-button
-          type="primary"
-          block
-          :loading="loading"
-          @click="handleLogin"
-        >
+        <n-button type="primary" block :loading="loading" @click="handleLogin">
           {{ loading ? 'Logging in...' : 'Login' }}
         </n-button>
       </n-form>

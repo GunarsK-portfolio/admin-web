@@ -6,23 +6,23 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue'),
-    meta: { requiresGuest: true }
+    meta: { requiresGuest: true },
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../views/Dashboard.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/',
-    redirect: '/dashboard'
-  }
+    redirect: '/dashboard',
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 router.beforeEach((to, from, next) => {

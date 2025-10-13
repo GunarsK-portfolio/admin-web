@@ -8,15 +8,15 @@ if (!API_URL || !AUTH_URL) {
 }
 
 const api = axios.create({
-  baseURL: API_URL
+  baseURL: API_URL,
 })
 
 const authApi = axios.create({
-  baseURL: AUTH_URL
+  baseURL: AUTH_URL,
 })
 
 // Add auth token to requests
-api.interceptors.request.use(config => {
+api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -31,9 +31,13 @@ export default {
   },
   logout() {
     const token = localStorage.getItem('access_token')
-    return authApi.post('/logout', {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    return authApi.post(
+      '/logout',
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
   },
 
   // Profile
@@ -77,5 +81,5 @@ export default {
   // Images
   deleteImage(id) {
     return api.delete(`/images/${id}`)
-  }
+  },
 }
