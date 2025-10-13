@@ -8,8 +8,8 @@ Admin panel for managing portfolio content built with Vue.js.
 - Full CRUD for projects, skills, experience
 - Image upload management
 - Protected routes with authentication
-- Responsive design with TailwindCSS
-- DaisyUI components
+- Responsive design with Naive UI
+- Modern Vue 3 UI components
 - State management with Pinia
 - Vue Router for navigation
 
@@ -17,7 +17,7 @@ Admin panel for managing portfolio content built with Vue.js.
 
 - **Framework**: Vue 3 (Composition API)
 - **Build Tool**: Vite
-- **Styling**: TailwindCSS + DaisyUI
+- **UI Library**: Naive UI
 - **State Management**: Pinia
 - **HTTP Client**: Axios
 - **Routing**: Vue Router
@@ -146,7 +146,7 @@ Routes are protected using Vue Router navigation guards. Unauthorized users are 
 
 ## Styling
 
-TailwindCSS utilities and DaisyUI components are used throughout. Configure themes in [tailwind.config.js](tailwind.config.js).
+The application uses Naive UI components for the user interface.
 
 ## License
 

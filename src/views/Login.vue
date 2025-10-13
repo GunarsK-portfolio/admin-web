@@ -1,53 +1,51 @@
 <template>
-  <div class="hero min-h-screen bg-base-200">
-    <div class="hero-content flex-col">
-      <div class="text-center">
-        <h1 class="text-5xl font-bold">Portfolio Admin</h1>
-        <p class="py-6">Sign in to manage your portfolio content</p>
-      </div>
-      <div class="card w-full max-w-sm shadow-2xl bg-base-100">
-        <form @submit.prevent="handleLogin" class="card-body">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Username</span>
-            </label>
-            <input
-              v-model="username"
-              type="text"
-              placeholder="username"
-              class="input input-bordered"
-              required
-            />
-          </div>
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Password</span>
-            </label>
-            <input
-              v-model="password"
-              type="password"
-              placeholder="password"
-              class="input input-bordered"
-              required
-            />
-          </div>
-          <div v-if="error" class="alert alert-error">
-            <span>{{ error }}</span>
-          </div>
-          <div class="form-control mt-6">
-            <button type="submit" class="btn btn-primary" :disabled="loading">
-              <span v-if="loading" class="loading loading-spinner"></span>
-              {{ loading ? 'Logging in...' : 'Login' }}
-            </button>
-          </div>
-        </form>
-      </div>
+  <n-space vertical align="center" justify="center" style="min-height: 100vh; padding: 24px">
+    <div style="text-align: center; margin-bottom: 32px">
+      <h1 style="font-size: 48px; font-weight: bold; margin-bottom: 16px">Portfolio Admin</h1>
+      <p style="font-size: 16px">Sign in to manage your portfolio content</p>
     </div>
-  </div>
+
+    <n-card style="width: 100%; max-width: 400px">
+      <n-form @submit.prevent="handleLogin">
+        <n-form-item label="Username">
+          <n-input
+            v-model:value="username"
+            placeholder="username"
+            :disabled="loading"
+            @keydown.enter.prevent="handleLogin"
+          />
+        </n-form-item>
+
+        <n-form-item label="Password">
+          <n-input
+            v-model:value="password"
+            type="password"
+            placeholder="password"
+            :disabled="loading"
+            @keydown.enter.prevent="handleLogin"
+          />
+        </n-form-item>
+
+        <n-alert v-if="error" type="error" style="margin-bottom: 16px">
+          {{ error }}
+        </n-alert>
+
+        <n-button
+          type="primary"
+          block
+          :loading="loading"
+          @click="handleLogin"
+        >
+          {{ loading ? 'Logging in...' : 'Login' }}
+        </n-button>
+      </n-form>
+    </n-card>
+  </n-space>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { NSpace, NCard, NForm, NFormItem, NInput, NButton, NAlert } from 'naive-ui'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
