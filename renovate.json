@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     ":dependencyDashboard",
     ":semanticCommits",
     ":separateMajorReleases",
@@ -9,29 +9,45 @@
     ":label(frontend)"
   ],
   "timezone": "Europe/Riga",
-  "schedule": ["before 6am on monday"],
-
+  "schedule": [
+    "before 6am on monday"
+  ],
   "packageRules": [
     {
-      "matchManagers": ["npm"],
+      "matchManagers": [
+        "npm"
+      ],
       "groupName": "Frontend dependencies",
       "automerge": false,
-      "labels": ["frontend", "dependencies"]
+      "labels": [
+        "frontend",
+        "dependencies"
+      ]
     },
     {
-      "matchPackagePatterns": ["eslint", "prettier", "vite", "typescript"],
       "groupName": "Frontend tooling",
       "automerge": false,
-      "labels": ["tooling"]
+      "labels": [
+        "tooling"
+      ],
+      "matchPackageNames": [
+        "/eslint/",
+        "/prettier/",
+        "/vite/",
+        "/typescript/"
+      ]
     },
     {
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "groupName": "GitHub Actions",
       "automerge": true,
-      "labels": ["ci"]
+      "labels": [
+        "ci"
+      ]
     }
   ],
-
   "rangeStrategy": "bump",
   "prHourlyLimit": 5,
   "prConcurrentLimit": 10,
