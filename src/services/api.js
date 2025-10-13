@@ -1,7 +1,11 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8083'
-const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:8084'
+const API_URL = import.meta.env.VITE_API_URL
+const AUTH_URL = import.meta.env.VITE_AUTH_URL
+
+if (!API_URL || !AUTH_URL) {
+  throw new Error('VITE_API_URL and VITE_AUTH_URL must be set in environment variables')
+}
 
 const api = axios.create({
   baseURL: API_URL

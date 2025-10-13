@@ -12,6 +12,12 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# Accept build arguments
+ARG VITE_API_URL
+ARG VITE_AUTH_URL
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_AUTH_URL=$VITE_AUTH_URL
+
 # Build for production
 RUN npm run build
 

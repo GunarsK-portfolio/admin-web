@@ -85,8 +85,11 @@ npm run preview   # Preview production build
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `VITE_API_URL` | Admin API base URL | `https://localhost:8443/api/v1` |
+| `VITE_API_URL` | Admin API base URL | `https://localhost:8443/admin-api/v1` |
 | `VITE_AUTH_URL` | Auth service base URL | `https://localhost:8443/auth/v1` |
+| `VITE_CERT_DIR` | Certificate directory for HTTPS dev server | `../infrastructure/docker/traefik/certs` |
+| `VITE_CERT_FILE` | Certificate filename | `localhost.crt` |
+| `VITE_KEY_FILE` | Private key filename | `localhost.key` |
 
 ## Authentication
 
