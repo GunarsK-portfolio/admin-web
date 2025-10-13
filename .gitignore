@@ -11,7 +11,6 @@ dist-ssr/
 .env.*.local
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -26,3 +25,15 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# Misc
+*.local
