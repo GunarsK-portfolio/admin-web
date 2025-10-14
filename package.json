@@ -10,11 +10,11 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "axios": "^1.6.0",
+    "axios": "^1.12.2",
     "naive-ui": "^2.43.1",
-    "pinia": "^2.1.0",
-    "vue": "^3.4.0",
-    "vue-router": "^4.2.0"
+    "pinia": "^2.3.1",
+    "vue": "^3.5.22",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.4",
@@ -24,7 +24,7 @@
     "@vue/eslint-config-prettier": "^10.2.0",
     "prettier": "^3.6.2",
     "husky": "^9.1.7",
-    "lint-staged": "^15.3.0"
+    "lint-staged": "^15.5.2"
   },
   "lint-staged": {
     "*.{js,vue}": [
