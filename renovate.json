@@ -8,21 +8,39 @@
     ":combinePatchMinorReleases",
     ":label(frontend)"
   ],
-  "prCreation": "immediate",
   "timezone": "Europe/Riga",
-  "schedule": [],
+  "schedule": ["every weekend"],
   "packageRules": [
     {
-      "matchManagers": ["npm"],
-      "groupName": "Frontend dependencies",
-      "automerge": false,
-      "labels": ["frontend", "dependencies"]
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "labels": ["dependencies", "automerge"]
     },
     {
-      "groupName": "Frontend tooling",
-      "automerge": false,
-      "labels": ["tooling"],
-      "matchPackageNames": ["/eslint/", "/prettier/", "/vite/", "/typescript/"]
+      "matchUpdateTypes": ["minor"],
+      "matchDepTypes": ["dependencies"],
+      "groupName": "all minor dependencies",
+      "labels": ["dependencies", "minor-update"]
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "matchDepTypes": ["devDependencies"],
+      "groupName": "all minor devDependencies",
+      "automerge": true,
+      "automergeType": "pr",
+      "labels": ["devDependencies", "automerge"]
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true,
+      "labels": ["dependencies", "major-update"]
+    },
+    {
+      "matchPackageNames": ["vue", "naive-ui", "vite"],
+      "groupName": "core framework",
+      "dependencyDashboardApproval": true,
+      "labels": ["core", "manual-review"]
     },
     {
       "matchManagers": ["github-actions"],
