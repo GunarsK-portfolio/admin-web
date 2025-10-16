@@ -10,7 +10,7 @@
   ],
   "prCreation": "immediate",
   "timezone": "Europe/Riga",
-  "schedule": ["before 6am on monday"],
+  "schedule": [],
   "packageRules": [
     {
       "matchManagers": ["npm"],
