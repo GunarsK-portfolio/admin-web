@@ -1,5 +1,7 @@
 # Admin Web
 
+![CI](https://github.com/GunarsK-portfolio/admin-web/workflows/CI/badge.svg)
+
 Admin panel for managing portfolio content built with Vue.js.
 
 ## Features
@@ -56,17 +58,20 @@ docker-compose up -d
 ### Local Development
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Create `.env` file (optional):
+
 ```env
 VITE_API_URL=http://localhost:8083/api/v1
 VITE_AUTH_URL=http://localhost:8084/api/v1/auth
 ```
 
 3. Run development server:
+
 ```bash
 npm run dev
 ```
@@ -75,25 +80,46 @@ npm run dev
 
 ## Available Commands
 
+Using Task:
+
+```bash
+task dev            # Start development server
+task build          # Build for production
+task preview        # Preview production build
+task install        # Install dependencies
+task lint           # Run ESLint
+task lint-fix       # Run ESLint and auto-fix issues
+task format         # Format code with Prettier
+task format-check   # Check code formatting
+task audit          # Run npm security audit
+task clean          # Clean build artifacts
+task docker-build   # Build Docker image
+task ci             # Run all CI checks locally
+```
+
+Using npm directly:
+
 ```bash
 npm run dev       # Start development server
 npm run build     # Build for production
 npm run preview   # Preview production build
+npm run lint      # Run ESLint
 ```
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_API_URL` | Admin API base URL | `https://localhost:8443/admin-api/v1` |
-| `VITE_AUTH_URL` | Auth service base URL | `https://localhost:8443/auth/v1` |
-| `VITE_CERT_DIR` | Certificate directory for HTTPS dev server | `../infrastructure/docker/traefik/certs` |
-| `VITE_CERT_FILE` | Certificate filename | `localhost.crt` |
-| `VITE_KEY_FILE` | Private key filename | `localhost.key` |
+| Variable         | Description                                | Default                                  |
+| ---------------- | ------------------------------------------ | ---------------------------------------- |
+| `VITE_API_URL`   | Admin API base URL                         | `https://localhost:8443/admin-api/v1`    |
+| `VITE_AUTH_URL`  | Auth service base URL                      | `https://localhost:8443/auth/v1`         |
+| `VITE_CERT_DIR`  | Certificate directory for HTTPS dev server | `../infrastructure/docker/traefik/certs` |
+| `VITE_CERT_FILE` | Certificate filename                       | `localhost.crt`                          |
+| `VITE_KEY_FILE`  | Private key filename                       | `localhost.key`                          |
 
 ## Authentication
 
 The app uses JWT tokens from auth-service:
+
 1. Login via auth-service
 2. Store access & refresh tokens
 3. Automatically attach token to API requests
@@ -135,6 +161,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 ## API Integration
 
 The app connects to two services:
+
 - **auth-service**: Authentication (login, refresh, logout)
 - **admin-api**: Portfolio content management (CRUD operations)
 
