@@ -8,7 +8,7 @@ on:
   workflow_dispatch: # Allow manual trigger
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '22'
 
 jobs:
   # Job 1: Lint code
