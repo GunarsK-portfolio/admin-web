@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5.0.0
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -40,10 +40,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5.0.0
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -58,7 +58,7 @@ jobs:
           VITE_AUTH_URL: http://localhost:8084/api/v1/auth
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v4
         with:
           name: build-output
           path: dist/
@@ -70,10 +70,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5.0.0
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -91,13 +91,13 @@ jobs:
       security-events: write # For GitHub Security tab
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v5
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.11.1
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
-        uses: docker/build-push-action@v6.18.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: false
@@ -116,7 +116,7 @@ jobs:
           exit-code: '1' # Fail on CRITICAL/HIGH vulnerabilities
 
       - name: Upload Trivy results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3.28.6
+        uses: github/codeql-action/upload-sarif@v4
         if: always() # Upload even if scan fails
         with:
           sarif_file: 'trivy-results.sarif'
