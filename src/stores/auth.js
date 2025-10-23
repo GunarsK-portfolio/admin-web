@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import api from '../services/api'
+import authService from '../services/auth'
 import router from '../router'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -9,7 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(username, password) {
     try {
-      const response = await api.login(username, password)
+      const response = await authService.login(username, password)
       token.value = response.data.access_token
       localStorage.setItem('access_token', response.data.access_token)
       localStorage.setItem('refresh_token', response.data.refresh_token)
@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout() {
     try {
-      await api.logout()
+      await authService.logout()
     } catch (error) {
       console.error('Logout error:', error)
     } finally {

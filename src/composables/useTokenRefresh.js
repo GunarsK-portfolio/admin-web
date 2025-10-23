@@ -1,5 +1,5 @@
 import { ref, onUnmounted } from 'vue'
-import api from '../services/api'
+import authService from '../services/auth'
 import { useAuthStore } from '../stores/auth'
 
 // Shared state across all instances
@@ -44,7 +44,7 @@ export function useTokenRefresh() {
   // Refresh the access token
   async function refreshToken() {
     try {
-      const response = await api.refresh()
+      const response = await authService.refresh()
       localStorage.setItem('access_token', response.data.access_token)
       localStorage.setItem('refresh_token', response.data.refresh_token)
 
@@ -63,7 +63,7 @@ export function useTokenRefresh() {
   // Check token status via API (for idle users)
   async function checkTokenStatus() {
     try {
-      const response = await api.tokenStatus()
+      const response = await authService.tokenStatus()
       if (response.data.valid) {
         await handleTTL(response.data.ttl_seconds)
       } else {
