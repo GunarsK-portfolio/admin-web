@@ -3,6 +3,9 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+# Update Alpine packages to get latest security fixes
+RUN apk update && apk upgrade --no-cache
+
 # Copy package files
 COPY package.json ./
 
