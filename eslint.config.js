@@ -10,8 +10,33 @@ export default [
   ...pluginVue.configs['flat/recommended'],
   prettierConfig,
   {
+    languageOptions: {
+      globals: {
+        // Browser globals
+        window: 'readonly',
+        document: 'readonly',
+        localStorage: 'readonly',
+        console: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        fetch: 'readonly',
+      },
+    },
     rules: {
       'vue/multi-word-component-names': 'off',
+    },
+  },
+  {
+    // Node.js globals for config files
+    files: ['*.config.js', '*.config.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+      },
     },
   },
 ]
