@@ -1,0 +1,77 @@
+version: '3'
+
+tasks:
+  dev:
+    desc: Start development server
+    cmds:
+      - npm run dev
+
+  build:
+    desc: Build for production
+    cmds:
+      - npm run build
+
+  preview:
+    desc: Preview production build
+    cmds:
+      - npm run preview
+
+  install:
+    desc: Install dependencies
+    cmds:
+      - npm install
+
+  lint:
+    desc: Run ESLint (check only)
+    cmds:
+      - npm run lint
+
+  lint-fix:
+    desc: Run ESLint and auto-fix issues
+    cmds:
+      - npm run lint:fix
+
+  format:
+    desc: Format code with Prettier
+    cmds:
+      - npx prettier --write "src/**/*.{js,vue,json,md}"
+
+  format-check:
+    desc: Check code formatting
+    cmds:
+      - npx prettier --check "src/**/*.{js,vue,json,md}"
+
+  audit:
+    desc: Run npm security audit
+    cmds:
+      - npm audit
+
+  clean:
+    desc: Clean build artifacts and node_modules
+    cmds:
+      - cmd: rm -rf dist/ node_modules/
+        platforms: [linux, darwin]
+      - cmd: if exist dist rmdir /s /q dist
+        platforms: [windows]
+        ignore_error: true
+      - cmd: if exist node_modules rmdir /s /q node_modules
+        platforms: [windows]
+        ignore_error: true
+
+  docker-build:
+    desc: Build Docker image
+    cmds:
+      - docker build -t admin-web .
+
+  docker-run:
+    desc: Run Docker container
+    cmds:
+      - docker run -p 8081:80 admin-web
+
+  ci:
+    desc: Run all CI checks locally (lint, format-check, build)
+    cmds:
+      - task: lint
+      - task: format-check
+      - task: build
+      - echo "✓ All CI checks passed!"
