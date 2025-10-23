@@ -18,6 +18,26 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Response interceptor to handle TTL headers (will be set up by App.vue)
+export function setupResponseInterceptor(ttlHandler) {
+  api.interceptors.response.use(
+    (response) => {
+      // Extract TTL from header if present
+      const ttlHeader = response.headers['x-token-ttl']
+      if (ttlHeader && ttlHandler) {
+        const ttlSeconds = parseInt(ttlHeader, 10)
+        if (!isNaN(ttlSeconds)) {
+          ttlHandler(ttlSeconds)
+        }
+      }
+      return response
+    },
+    (error) => {
+      return Promise.reject(error)
+    }
+  )
+}
+
 export default {
   // Auth
   login(username, password) {
@@ -32,6 +52,16 @@ export default {
         headers: { Authorization: `Bearer ${token}` },
       }
     )
+  },
+  refresh() {
+    const refreshToken = localStorage.getItem('refresh_token')
+    return authApi.post('/refresh', { refresh_token: refreshToken })
+  },
+  tokenStatus() {
+    const token = localStorage.getItem('access_token')
+    return authApi.get('/token-status', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
   },
 
   // Profile

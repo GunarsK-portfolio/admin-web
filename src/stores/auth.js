@@ -14,6 +14,10 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('access_token', response.data.access_token)
       localStorage.setItem('refresh_token', response.data.refresh_token)
       isAuthenticated.value = true
+
+      // Token refresh system will automatically start via App.vue
+      console.log(`Logged in successfully. Token expires in ${response.data.expires_in} seconds`)
+
       router.push('/dashboard')
       return true
     } catch (error) {
