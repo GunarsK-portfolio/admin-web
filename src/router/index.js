@@ -15,6 +15,26 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('../views/Profile.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/403',
+    name: 'Forbidden',
+    component: () => import('../errors/Forbidden.vue'),
+  },
+  {
+    path: '/404',
+    name: 'NotFound',
+    component: () => import('../errors/NotFound.vue'),
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/404',
+  },
+  {
     path: '/',
     redirect: '/dashboard',
   },
@@ -25,7 +45,7 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
