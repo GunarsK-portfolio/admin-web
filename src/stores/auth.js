@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import authService from '../services/auth'
 import router from '../router'
+import { logger, setUserContext, clearUserContext } from '../utils/logger'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('access_token') || null)
@@ -15,13 +16,24 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('refresh_token', response.data.refresh_token)
       isAuthenticated.value = true
 
-      // Token refresh system will automatically start via App.vue
-      console.log(`Logged in successfully. Token expires in ${response.data.expires_in} seconds`)
+      logger.info('User logged in successfully', {
+        expiresIn: response.data.expires_in,
+        username,
+      })
+
+      // Set user context for future logs
+      if (response.data.user) {
+        setUserContext(response.data.user)
+      }
 
       router.push('/dashboard')
       return true
     } catch (error) {
-      console.error('Login failed:', error)
+      logger.error('Login failed', {
+        username,
+        error: error.message,
+        status: error.response?.status,
+      })
       return false
     }
   }
@@ -29,13 +41,17 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout() {
     try {
       await authService.logout()
+      logger.info('User logged out successfully')
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.warn('Logout request failed, clearing local session anyway', {
+        error: error.message,
+      })
     } finally {
       token.value = null
       isAuthenticated.value = false
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
+      clearUserContext()
       router.push('/login')
     }
   }

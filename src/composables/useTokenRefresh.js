@@ -1,6 +1,7 @@
 import { ref, onUnmounted } from 'vue'
 import authService from '../services/auth'
 import { useAuthStore } from '../stores/auth'
+import { logger } from '../utils/logger'
 
 // Shared state across all instances
 let refreshTimer = null
@@ -36,7 +37,7 @@ export function useTokenRefresh() {
 
     if (ttlSeconds < REFRESH_THRESHOLD_SECONDS) {
       // Token expiring soon, refresh immediately
-      console.log(`Token expiring in ${ttlSeconds}s, refreshing now`)
+      logger.info('Token expiring soon, refreshing now', { ttlSeconds })
       await refreshToken()
     }
   }
@@ -51,10 +52,15 @@ export function useTokenRefresh() {
       // Update TTL and reschedule checks
       await handleTTL(response.data.expires_in)
 
-      console.log('Token refreshed successfully')
+      logger.info('Token refreshed successfully', {
+        expiresIn: response.data.expires_in,
+      })
       return true
     } catch (error) {
-      console.error('Token refresh failed:', error)
+      logger.error('Token refresh failed', {
+        error: error.message,
+        status: error.response?.status,
+      })
       await authStore.logout()
       return false
     }
@@ -67,10 +73,13 @@ export function useTokenRefresh() {
       if (response.data.valid) {
         await handleTTL(response.data.ttl_seconds)
       } else {
+        logger.warn('Token no longer valid')
         await authStore.logout()
       }
     } catch (error) {
-      console.error('Token status check failed:', error)
+      logger.warn('Token status check failed, attempting refresh', {
+        error: error.message,
+      })
       // If status check fails, try to refresh
       await refreshToken()
     }
@@ -84,7 +93,7 @@ export function useTokenRefresh() {
 
     statusCheckTimer = setInterval(async () => {
       if (isIdle() && authStore.isAuthenticated) {
-        console.log('User idle, checking token status')
+        logger.debug('User idle, checking token status')
         await checkTokenStatus()
       }
     }, STATUS_CHECK_INTERVAL_MS)

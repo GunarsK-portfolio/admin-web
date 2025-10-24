@@ -155,6 +155,7 @@ import {
 } from 'naive-ui'
 import { ArrowBackOutline, SaveOutline, TrashOutline } from '@vicons/ionicons5'
 import profileService from '../services/profile'
+import { logger } from '../utils/logger'
 
 const router = useRouter()
 const message = useMessage()
@@ -206,7 +207,10 @@ async function loadProfile() {
       }
     }
   } catch (error) {
-    console.error('Failed to load profile:', error)
+    logger.error('Failed to load profile', {
+      error: error.message,
+      status: error.response?.status,
+    })
     message.error('Failed to load profile data')
   } finally {
     loading.value = false
@@ -224,7 +228,10 @@ async function handleSave() {
     if (error?.errors) {
       return
     }
-    console.error('Failed to update profile:', error)
+    logger.error('Failed to update profile', {
+      error: error.message,
+      status: error.response?.status,
+    })
     message.error(error.response?.data?.error || 'Failed to update profile')
   } finally {
     saving.value = false
@@ -238,7 +245,10 @@ async function handleDeleteAvatar() {
     formData.value.avatarFileId = null
     message.success('Avatar removed successfully')
   } catch (error) {
-    console.error('Failed to delete avatar:', error)
+    logger.error('Failed to delete avatar', {
+      error: error.message,
+      status: error.response?.status,
+    })
     message.error('Failed to remove avatar')
   } finally {
     deletingAvatar.value = false
@@ -252,7 +262,10 @@ async function handleDeleteResume() {
     formData.value.resumeFileId = null
     message.success('Resume removed successfully')
   } catch (error) {
-    console.error('Failed to delete resume:', error)
+    logger.error('Failed to delete resume', {
+      error: error.message,
+      status: error.response?.status,
+    })
     message.error('Failed to remove resume')
   } finally {
     deletingResume.value = false

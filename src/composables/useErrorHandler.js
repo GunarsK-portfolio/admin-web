@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotification } from 'naive-ui'
+import { logger } from '../utils/logger'
 
 /**
  * Centralized error handling composable for admin panel
@@ -65,11 +66,19 @@ export function useErrorHandler() {
    * Main error handler - routes to appropriate handler based on error type
    */
   const handleError = (error, context = {}) => {
-    console.error('Error occurred:', error, context)
-
     // Extract error info
     const status = error.response?.status || error.status
     const message = error.response?.data?.message || error.message
+
+    // Log error with structured data
+    logger.error('Error occurred', {
+      status,
+      message,
+      context,
+      url: error.config?.url,
+      method: error.config?.method,
+      errorType: error.response ? 'http' : 'network',
+    })
 
     // Create a unique key for retry tracking
     const retryKey = context.retryKey || `${Date.now()}-${Math.random()}`
