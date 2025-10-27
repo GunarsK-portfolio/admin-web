@@ -1,4 +1,4 @@
-import { authApi } from './api'
+import { authApi } from './authApi'
 
 export default {
   login(username, password) {

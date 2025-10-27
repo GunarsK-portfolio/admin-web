@@ -2,6 +2,7 @@ function validateEnv() {
   const required = {
     VITE_API_URL: import.meta.env.VITE_API_URL,
     VITE_AUTH_URL: import.meta.env.VITE_AUTH_URL,
+    VITE_FILES_API_URL: import.meta.env.VITE_FILES_API_URL,
   }
 
   const missing = []
@@ -23,4 +24,5 @@ validateEnv()
 export const env = {
   apiUrl: import.meta.env.VITE_API_URL,
   authUrl: import.meta.env.VITE_AUTH_URL,
+  filesApiUrl: import.meta.env.VITE_FILES_API_URL,
 }
