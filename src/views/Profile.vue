@@ -80,7 +80,7 @@
                           {{ formData.name?.charAt(0)?.toUpperCase() || 'U' }}
                         </template>
                       </n-avatar>
-                      <n-text depth="3" style="font-size: 12px">
+                      <n-text depth="3" class="file-info">
                         {{ formData.avatarFile.fileName }} ({{
                           formatFileSize(formData.avatarFile.fileSize)
                         }})
@@ -107,19 +107,19 @@
                     :disabled="uploadingAvatar"
                   >
                     <n-upload-dragger>
-                      <div style="margin-bottom: 12px">
+                      <div class="upload-icon">
                         <n-icon size="48" :depth="3">
                           <CloudUploadOutline />
                         </n-icon>
                       </div>
-                      <n-text style="font-size: 16px">
+                      <n-text class="upload-text">
                         {{
                           formData.avatarFile
                             ? 'Click or drag to replace avatar'
                             : 'Click or drag avatar image to this area to upload'
                         }}
                       </n-text>
-                      <n-text depth="3" style="font-size: 12px; margin-top: 8px">
+                      <n-text depth="3" class="upload-hint">
                         Supported formats: JPEG, PNG, GIF, WebP (Max 10MB)
                       </n-text>
                     </n-upload-dragger>
@@ -139,7 +139,7 @@
                         </n-icon>
                         <n-space vertical :size="4">
                           <n-text strong>{{ formData.resumeFile.fileName }}</n-text>
-                          <n-text depth="3" style="font-size: 12px">
+                          <n-text depth="3" class="file-info">
                             {{ formatFileSize(formData.resumeFile.fileSize) }}
                           </n-text>
                         </n-space>
@@ -179,15 +179,15 @@
                     :disabled="uploadingResume"
                   >
                     <n-upload-dragger>
-                      <div style="margin-bottom: 12px">
+                      <div class="upload-icon">
                         <n-icon size="48" :depth="3">
                           <CloudUploadOutline />
                         </n-icon>
                       </div>
-                      <n-text style="font-size: 16px">
+                      <n-text class="upload-text">
                         Click or drag resume file to this area to upload
                       </n-text>
-                      <n-text depth="3" style="font-size: 12px; margin-top: 8px">
+                      <n-text depth="3" class="upload-hint">
                         Supported formats: PDF, DOC, DOCX (Max 10MB)
                       </n-text>
                     </n-upload-dragger>
@@ -497,5 +497,22 @@ onMounted(() => {
 
 html.dark .profile-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.file-info {
+  font-size: 12px;
+}
+
+.upload-icon {
+  margin-bottom: 12px;
+}
+
+.upload-text {
+  font-size: 16px;
+}
+
+.upload-hint {
+  font-size: 12px;
+  margin-top: 8px;
 }
 </style>
