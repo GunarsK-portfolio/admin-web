@@ -5,10 +5,6 @@ export const api = axios.create({
   baseURL: env.apiUrl,
 })
 
-export const authApi = axios.create({
-  baseURL: env.authUrl,
-})
-
 // Add auth token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token')
