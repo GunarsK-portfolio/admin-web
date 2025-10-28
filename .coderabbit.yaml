@@ -17,21 +17,4 @@ reviews:
       enabled: true
 chat:
   auto_reply: true
-tone_instructions: |
-  You are reviewing Vue.js 3 admin dashboard code for a portfolio management system.
-
-  Focus on:
-  - Vue 3 Composition API best practices (proper use of ref, computed, watch)
-  - Component design (single responsibility, prop types, emits declaration)
-  - State management patterns (reactive data, prop drilling, composables)
-  - Naive UI component usage and best practices
-  - Form validation and error handling
-  - API integration (proper error handling, loading states, axios patterns)
-  - Security (XSS prevention, CSRF tokens, input sanitization, secure file uploads)
-  - Performance (unnecessary re-renders, large list optimization, code splitting)
-  - Accessibility (ARIA labels, keyboard navigation, screen reader support)
-  - TypeScript usage (if applicable - proper typing, avoid any)
-
-  Be specific about Vue 3 patterns. Suggest composables for reusable logic.
-  Flag security issues in file uploads, image handling, and user input.
-  Suggest UX improvements for admin workflows.
+tone_instructions: "Focus on Vue 3 Composition API, component design, Naive UI usage, security (XSS, file uploads), performance, and accessibility. Be specific with Vue patterns and flag security issues immediately."
