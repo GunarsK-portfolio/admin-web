@@ -106,7 +106,7 @@ task docker:build        # Build Docker image
 task docker:run          # Run in Docker container
 
 # CI/CD
-task ci:all              # Run all CI checks (format, lint:fix, build, security:audit)
+task ci:all              # Run all CI checks
 ```
 
 Using npm directly:
