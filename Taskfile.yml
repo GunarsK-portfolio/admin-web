@@ -75,10 +75,10 @@ tasks:
 
   # CI/CD
   ci:all:
-    desc: Run all CI checks (format, lint, build, security)
+    desc: Run all CI checks (format, lint:fix, build, security:audit)
     cmds:
       - task: format
       - task: lint:fix
       - task: build
       - task: security:audit
-      - echo "✓ All CI checks passed!"
+      - echo "All CI checks passed!"
