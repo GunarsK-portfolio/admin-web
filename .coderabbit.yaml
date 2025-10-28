@@ -10,6 +10,8 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
+  docstring:
+    enabled: false
   tools:
     eslint:
       enabled: true
