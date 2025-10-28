@@ -18,6 +18,18 @@
 
         <n-grid-item>
           <n-card>
+            <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 8px">Skills</h3>
+            <p style="margin-bottom: 16px">Manage your skills and skill categories</p>
+            <div style="text-align: right">
+              <n-button type="primary" size="small" @click="$router.push('/skills')">
+                Manage Skills
+              </n-button>
+            </div>
+          </n-card>
+        </n-grid-item>
+
+        <n-grid-item>
+          <n-card>
             <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 8px">Work Experience</h3>
             <p style="margin-bottom: 16px">Add, edit, or remove work experience entries</p>
             <div style="text-align: right">
