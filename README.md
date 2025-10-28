@@ -83,18 +83,30 @@ npm run dev
 Using Task:
 
 ```bash
-task dev            # Start development server
-task build          # Build for production
-task preview        # Preview production build
-task install        # Install dependencies
-task lint           # Run ESLint
-task lint-fix       # Run ESLint and auto-fix issues
-task format         # Format code with Prettier
-task format-check   # Check code formatting
-task audit          # Run npm security audit
-task clean          # Clean build artifacts
-task docker-build   # Build Docker image
-task ci             # Run all CI checks locally
+# Development
+task dev:start           # Start development server
+task install             # Install dependencies
+
+# Build
+task build               # Build for production
+task preview             # Preview production build
+task clean               # Clean build artifacts
+
+# Code quality
+task lint                # Run ESLint
+task lint:fix            # Run ESLint and auto-fix issues
+task format              # Format code with Prettier
+task format:check        # Check code formatting
+
+# Security
+task security:audit      # Run npm security audit (high/critical only)
+
+# Docker
+task docker:build        # Build Docker image
+task docker:run          # Run in Docker container
+
+# CI/CD
+task ci:all              # Run all CI checks (format, lint:fix, build, security:audit)
 ```
 
 Using npm directly:
