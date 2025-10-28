@@ -1,0 +1,22 @@
+language: en-US
+early_access: false
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  docstring:
+    enabled: false
+  tools:
+    eslint:
+      enabled: true
+    biome:
+      enabled: true
+chat:
+  auto_reply: true
+tone_instructions: "Focus on Vue 3 Composition API, component design, Naive UI usage, security (XSS, file uploads), performance, and accessibility. Be specific with Vue patterns and flag security issues immediately."

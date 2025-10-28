@@ -2,35 +2,37 @@
   <n-config-provider :theme="currentTheme">
     <n-notification-provider>
       <n-message-provider>
-        <n-global-style />
-        <n-layout class="app-layout">
-          <n-layout-header v-if="authStore.isAuthenticated" bordered class="app-header">
-            <div class="header-inner">
-              <router-link to="/dashboard" class="header-logo">Portfolio Admin</router-link>
+        <n-dialog-provider>
+          <n-global-style />
+          <n-layout class="app-layout">
+            <n-layout-header v-if="authStore.isAuthenticated" bordered class="app-header">
+              <div class="header-inner">
+                <router-link to="/dashboard" class="header-logo">Portfolio Admin</router-link>
 
-              <n-space>
-                <n-button circle @click="toggleTheme">
-                  <template #icon>
-                    <n-icon size="20">
-                      <MoonOutline v-if="isDark" />
-                      <SunnyOutline v-else />
-                    </n-icon>
-                  </template>
-                </n-button>
-                <n-button @click="authStore.logout()">Logout</n-button>
-              </n-space>
-            </div>
-          </n-layout-header>
+                <n-space>
+                  <n-button circle @click="toggleTheme">
+                    <template #icon>
+                      <n-icon size="20">
+                        <MoonOutline v-if="isDark" />
+                        <SunnyOutline v-else />
+                      </n-icon>
+                    </template>
+                  </n-button>
+                  <n-button @click="authStore.logout()">Logout</n-button>
+                </n-space>
+              </div>
+            </n-layout-header>
 
-          <n-layout-content
-            class="app-content"
-            :class="{ 'no-header': !authStore.isAuthenticated }"
-          >
-            <router-view />
-          </n-layout-content>
-        </n-layout>
+            <n-layout-content
+              class="app-content"
+              :class="{ 'no-header': !authStore.isAuthenticated }"
+            >
+              <router-view />
+            </n-layout-content>
+          </n-layout>
 
-        <BackToTop />
+          <BackToTop />
+        </n-dialog-provider>
       </n-message-provider>
     </n-notification-provider>
   </n-config-provider>
@@ -42,6 +44,7 @@ import {
   NConfigProvider,
   NNotificationProvider,
   NMessageProvider,
+  NDialogProvider,
   NGlobalStyle,
   NLayout,
   NLayoutHeader,
