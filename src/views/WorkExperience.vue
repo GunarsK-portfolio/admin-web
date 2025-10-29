@@ -138,7 +138,7 @@ import {
 } from '@vicons/ionicons5'
 import workExperienceService from '../services/work-experience'
 import { logger } from '../utils/logger'
-import { required, dateAfter, validateForm } from '../utils/validation'
+import { required, dateAfter, validateForm, normalizeString } from '../utils/validation'
 import { createActionsRenderer, createDateRangeRenderer, stringSorter } from '../utils/tableHelpers'
 import { toMonthFormat, fromMonthFormat } from '../utils/dateHelpers'
 
@@ -194,13 +194,17 @@ const columns = [
 
 const filteredExperience = computed(() => {
   if (!search.value) return experiences.value
-  const searchLower = search.value.toLowerCase()
-  return experiences.value.filter(
-    (exp) =>
-      exp.company?.toLowerCase().includes(searchLower) ||
-      exp.position?.toLowerCase().includes(searchLower) ||
-      exp.description?.toLowerCase().includes(searchLower)
-  )
+  const searchLower = normalizeString(search.value)
+  return experiences.value.filter((exp) => {
+    const company = normalizeString(exp.company)
+    const position = normalizeString(exp.position)
+    const description = normalizeString(exp.description)
+    return (
+      company.includes(searchLower) ||
+      position.includes(searchLower) ||
+      description.includes(searchLower)
+    )
+  })
 })
 
 async function loadExperience() {

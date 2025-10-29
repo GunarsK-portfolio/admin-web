@@ -6,6 +6,7 @@ export default {
     return api.get('/portfolio/profile')
   },
   updateProfile(data) {
+    validateRequired(data, 'Profile data', { type: 'object' })
     return api.put('/portfolio/profile', data)
   },
   updateProfileAvatar(fileId) {

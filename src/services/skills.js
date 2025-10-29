@@ -11,10 +11,12 @@ export default {
     return api.get(`/portfolio/skills/${encodeURIComponent(id)}`)
   },
   createSkill(skill) {
+    validateRequired(skill, 'Skill', { type: 'object' })
     return api.post('/portfolio/skills', skill)
   },
   updateSkill(id, skill) {
     validateRequired(id, 'Skill ID')
+    validateRequired(skill, 'Skill', { type: 'object' })
     return api.put(`/portfolio/skills/${encodeURIComponent(id)}`, skill)
   },
   deleteSkill(id) {
@@ -31,10 +33,12 @@ export default {
     return api.get(`/portfolio/skill-types/${encodeURIComponent(id)}`)
   },
   createSkillType(skillType) {
+    validateRequired(skillType, 'Skill type', { type: 'object' })
     return api.post('/portfolio/skill-types', skillType)
   },
   updateSkillType(id, skillType) {
     validateRequired(id, 'Skill Type ID')
+    validateRequired(skillType, 'Skill type', { type: 'object' })
     return api.put(`/portfolio/skill-types/${encodeURIComponent(id)}`, skillType)
   },
   deleteSkillType(id) {

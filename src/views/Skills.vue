@@ -110,7 +110,7 @@
 
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showSkillModal = false">Cancel</n-button>
+          <n-button @click="handleCancelSkill">Cancel</n-button>
           <n-button type="primary" :loading="savingSkill" @click="handleSaveSkill">
             {{ editingSkill ? 'Update' : 'Create' }}
           </n-button>
@@ -146,7 +146,7 @@
 
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showTypeModal = false">Cancel</n-button>
+          <n-button @click="handleCancelType">Cancel</n-button>
           <n-button type="primary" :loading="savingType" @click="handleSaveType">
             {{ editingType ? 'Update' : 'Create' }}
           </n-button>
@@ -187,7 +187,7 @@ import {
 } from '@vicons/ionicons5'
 import skillsService from '../services/skills'
 import { logger } from '../utils/logger'
-import { required, requiredNumber, validateForm } from '../utils/validation'
+import { required, requiredNumber, validateForm, normalizeString } from '../utils/validation'
 import { stringSorter, createActionsRenderer } from '../utils/tableHelpers'
 
 const router = useRouter()
@@ -237,21 +237,22 @@ const typeRules = {
 // Computed
 const filteredSkills = computed(() => {
   if (!skillsSearch.value) return skills.value
-  const search = skillsSearch.value.toLowerCase()
-  return skills.value.filter(
-    (skill) =>
-      skill.skill?.toLowerCase().includes(search) ||
-      skill.skillType?.name?.toLowerCase().includes(search)
-  )
+  const search = normalizeString(skillsSearch.value)
+  return skills.value.filter((skill) => {
+    const skillName = normalizeString(skill.skill)
+    const typeName = normalizeString(skill.skillType?.name)
+    return skillName.includes(search) || typeName.includes(search)
+  })
 })
 
 const filteredTypes = computed(() => {
   if (!typesSearch.value) return skillTypes.value
-  const search = typesSearch.value.toLowerCase()
-  return skillTypes.value.filter(
-    (type) =>
-      type.name?.toLowerCase().includes(search) || type.description?.toLowerCase().includes(search)
-  )
+  const search = normalizeString(typesSearch.value)
+  return skillTypes.value.filter((type) => {
+    const name = normalizeString(type.name)
+    const description = normalizeString(type.description)
+    return name.includes(search) || description.includes(search)
+  })
 })
 
 const skillTypeOptions = computed(() => {
@@ -413,6 +414,11 @@ function resetSkillForm() {
   })
 }
 
+function handleCancelSkill() {
+  showSkillModal.value = false
+  resetSkillForm()
+}
+
 function handleEditType(type) {
   editingType.value = type
   typeForm.value = {
@@ -478,6 +484,11 @@ function resetTypeForm() {
   nextTick(() => {
     typeFormRef.value?.restoreValidation()
   })
+}
+
+function handleCancelType() {
+  showTypeModal.value = false
+  resetTypeForm()
 }
 
 onMounted(() => {

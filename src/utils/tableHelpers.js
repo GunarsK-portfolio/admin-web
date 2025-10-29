@@ -82,7 +82,8 @@ export function createDateRangeRenderer(options) {
   return (row) => {
     const formatDate = (date) => {
       if (!date) return 'N/A'
-      return format === 'month' ? toMonthFormat(date) : toDateFormat(date)
+      const formatted = format === 'month' ? toMonthFormat(date) : toDateFormat(date)
+      return formatted ?? 'N/A'
     }
 
     const startDate = formatDate(row[startKey])
