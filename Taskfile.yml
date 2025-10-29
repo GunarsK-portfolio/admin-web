@@ -73,12 +73,19 @@ tasks:
     cmds:
       - npm audit --audit-level=high
 
+  # Linting
+  lint:markdown:
+    desc: Lint Markdown files
+    cmds:
+      - npx markdownlint-cli2
+
   # CI/CD
   ci:all:
-    desc: Run all CI checks (format, lint:fix, build, security:audit)
+    desc: Run all CI checks (format, lint:fix, build, security:audit, lint:markdown)
     cmds:
       - task: format
       - task: lint:fix
       - task: build
       - task: security:audit
+      - task: lint:markdown
       - echo "All CI checks passed!"

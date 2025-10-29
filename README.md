@@ -32,7 +32,7 @@ Admin panel for managing portfolio content built with Vue.js.
 
 ## Project Structure
 
-```
+```text
 admin-web/
 ├── src/
 │   ├── assets/           # Static assets
@@ -63,20 +63,20 @@ docker-compose up -d
 npm install
 ```
 
-2. Create `.env` file (optional):
+1. Create `.env` file (optional):
 
 ```env
 VITE_API_URL=http://localhost:8083/api/v1
 VITE_AUTH_URL=http://localhost:8084/api/v1/auth
 ```
 
-3. Run development server:
+1. Run development server:
 
 ```bash
 npm run dev
 ```
 
-4. Access at: `http://localhost:8081`
+1. Access at: `http://localhost:8081`
 
 ## Available Commands
 
@@ -106,7 +106,7 @@ task docker:build        # Build Docker image
 task docker:run          # Run in Docker container
 
 # CI/CD
-task ci:all              # Run all CI checks (format, lint:fix, build, security:audit)
+task ci:all              # Run all CI checks
 ```
 
 Using npm directly:
@@ -120,13 +120,13 @@ npm run lint      # Run ESLint
 
 ## Environment Variables
 
-| Variable         | Description                                | Default                                  |
-| ---------------- | ------------------------------------------ | ---------------------------------------- |
-| `VITE_API_URL`   | Admin API base URL                         | `https://localhost:8443/admin-api/v1`    |
-| `VITE_AUTH_URL`  | Auth service base URL                      | `https://localhost:8443/auth/v1`         |
-| `VITE_CERT_DIR`  | Certificate directory for HTTPS dev server | `../infrastructure/docker/traefik/certs` |
-| `VITE_CERT_FILE` | Certificate filename                       | `localhost.crt`                          |
-| `VITE_KEY_FILE`  | Private key filename                       | `localhost.key`                          |
+| Variable         | Description  | Default        |
+| ---------------- | ------------ | -------------- |
+| `VITE_API_URL`   | Admin API    | localhost:8443 |
+| `VITE_AUTH_URL`  | Auth service | localhost:8443 |
+| `VITE_CERT_DIR`  | Cert dir     | certs/         |
+| `VITE_CERT_FILE` | Cert file    | localhost.crt  |
+| `VITE_KEY_FILE`  | Key file     | localhost.key  |
 
 ## Authentication
 
@@ -142,7 +142,8 @@ Auth logic is in `src/stores/auth.js` and `src/services/auth.js`.
 
 ## Development Server
 
-The development server runs on port 8081 and supports HTTPS if certificates are available in `../infrastructure/docker/traefik/certs/`.
+The development server runs on port 8081 and supports HTTPS if
+certificates are available in `../infrastructure/docker/traefik/certs/`.
 
 ## Building for Production
 
@@ -181,7 +182,8 @@ API service configuration is in `src/services/`.
 
 ## Route Protection
 
-Routes are protected using Vue Router navigation guards. Unauthorized users are redirected to login page.
+Routes are protected using Vue Router navigation guards. Unauthorized
+users are redirected to login page.
 
 ## Styling
 
