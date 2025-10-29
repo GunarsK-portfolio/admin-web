@@ -1,6 +1,6 @@
 <template>
-  <div class="skills-page">
-    <n-space vertical size="large" class="skills-container">
+  <div class="page">
+    <n-space vertical size="large" class="page-container">
       <n-button text @click="router.push('/dashboard')">
         <template #icon>
           <n-icon><ArrowBackOutline /></n-icon>
@@ -80,7 +80,7 @@
     </n-space>
 
     <!-- Add/Edit Skill Modal -->
-    <n-modal v-model:show="showSkillModal" preset="card" title="Skill" style="width: 500px">
+    <n-modal v-model:show="showSkillModal" preset="card" title="Skill" class="modal-small">
       <n-form ref="skillFormRef" :model="skillForm" :rules="skillRules">
         <n-form-item label="Skill Name" path="skill">
           <n-input v-model:value="skillForm.skill" placeholder="e.g., Vue.js" />
@@ -103,7 +103,7 @@
             v-model:value="skillForm.displayOrder"
             :min="0"
             placeholder="Order"
-            style="width: 100%"
+            class="full-width"
           />
         </n-form-item>
       </n-form>
@@ -119,7 +119,7 @@
     </n-modal>
 
     <!-- Add/Edit Skill Type Modal -->
-    <n-modal v-model:show="showTypeModal" preset="card" title="Skill Type" style="width: 500px">
+    <n-modal v-model:show="showTypeModal" preset="card" title="Skill Type" class="modal-small">
       <n-form ref="typeFormRef" :model="typeForm" :rules="typeRules">
         <n-form-item label="Name" path="name">
           <n-input v-model:value="typeForm.name" placeholder="e.g., Frontend" />
@@ -139,7 +139,7 @@
             v-model:value="typeForm.displayOrder"
             :min="0"
             placeholder="Order"
-            style="width: 100%"
+            class="full-width"
           />
         </n-form-item>
       </n-form>
@@ -157,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, h } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NSpace,
@@ -187,6 +187,8 @@ import {
 } from '@vicons/ionicons5'
 import skillsService from '../services/skills'
 import { logger } from '../utils/logger'
+import { required, requiredNumber, validateForm } from '../utils/validation'
+import { stringSorter, createActionsRenderer } from '../utils/tableHelpers'
 
 const router = useRouter()
 const message = useMessage()
@@ -209,10 +211,8 @@ const skillForm = ref({
 })
 
 const skillRules = {
-  skill: [{ required: true, message: 'Skill name is required', trigger: 'blur' }],
-  skillTypeId: [
-    { required: true, message: 'Skill type is required', trigger: 'change', type: 'number' },
-  ],
+  skill: [required('Skill name')],
+  skillTypeId: [requiredNumber('Skill type')],
 }
 
 // Skill Types state
@@ -231,7 +231,7 @@ const typeForm = ref({
 })
 
 const typeRules = {
-  name: [{ required: true, message: 'Name is required', trigger: 'blur' }],
+  name: [required('Name')],
 }
 
 // Computed
@@ -266,7 +266,7 @@ const skillColumns = [
   {
     title: 'Skill',
     key: 'skill',
-    sorter: (a, b) => a.skill.localeCompare(b.skill),
+    sorter: stringSorter('skill'),
   },
   {
     title: 'Type',
@@ -285,36 +285,10 @@ const skillColumns = [
   {
     title: 'Actions',
     key: 'actions',
-    render: (row) =>
-      h(
-        NSpace,
-        {},
-        {
-          default: () => [
-            h(
-              NButton,
-              {
-                size: 'small',
-                onClick: () => handleEditSkill(row),
-              },
-              {
-                icon: () => h(NIcon, null, { default: () => h(CreateOutline) }),
-              }
-            ),
-            h(
-              NButton,
-              {
-                size: 'small',
-                type: 'error',
-                onClick: () => handleDeleteSkill(row),
-              },
-              {
-                icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
-              }
-            ),
-          ],
-        }
-      ),
+    render: createActionsRenderer([
+      { icon: CreateOutline, onClick: handleEditSkill },
+      { icon: TrashOutline, onClick: handleDeleteSkill, type: 'error' },
+    ]),
   },
 ]
 
@@ -323,7 +297,7 @@ const typeColumns = [
   {
     title: 'Name',
     key: 'name',
-    sorter: (a, b) => a.name.localeCompare(b.name),
+    sorter: stringSorter('name'),
   },
   {
     title: 'Description',
@@ -336,36 +310,10 @@ const typeColumns = [
   {
     title: 'Actions',
     key: 'actions',
-    render: (row) =>
-      h(
-        NSpace,
-        {},
-        {
-          default: () => [
-            h(
-              NButton,
-              {
-                size: 'small',
-                onClick: () => handleEditType(row),
-              },
-              {
-                icon: () => h(NIcon, null, { default: () => h(CreateOutline) }),
-              }
-            ),
-            h(
-              NButton,
-              {
-                size: 'small',
-                type: 'error',
-                onClick: () => handleDeleteType(row),
-              },
-              {
-                icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
-              }
-            ),
-          ],
-        }
-      ),
+    render: createActionsRenderer([
+      { icon: CreateOutline, onClick: handleEditType },
+      { icon: TrashOutline, onClick: handleDeleteType, type: 'error' },
+    ]),
   },
 ]
 
@@ -411,10 +359,10 @@ function handleEditSkill(skill) {
 }
 
 async function handleSaveSkill() {
-  try {
-    await skillFormRef.value?.validate()
-    savingSkill.value = true
+  if (!(await validateForm(skillFormRef))) return
 
+  savingSkill.value = true
+  try {
     if (editingSkill.value) {
       await skillsService.updateSkill(editingSkill.value.id, skillForm.value)
       message.success('Skill updated successfully')
@@ -427,7 +375,6 @@ async function handleSaveSkill() {
     resetSkillForm()
     await loadSkills()
   } catch (error) {
-    if (error?.errors) return
     logger.error('Failed to save skill', { error: error.message })
     message.error('Failed to save skill')
   } finally {
@@ -474,10 +421,10 @@ function handleEditType(type) {
 }
 
 async function handleSaveType() {
-  try {
-    await typeFormRef.value?.validate()
-    savingType.value = true
+  if (!(await validateForm(typeFormRef))) return
 
+  savingType.value = true
+  try {
     if (editingType.value) {
       await skillsService.updateSkillType(editingType.value.id, typeForm.value)
       message.success('Skill type updated successfully')
@@ -489,9 +436,8 @@ async function handleSaveType() {
     showTypeModal.value = false
     resetTypeForm()
     await loadSkillTypes()
-    await loadSkills() // Reload skills to update type references
+    await loadSkills()
   } catch (error) {
-    if (error?.errors) return
     logger.error('Failed to save skill type', { error: error.message })
     message.error('Failed to save skill type')
   } finally {
@@ -533,21 +479,3 @@ onMounted(() => {
   loadSkills()
 })
 </script>
-
-<style scoped>
-.skills-page {
-  width: 100%;
-  padding: 24px;
-  min-height: 100vh;
-}
-
-.skills-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.search-input {
-  width: 300px;
-}
-</style>

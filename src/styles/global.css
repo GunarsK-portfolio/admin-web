@@ -1,0 +1,44 @@
+/* Page layout */
+.page {
+  width: 100%;
+  padding: 24px;
+  min-height: 100vh;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-container-narrow {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Modal styles */
+.modal-small {
+  width: 500px;
+  max-width: 90vw;
+}
+
+.modal-medium {
+  width: 600px;
+  max-width: 90vw;
+}
+
+.modal-large {
+  width: 800px;
+  max-width: 90vw;
+}
+
+/* Form styles */
+.full-width {
+  width: 100%;
+}
+
+.search-input {
+  width: 300px;
+  max-width: 100%;
+}

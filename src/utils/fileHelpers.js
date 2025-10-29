@@ -1,7 +1,7 @@
 /**
- * Formats a file size in bytes to a human-readable string
- * @param {number} bytes - The file size in bytes
- * @returns {string} Formatted file size (e.g., "1.5 MB", "245.5 KB")
+ * Formats file size to human-readable string
+ * @param {number} bytes - File size in bytes
+ * @returns {string} Formatted file size
  */
 export function formatFileSize(bytes) {
   if (!bytes) return '0 B'
