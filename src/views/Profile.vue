@@ -1,12 +1,7 @@
 <template>
   <div class="page">
     <n-space vertical size="large" class="page-container-narrow">
-      <n-button text @click="router.push('/dashboard')">
-        <template #icon>
-          <n-icon><ArrowBackOutline /></n-icon>
-        </template>
-        Back to Dashboard
-      </n-button>
+      <BackButton />
 
       <n-page-header
         title="Profile Management"
@@ -226,7 +221,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import {
   NSpace,
   NPageHeader,
@@ -243,25 +237,25 @@ import {
   NUpload,
   NUploadDragger,
   NAvatar,
-  useMessage,
 } from 'naive-ui'
 import {
-  ArrowBackOutline,
   SaveOutline,
   TrashOutline,
   CloudUploadOutline,
   DocumentTextOutline,
   OpenOutline,
 } from '@vicons/ionicons5'
+import BackButton from '../components/shared/BackButton.vue'
+import { useViewServices } from '../composables/useViewServices'
 import profileService from '../services/profile'
 import filesService from '../services/files'
 import { logger } from '../utils/logger'
 import { formatFileSize } from '../utils/fileHelpers'
 import { required, email, validateForm } from '../utils/validation'
+import { createDataLoader } from '../utils/crudHelpers'
 import ImageCropperModal from '../components/shared/ImageCropperModal.vue'
 
-const router = useRouter()
-const message = useMessage()
+const { message } = useViewServices()
 const formRef = ref(null)
 
 const loading = ref(false)
@@ -296,35 +290,26 @@ const rules = {
   email: [email()],
 }
 
-async function loadProfile() {
-  loading.value = true
-  try {
-    const response = await profileService.getProfile()
-    if (response.data) {
-      formData.value = {
-        id: response.data.id,
-        name: response.data.name || '',
-        title: response.data.title || '',
-        tagline: response.data.tagline || '',
-        email: response.data.email || '',
-        phone: response.data.phone || '',
-        location: response.data.location || '',
-        avatarFileId: response.data.avatarFileId || null,
-        avatarFile: response.data.avatarFile || null,
-        resumeFileId: response.data.resumeFileId || null,
-        resumeFile: response.data.resumeFile || null,
-      }
-    }
-  } catch (error) {
-    logger.error('Failed to load profile', {
-      error: error.message,
-      status: error.response?.status,
-    })
-    message.error('Failed to load profile data')
-  } finally {
-    loading.value = false
-  }
-}
+const loadProfile = createDataLoader({
+  loading,
+  data: formData,
+  service: profileService.getProfile,
+  entityName: 'profile',
+  message,
+  transform: (data) => ({
+    id: data.id,
+    name: data.name || '',
+    title: data.title || '',
+    tagline: data.tagline || '',
+    email: data.email || '',
+    phone: data.phone || '',
+    location: data.location || '',
+    avatarFileId: data.avatarFileId || null,
+    avatarFile: data.avatarFile || null,
+    resumeFileId: data.resumeFileId || null,
+    resumeFile: data.resumeFile || null,
+  }),
+})
 
 async function handleSave() {
   if (!(await validateForm(formRef))) return

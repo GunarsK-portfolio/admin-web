@@ -26,13 +26,14 @@ export function fromMonthFormat(monthString) {
 /**
  * Extracts full date without timestamp
  * @param {string|null} dateString - Date or timestamp string
- * @returns {string|null} Date in yyyy-MM-dd format
+ * @param {string} defaultValue - Default value to return if dateString is null/invalid
+ * @returns {string|null} Date in yyyy-MM-dd format or defaultValue
  */
-export function toDateFormat(dateString) {
-  if (!dateString) return null
+export function toDateFormat(dateString, defaultValue = null) {
+  if (!dateString) return defaultValue
   const match =
     typeof dateString === 'string' &&
     dateString.match(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])/)
-  if (!match) return null
+  if (!match) return defaultValue
   return match[0]
 }

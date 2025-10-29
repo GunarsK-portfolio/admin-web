@@ -1,12 +1,7 @@
 <template>
   <div class="page">
     <n-space vertical size="large" class="page-container">
-      <n-button text @click="router.push('/dashboard')">
-        <template #icon>
-          <n-icon><ArrowBackOutline /></n-icon>
-        </template>
-        Back to Dashboard
-      </n-button>
+      <BackButton />
 
       <n-page-header
         title="Work Experience Management"
@@ -16,23 +11,11 @@
       <n-card>
         <n-space vertical size="large">
           <n-space justify="space-between">
-            <n-input
-              v-model:value="search"
+            <SearchInput
+              v-model="search"
               placeholder="Search by company, position, or description..."
-              aria-label="Search work experience"
-              class="search-input"
-              clearable
-            >
-              <template #prefix>
-                <n-icon><SearchOutline /></n-icon>
-              </template>
-            </n-input>
-            <n-button type="primary" @click="handleAdd">
-              <template #icon>
-                <n-icon><AddOutline /></n-icon>
-              </template>
-              Add Experience
-            </n-button>
+            />
+            <AddButton label="Add Experience" @click="openModal" />
           </n-space>
 
           <n-spin :show="loading">
@@ -98,71 +81,56 @@
       </n-form>
 
       <template #footer>
-        <n-space justify="end">
-          <n-button @click="handleCancel">Cancel</n-button>
-          <n-button type="primary" :loading="saving" @click="handleSave">
-            {{ editing ? 'Update' : 'Create' }}
-          </n-button>
-        </n-space>
+        <ModalFooter :loading="saving" :editing="editing" @cancel="closeModal" @save="handleSave" />
       </template>
     </n-modal>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, h, onMounted, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, h, onMounted, watch } from 'vue'
 import {
   NSpace,
   NPageHeader,
-  NButton,
-  NIcon,
   NCard,
-  NInput,
   NDataTable,
   NSpin,
   NTag,
   NModal,
   NForm,
   NFormItem,
+  NInput,
   NDatePicker,
   NCheckbox,
-  useMessage,
-  useDialog,
 } from 'naive-ui'
-import {
-  AddOutline,
-  CreateOutline,
-  TrashOutline,
-  SearchOutline,
-  ArrowBackOutline,
-} from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
+import BackButton from '../components/shared/BackButton.vue'
+import SearchInput from '../components/shared/SearchInput.vue'
+import AddButton from '../components/shared/AddButton.vue'
+import ModalFooter from '../components/shared/ModalFooter.vue'
+import { useViewServices } from '../composables/useViewServices'
+import { useDataState } from '../composables/useDataState'
+import { useModal } from '../composables/useModal'
 import workExperienceService from '../services/work-experience'
-import { logger } from '../utils/logger'
-import { required, dateAfter, validateForm, normalizeString } from '../utils/validation'
+import { required, dateAfter, validateForm } from '../utils/validation'
 import { createActionsRenderer, createDateRangeRenderer, stringSorter } from '../utils/tableHelpers'
 import { toMonthFormat, fromMonthFormat } from '../utils/dateHelpers'
+import { createSearchFilter } from '../utils/filterHelpers'
+import { createDataLoader, createSaveHandler, createDeleteHandler } from '../utils/crudHelpers'
 
-const router = useRouter()
-const message = useMessage()
-const dialog = useDialog()
+const { message, dialog } = useViewServices()
+const { data: experiences, loading, search } = useDataState()
+const { showModal, editing, form, formRef, openModal, closeModal, openEditModal, resetForm } =
+  useModal({
+    company: '',
+    position: '',
+    description: '',
+    startDate: null,
+    endDate: null,
+    isCurrent: false,
+  })
 
-const experiences = ref([])
-const loading = ref(false)
-const search = ref('')
-const showModal = ref(false)
-const editing = ref(null)
 const saving = ref(false)
-const formRef = ref(null)
-
-const form = ref({
-  company: '',
-  position: '',
-  description: '',
-  startDate: null,
-  endDate: null,
-  isCurrent: false,
-})
 
 const rules = {
   company: [required('Company')],
@@ -178,6 +146,62 @@ const renderStatus = (row) =>
     { default: () => (row.isCurrent ? 'Current' : 'Past') }
   )
 
+const filteredExperience = createSearchFilter(experiences, search, [
+  'company',
+  'position',
+  'description',
+])
+
+const loadExperience = createDataLoader({
+  loading,
+  data: experiences,
+  service: workExperienceService.getAllWorkExperiences,
+  entityName: 'work experience',
+  message,
+})
+
+function handleEdit(experience) {
+  openEditModal(experience, (exp) => ({
+    company: exp.company,
+    position: exp.position,
+    description: exp.description || '',
+    startDate: toMonthFormat(exp.startDate),
+    endDate: toMonthFormat(exp.endDate),
+    isCurrent: exp.isCurrent || false,
+  }))
+}
+
+const handleSave = createSaveHandler({
+  formRef,
+  saving,
+  editing,
+  form,
+  showModal,
+  service: {
+    create: workExperienceService.createWorkExperience,
+    update: workExperienceService.updateWorkExperience,
+  },
+  entityName: 'Work experience',
+  message,
+  onSuccess: loadExperience,
+  resetForm: () => resetForm(),
+  validateForm,
+  transformPayload: (formData) => ({
+    ...formData,
+    startDate: fromMonthFormat(formData.startDate),
+    endDate: formData.isCurrent ? null : fromMonthFormat(formData.endDate),
+  }),
+})
+
+const handleDelete = createDeleteHandler({
+  dialog,
+  service: workExperienceService.deleteWorkExperience,
+  entityName: 'Work experience',
+  message,
+  onSuccess: loadExperience,
+  getConfirmText: (exp) => `"${exp.position} at ${exp.company}"`,
+})
+
 const columns = [
   { title: 'Company', key: 'company', sorter: stringSorter('company') },
   { title: 'Position', key: 'position', sorter: stringSorter('position') },
@@ -192,125 +216,6 @@ const columns = [
     ]),
   },
 ]
-
-const filteredExperience = computed(() => {
-  if (!search.value) return experiences.value
-  const searchLower = normalizeString(search.value)
-  return experiences.value.filter((exp) => {
-    const company = normalizeString(exp.company)
-    const position = normalizeString(exp.position)
-    const description = normalizeString(exp.description)
-    return (
-      company.includes(searchLower) ||
-      position.includes(searchLower) ||
-      description.includes(searchLower)
-    )
-  })
-})
-
-async function loadExperience() {
-  loading.value = true
-  try {
-    const response = await workExperienceService.getAllWorkExperiences()
-    experiences.value = response.data || []
-    logger.info('Work experience loaded', { count: experiences.value.length })
-  } catch (error) {
-    logger.error('Failed to load work experience', { error: error.message })
-    message.error('Failed to load work experience')
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleAdd() {
-  resetForm()
-  showModal.value = true
-}
-
-function handleEdit(experience) {
-  editing.value = experience
-  form.value = {
-    company: experience.company,
-    position: experience.position,
-    description: experience.description || '',
-    startDate: toMonthFormat(experience.startDate),
-    endDate: toMonthFormat(experience.endDate),
-    isCurrent: experience.isCurrent || false,
-  }
-  showModal.value = true
-}
-
-async function handleSave() {
-  if (!(await validateForm(formRef))) return
-
-  saving.value = true
-  try {
-    const payload = {
-      ...form.value,
-      startDate: fromMonthFormat(form.value.startDate),
-      endDate: form.value.isCurrent ? null : fromMonthFormat(form.value.endDate),
-    }
-
-    if (editing.value) {
-      await workExperienceService.updateWorkExperience(editing.value.id, payload)
-      message.success('Work experience updated successfully')
-      logger.info('Work experience updated', { id: editing.value.id })
-    } else {
-      const response = await workExperienceService.createWorkExperience(payload)
-      message.success('Work experience created successfully')
-      logger.info('Work experience created', { id: response.data?.id })
-    }
-
-    showModal.value = false
-    resetForm()
-    await loadExperience()
-  } catch (error) {
-    logger.error('Failed to save work experience', { error: error.message })
-    message.error('Failed to save work experience')
-  } finally {
-    saving.value = false
-  }
-}
-
-function handleDelete(experience) {
-  dialog.warning({
-    title: 'Delete Work Experience',
-    content: `Are you sure you want to delete "${experience.position} at ${experience.company}"?`,
-    positiveText: 'Delete',
-    negativeText: 'Cancel',
-    onPositiveClick: async () => {
-      try {
-        await workExperienceService.deleteWorkExperience(experience.id)
-        message.success('Work experience deleted successfully')
-        logger.info('Work experience deleted', { id: experience.id })
-        await loadExperience()
-      } catch (error) {
-        logger.error('Failed to delete work experience', { error: error.message })
-        message.error('Failed to delete work experience')
-      }
-    },
-  })
-}
-
-function handleCancel() {
-  showModal.value = false
-  resetForm()
-}
-
-function resetForm() {
-  editing.value = null
-  form.value = {
-    company: '',
-    position: '',
-    description: '',
-    startDate: null,
-    endDate: null,
-    isCurrent: false,
-  }
-  nextTick(() => {
-    formRef.value?.restoreValidation()
-  })
-}
 
 // Clear end date when "Currently working here" is checked
 watch(

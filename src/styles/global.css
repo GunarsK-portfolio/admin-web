@@ -42,6 +42,12 @@
 }
 
 .search-input {
-  width: 300px;
+  min-width: 400px;
   max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .search-input {
+    min-width: 200px;
+  }
 }

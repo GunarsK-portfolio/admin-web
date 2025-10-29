@@ -9,7 +9,7 @@
             <h3 class="card-title">Profile</h3>
             <p class="card-description">Manage your personal information and bio</p>
             <div class="card-actions">
-              <n-button type="primary" size="small" @click="$router.push('/profile')">
+              <n-button type="primary" size="small" @click="router.push({ name: 'Profile' })">
                 Edit Profile
               </n-button>
             </div>
@@ -21,7 +21,7 @@
             <h3 class="card-title">Skills</h3>
             <p class="card-description">Manage your skills and skill categories</p>
             <div class="card-actions">
-              <n-button type="primary" size="small" @click="$router.push('/skills')">
+              <n-button type="primary" size="small" @click="router.push({ name: 'Skills' })">
                 Manage Skills
               </n-button>
             </div>
@@ -33,7 +33,11 @@
             <h3 class="card-title">Work Experience</h3>
             <p class="card-description">Add, edit, or remove work experience entries</p>
             <div class="card-actions">
-              <n-button type="primary" size="small" @click="$router.push('/work-experience')">
+              <n-button
+                type="primary"
+                size="small"
+                @click="router.push({ name: 'WorkExperience' })"
+              >
                 Manage
               </n-button>
             </div>
@@ -45,7 +49,13 @@
             <h3 class="card-title">Certifications</h3>
             <p class="card-description">Manage your professional certifications</p>
             <div class="card-actions">
-              <n-button type="primary" size="small">Manage</n-button>
+              <n-button
+                type="primary"
+                size="small"
+                @click="router.push({ name: 'Certifications' })"
+              >
+                Manage
+              </n-button>
             </div>
           </n-card>
         </n-grid-item>
@@ -81,6 +91,9 @@
 
 <script setup>
 import { NGrid, NGridItem, NCard, NAlert, NButton } from 'naive-ui'
+import { useViewServices } from '../composables/useViewServices'
+
+const { router } = useViewServices()
 </script>
 
 <style scoped>

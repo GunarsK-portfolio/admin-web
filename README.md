@@ -1,17 +1,19 @@
 # Admin Web
 
 ![CI](https://github.com/GunarsK-portfolio/admin-web/workflows/CI/badge.svg)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/GunarsK-portfolio/admin-web?utm_source=oss&utm_medium=github&utm_campaign=GunarsK-portfolio%2Fadmin-web&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 Admin panel for managing portfolio content built with Vue.js.
 
 ## Features
 
 - User authentication (login/logout)
-- Full CRUD for projects, skills, experience
-- Image upload management
+- Full CRUD for skills, work experience, and certifications
+- Profile management with avatar and resume uploads
+- Image upload management with cropping
 - Protected routes with authentication
 - Responsive design with Naive UI
-- Modern Vue 3 UI components
+- Modern Vue 3 UI components with reusable composables
 - State management with Pinia
 - Vue Router for navigation
 
@@ -37,15 +39,40 @@ admin-web/
 ├── src/
 │   ├── assets/           # Static assets
 │   ├── components/       # Reusable components
-│   ├── views/            # Page components
+│   │   └── shared/       # Shared UI components (BackButton, SearchInput, etc.)
+│   ├── composables/      # Vue composables (useModal, useDataState, etc.)
+│   ├── views/            # Page components (CRUD views)
 │   ├── router/           # Route definitions (with auth guards)
 │   ├── stores/           # Pinia stores (auth, etc.)
 │   ├── services/         # API service layer
+│   ├── utils/            # Utility functions (validation, CRUD helpers, etc.)
 │   ├── App.vue           # Root component
 │   └── main.js           # Application entry
 ├── public/               # Public static files
 └── index.html            # HTML template
 ```
+
+### Architecture Patterns
+
+**Composables** (`src/composables/`):
+
+- `useModal` - Modal state management for CRUD operations
+- `useDataState` - Data list state (data, loading, search)
+- `useViewServices` - Common services (router, message, dialog)
+
+**Shared Components** (`src/components/shared/`):
+
+- `BackButton` - Consistent navigation
+- `SearchInput` - Reusable search with icon
+- `AddButton` - Standard add button
+- `ModalFooter` - Modal cancel/save footer
+
+**CRUD Helpers** (`src/utils/`):
+
+- `crudHelpers` - Reusable data loaders and save/delete handlers
+- `validation` - Form validation rules
+- `tableHelpers` - Data table renderers and sorters
+- `filterHelpers` - Search filtering utilities
 
 ## Quick Start
 

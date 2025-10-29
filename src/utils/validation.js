@@ -36,7 +36,50 @@ export const email = (trigger = 'blur') => ({
 })
 
 /**
+ * Creates URL validation rule with protocol restrictions
+ * @param {Object} options - Validation options
+ * @param {Array<string>} options.protocols - Allowed protocols (default: ['http:', 'https:'])
+ * @param {string} options.trigger - Validation trigger event
+ * @returns {Object} Naive UI validation rule
+ */
+export const url = (options = {}) => {
+  const { protocols = ['http:', 'https:'], trigger = 'blur' } = options
+
+  return {
+    validator: (_rule, value) => {
+      if (!value) return true
+      try {
+        const urlObj = new URL(value)
+        if (!protocols.includes(urlObj.protocol)) {
+          return new Error(`URL must use one of the following protocols: ${protocols.join(', ')}`)
+        }
+        return true
+      } catch {
+        return new Error('Please enter a valid URL')
+      }
+    },
+    trigger,
+  }
+}
+
+/**
+ * Checks if a URL string is a valid HTTP/HTTPS URL
+ * @param {string} urlString - URL to validate
+ * @returns {boolean} True if valid HTTP/HTTPS URL
+ */
+export function isValidHttpUrl(urlString) {
+  if (!urlString) return false
+  try {
+    const url = new URL(urlString)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+/**
  * Creates date range validation rule
+ * Supports both full dates (yyyy-MM-dd) and month dates (yyyy-MM)
  * @param {Function} getStartDate - Function that returns the start date value
  * @param {string} trigger - Validation trigger event
  * @returns {Object} Naive UI validation rule
@@ -46,8 +89,34 @@ export const dateAfter = (getStartDate, trigger = 'blur') => ({
     if (!value) return true
     const startDate = getStartDate()
     if (!startDate) return true
-    const startFull = startDate + '-01'
-    const endFull = value + '-01'
+
+    // Convert to string to safely check format
+    const startStr = String(startDate)
+    const endStr = String(value)
+
+    // Regex patterns for date formats
+    const fullDatePattern = /^\d{4}-\d{2}-\d{2}$/
+    const monthPattern = /^\d{4}-\d{2}$/
+
+    // Determine format and normalize dates
+    let startFull, endFull
+
+    if (fullDatePattern.test(startStr)) {
+      startFull = startStr
+    } else if (monthPattern.test(startStr)) {
+      startFull = startStr + '-01'
+    } else {
+      return new Error('Invalid start date format')
+    }
+
+    if (fullDatePattern.test(endStr)) {
+      endFull = endStr
+    } else if (monthPattern.test(endStr)) {
+      endFull = endStr + '-01'
+    } else {
+      return new Error('Invalid end date format')
+    }
+
     const isValid = new Date(endFull) >= new Date(startFull)
     if (isValid) return true
     return new Error('End date must be after or equal to start date')
