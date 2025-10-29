@@ -1,6 +1,6 @@
 <template>
-  <div class="skills-page">
-    <n-space vertical size="large" class="skills-container">
+  <div class="page">
+    <n-space vertical size="large" class="page-container">
       <n-button text @click="router.push('/dashboard')">
         <template #icon>
           <n-icon><ArrowBackOutline /></n-icon>
@@ -18,6 +18,7 @@
               <n-input
                 v-model:value="skillsSearch"
                 placeholder="Search skills..."
+                aria-label="Search skills"
                 clearable
                 class="search-input"
               >
@@ -51,6 +52,7 @@
               <n-input
                 v-model:value="typesSearch"
                 placeholder="Search skill types..."
+                aria-label="Search skill types"
                 clearable
                 class="search-input"
               >
@@ -80,7 +82,7 @@
     </n-space>
 
     <!-- Add/Edit Skill Modal -->
-    <n-modal v-model:show="showSkillModal" preset="card" title="Skill" style="width: 500px">
+    <n-modal v-model:show="showSkillModal" preset="card" title="Skill" class="modal-small">
       <n-form ref="skillFormRef" :model="skillForm" :rules="skillRules">
         <n-form-item label="Skill Name" path="skill">
           <n-input v-model:value="skillForm.skill" placeholder="e.g., Vue.js" />
@@ -103,14 +105,14 @@
             v-model:value="skillForm.displayOrder"
             :min="0"
             placeholder="Order"
-            style="width: 100%"
+            class="full-width"
           />
         </n-form-item>
       </n-form>
 
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showSkillModal = false">Cancel</n-button>
+          <n-button @click="handleCancelSkill">Cancel</n-button>
           <n-button type="primary" :loading="savingSkill" @click="handleSaveSkill">
             {{ editingSkill ? 'Update' : 'Create' }}
           </n-button>
@@ -119,7 +121,7 @@
     </n-modal>
 
     <!-- Add/Edit Skill Type Modal -->
-    <n-modal v-model:show="showTypeModal" preset="card" title="Skill Type" style="width: 500px">
+    <n-modal v-model:show="showTypeModal" preset="card" title="Skill Type" class="modal-small">
       <n-form ref="typeFormRef" :model="typeForm" :rules="typeRules">
         <n-form-item label="Name" path="name">
           <n-input v-model:value="typeForm.name" placeholder="e.g., Frontend" />
@@ -139,14 +141,14 @@
             v-model:value="typeForm.displayOrder"
             :min="0"
             placeholder="Order"
-            style="width: 100%"
+            class="full-width"
           />
         </n-form-item>
       </n-form>
 
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showTypeModal = false">Cancel</n-button>
+          <n-button @click="handleCancelType">Cancel</n-button>
           <n-button type="primary" :loading="savingType" @click="handleSaveType">
             {{ editingType ? 'Update' : 'Create' }}
           </n-button>
@@ -157,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, h } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NSpace,
@@ -187,6 +189,8 @@ import {
 } from '@vicons/ionicons5'
 import skillsService from '../services/skills'
 import { logger } from '../utils/logger'
+import { required, requiredNumber, validateForm, normalizeString } from '../utils/validation'
+import { stringSorter, createActionsRenderer } from '../utils/tableHelpers'
 
 const router = useRouter()
 const message = useMessage()
@@ -209,10 +213,8 @@ const skillForm = ref({
 })
 
 const skillRules = {
-  skill: [{ required: true, message: 'Skill name is required', trigger: 'blur' }],
-  skillTypeId: [
-    { required: true, message: 'Skill type is required', trigger: 'change', type: 'number' },
-  ],
+  skill: [required('Skill name')],
+  skillTypeId: [requiredNumber('Skill type')],
 }
 
 // Skill Types state
@@ -231,33 +233,34 @@ const typeForm = ref({
 })
 
 const typeRules = {
-  name: [{ required: true, message: 'Name is required', trigger: 'blur' }],
+  name: [required('Name')],
 }
 
 // Computed
 const filteredSkills = computed(() => {
   if (!skillsSearch.value) return skills.value
-  const search = skillsSearch.value.toLowerCase()
-  return skills.value.filter(
-    (skill) =>
-      skill.skill?.toLowerCase().includes(search) ||
-      skill.skillType?.name?.toLowerCase().includes(search)
-  )
+  const search = normalizeString(skillsSearch.value)
+  return skills.value.filter((skill) => {
+    const skillName = normalizeString(skill.skill)
+    const typeName = normalizeString(skill.skillType?.name)
+    return skillName.includes(search) || typeName.includes(search)
+  })
 })
 
 const filteredTypes = computed(() => {
   if (!typesSearch.value) return skillTypes.value
-  const search = typesSearch.value.toLowerCase()
-  return skillTypes.value.filter(
-    (type) =>
-      type.name?.toLowerCase().includes(search) || type.description?.toLowerCase().includes(search)
-  )
+  const search = normalizeString(typesSearch.value)
+  return skillTypes.value.filter((type) => {
+    const name = normalizeString(type.name)
+    const description = normalizeString(type.description)
+    return name.includes(search) || description.includes(search)
+  })
 })
 
 const skillTypeOptions = computed(() => {
   return skillTypes.value.map((type) => ({
     label: type.name,
-    value: type.id,
+    value: Number(type.id),
   }))
 })
 
@@ -266,7 +269,7 @@ const skillColumns = [
   {
     title: 'Skill',
     key: 'skill',
-    sorter: (a, b) => a.skill.localeCompare(b.skill),
+    sorter: stringSorter('skill'),
   },
   {
     title: 'Type',
@@ -285,36 +288,10 @@ const skillColumns = [
   {
     title: 'Actions',
     key: 'actions',
-    render: (row) =>
-      h(
-        NSpace,
-        {},
-        {
-          default: () => [
-            h(
-              NButton,
-              {
-                size: 'small',
-                onClick: () => handleEditSkill(row),
-              },
-              {
-                icon: () => h(NIcon, null, { default: () => h(CreateOutline) }),
-              }
-            ),
-            h(
-              NButton,
-              {
-                size: 'small',
-                type: 'error',
-                onClick: () => handleDeleteSkill(row),
-              },
-              {
-                icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
-              }
-            ),
-          ],
-        }
-      ),
+    render: createActionsRenderer([
+      { icon: CreateOutline, onClick: handleEditSkill, label: 'Edit skill' },
+      { icon: TrashOutline, onClick: handleDeleteSkill, type: 'error', label: 'Delete skill' },
+    ]),
   },
 ]
 
@@ -323,7 +300,7 @@ const typeColumns = [
   {
     title: 'Name',
     key: 'name',
-    sorter: (a, b) => a.name.localeCompare(b.name),
+    sorter: stringSorter('name'),
   },
   {
     title: 'Description',
@@ -336,36 +313,10 @@ const typeColumns = [
   {
     title: 'Actions',
     key: 'actions',
-    render: (row) =>
-      h(
-        NSpace,
-        {},
-        {
-          default: () => [
-            h(
-              NButton,
-              {
-                size: 'small',
-                onClick: () => handleEditType(row),
-              },
-              {
-                icon: () => h(NIcon, null, { default: () => h(CreateOutline) }),
-              }
-            ),
-            h(
-              NButton,
-              {
-                size: 'small',
-                type: 'error',
-                onClick: () => handleDeleteType(row),
-              },
-              {
-                icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
-              }
-            ),
-          ],
-        }
-      ),
+    render: createActionsRenderer([
+      { icon: CreateOutline, onClick: handleEditType, label: 'Edit skill type' },
+      { icon: TrashOutline, onClick: handleDeleteType, type: 'error', label: 'Delete skill type' },
+    ]),
   },
 ]
 
@@ -403,7 +354,7 @@ function handleEditSkill(skill) {
   editingSkill.value = skill
   skillForm.value = {
     skill: skill.skill,
-    skillTypeId: skill.skillTypeId,
+    skillTypeId: Number(skill.skillTypeId),
     isVisible: skill.isVisible ?? true,
     displayOrder: skill.displayOrder || 0,
   }
@@ -411,10 +362,10 @@ function handleEditSkill(skill) {
 }
 
 async function handleSaveSkill() {
-  try {
-    await skillFormRef.value?.validate()
-    savingSkill.value = true
+  if (!(await validateForm(skillFormRef))) return
 
+  savingSkill.value = true
+  try {
     if (editingSkill.value) {
       await skillsService.updateSkill(editingSkill.value.id, skillForm.value)
       message.success('Skill updated successfully')
@@ -427,7 +378,6 @@ async function handleSaveSkill() {
     resetSkillForm()
     await loadSkills()
   } catch (error) {
-    if (error?.errors) return
     logger.error('Failed to save skill', { error: error.message })
     message.error('Failed to save skill')
   } finally {
@@ -461,6 +411,14 @@ function resetSkillForm() {
     isVisible: true,
     displayOrder: 0,
   }
+  nextTick(() => {
+    skillFormRef.value?.restoreValidation()
+  })
+}
+
+function handleCancelSkill() {
+  showSkillModal.value = false
+  resetSkillForm()
 }
 
 function handleEditType(type) {
@@ -474,10 +432,10 @@ function handleEditType(type) {
 }
 
 async function handleSaveType() {
-  try {
-    await typeFormRef.value?.validate()
-    savingType.value = true
+  if (!(await validateForm(typeFormRef))) return
 
+  savingType.value = true
+  try {
     if (editingType.value) {
       await skillsService.updateSkillType(editingType.value.id, typeForm.value)
       message.success('Skill type updated successfully')
@@ -489,9 +447,8 @@ async function handleSaveType() {
     showTypeModal.value = false
     resetTypeForm()
     await loadSkillTypes()
-    await loadSkills() // Reload skills to update type references
+    await loadSkills()
   } catch (error) {
-    if (error?.errors) return
     logger.error('Failed to save skill type', { error: error.message })
     message.error('Failed to save skill type')
   } finally {
@@ -526,6 +483,14 @@ function resetTypeForm() {
     description: '',
     displayOrder: 0,
   }
+  nextTick(() => {
+    typeFormRef.value?.restoreValidation()
+  })
+}
+
+function handleCancelType() {
+  showTypeModal.value = false
+  resetTypeForm()
 }
 
 onMounted(() => {
@@ -533,21 +498,3 @@ onMounted(() => {
   loadSkills()
 })
 </script>
-
-<style scoped>
-.skills-page {
-  width: 100%;
-  padding: 24px;
-  min-height: 100vh;
-}
-
-.skills-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.search-input {
-  width: 300px;
-}
-</style>

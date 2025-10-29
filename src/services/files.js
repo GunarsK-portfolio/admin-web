@@ -1,4 +1,5 @@
 import { filesApi } from './filesApi'
+import { validateRequired } from '../utils/validation'
 
 export default {
   async uploadFile(file, fileType = 'portfolio-image') {
@@ -14,6 +15,7 @@ export default {
   },
 
   async deleteFile(fileId) {
-    return filesApi.delete(`/files/${fileId}`)
+    validateRequired(fileId, 'File ID')
+    return filesApi.delete(`/files/${encodeURIComponent(fileId)}`)
   },
 }

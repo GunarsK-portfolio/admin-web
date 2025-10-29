@@ -1,0 +1,47 @@
+/* Page layout */
+.page {
+  width: 100%;
+  padding: 24px;
+  min-height: 100vh;
+}
+
+@supports (min-height: 100dvh) {
+  .page {
+    min-height: 100dvh;
+  }
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-container-narrow {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Modal styles */
+.modal-small {
+  width: clamp(320px, 90vw, 500px);
+}
+
+.modal-medium {
+  width: clamp(320px, 90vw, 600px);
+}
+
+.modal-large {
+  width: clamp(320px, 90vw, 800px);
+}
+
+/* Form styles */
+.full-width {
+  width: 100%;
+}
+
+.search-input {
+  width: 300px;
+  max-width: 100%;
+}

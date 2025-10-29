@@ -27,6 +27,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/work-experience',
+    name: 'WorkExperience',
+    component: () => import('../views/WorkExperience.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/403',
     name: 'Forbidden',
     component: () => import('../errors/Forbidden.vue'),

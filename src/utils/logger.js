@@ -1,23 +1,5 @@
 import pino from 'pino'
 
-/**
- * Structured logger for admin-web using pino
- *
- * Features:
- * - Structured JSON logging
- * - Log levels: trace, debug, info, warn, error, fatal
- * - Context enrichment (user, session, request info)
- * - Pretty printing in development
- * - Production-ready for sending to backend
- *
- * Usage:
- * import { logger } from '@/utils/logger'
- *
- * logger.info('User logged in', { userId: 123 })
- * logger.error('API request failed', { error, endpoint: '/api/profile' })
- * logger.warn('Token expiring soon', { ttl: 60 })
- */
-
 // Determine log level based on environment
 const getLogLevel = () => {
   if (import.meta.env.DEV) return 'debug'
@@ -25,23 +7,11 @@ const getLogLevel = () => {
   return 'info'
 }
 
-// Browser transport with pretty printing in development
-const browserTransport = {
-  target: 'pino-pretty',
-  options: {
-    colorize: true,
-    translateTime: 'HH:MM:ss',
-    ignore: 'pid,hostname',
-  },
-}
-
 // Create base logger
 const baseLogger = pino({
   level: getLogLevel(),
   browser: {
     asObject: true,
-    // Use pretty printing in development, JSON in production
-    ...(import.meta.env.DEV ? browserTransport : {}),
   },
   base: {
     app: 'admin-web',
@@ -49,25 +19,16 @@ const baseLogger = pino({
   },
 })
 
-/**
- * Enhanced logger with context support
- */
 class Logger {
   constructor(pinoInstance) {
     this.pino = pinoInstance
     this.context = {}
   }
 
-  /**
-   * Set global context that will be included in all logs
-   */
   setContext(context) {
     this.context = { ...this.context, ...context }
   }
 
-  /**
-   * Clear specific context keys or all context
-   */
   clearContext(keys = null) {
     if (!keys) {
       this.context = {}
@@ -78,25 +39,16 @@ class Logger {
     }
   }
 
-  /**
-   * Create a child logger with additional context
-   */
   child(bindings) {
     const childLogger = new Logger(this.pino.child(bindings))
     childLogger.context = { ...this.context }
     return childLogger
   }
 
-  /**
-   * Merge context with log data
-   */
   _mergeContext(data = {}) {
     return { ...this.context, ...data }
   }
 
-  /**
-   * Log methods
-   */
   trace(msg, data) {
     this.pino.trace(this._mergeContext(data), msg)
   }
@@ -114,7 +66,6 @@ class Logger {
   }
 
   error(msg, data) {
-    // If data is an Error object, extract stack trace
     if (data instanceof Error) {
       this.pino.error(
         this._mergeContext({
@@ -135,9 +86,6 @@ class Logger {
     this.pino.fatal(this._mergeContext(data), msg)
   }
 
-  /**
-   * Log HTTP request/response
-   */
   logRequest(config, data = {}) {
     this.debug('HTTP Request', {
       ...data,
@@ -183,9 +131,6 @@ class Logger {
     this.error('Error occurred', errorData)
   }
 
-  /**
-   * Sanitize headers to remove sensitive information
-   */
   _sanitizeHeaders(headers = {}) {
     const sanitized = { ...headers }
     const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key']
@@ -200,24 +145,27 @@ class Logger {
   }
 }
 
-// Export singleton logger instance
 export const logger = new Logger(baseLogger)
 
 /**
- * Helper to set user context when user logs in
+ * Sets user context for logging
+ * @param {Object} user - User object
  */
 export function setUserContext(user) {
+  if (!user || typeof user !== 'object') {
+    logger.warn('setUserContext called with invalid user', { user })
+    return
+  }
+
   logger.setContext({
     user: {
       id: user.id,
-      email: user.email,
-      // Don't log sensitive fields
     },
   })
 }
 
 /**
- * Helper to clear user context when user logs out
+ * Clears user context from logging
  */
 export function clearUserContext() {
   logger.clearContext(['user'])

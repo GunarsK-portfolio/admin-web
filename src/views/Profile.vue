@@ -1,6 +1,6 @@
 <template>
-  <div class="profile-page">
-    <n-space vertical size="large" class="profile-container">
+  <div class="page">
+    <n-space vertical size="large" class="page-container-narrow">
       <n-button text @click="router.push('/dashboard')">
         <template #icon>
           <n-icon><ArrowBackOutline /></n-icon>
@@ -69,7 +69,7 @@
             </n-form-item>
           </n-card>
 
-          <n-grid :x-gap="24" :y-gap="24" :cols="1" :m="2">
+          <n-grid :x-gap="24" :y-gap="24" :cols="1">
             <n-grid-item>
               <n-card title="Avatar" class="profile-card">
                 <n-space vertical>
@@ -149,6 +149,7 @@
                           tag="a"
                           :href="formData.resumeFile.url"
                           target="_blank"
+                          rel="noopener noreferrer"
                           size="small"
                         >
                           <template #icon>
@@ -256,6 +257,7 @@ import profileService from '../services/profile'
 import filesService from '../services/files'
 import { logger } from '../utils/logger'
 import { formatFileSize } from '../utils/fileHelpers'
+import { required, email, validateForm } from '../utils/validation'
 import ImageCropperModal from '../components/shared/ImageCropperModal.vue'
 
 const router = useRouter()
@@ -290,14 +292,8 @@ const formData = ref({
 })
 
 const rules = {
-  name: [{ required: true, message: 'Full name is required', trigger: 'blur' }],
-  email: [
-    {
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      message: 'Please enter a valid email',
-      trigger: 'blur',
-    },
-  ],
+  name: [required('Full name')],
+  email: [email()],
 }
 
 async function loadProfile() {
@@ -331,16 +327,13 @@ async function loadProfile() {
 }
 
 async function handleSave() {
-  try {
-    await formRef.value?.validate()
-    saving.value = true
+  if (!(await validateForm(formRef))) return
 
+  saving.value = true
+  try {
     await profileService.updateProfile(formData.value)
     message.success('Profile updated successfully')
   } catch (error) {
-    if (error?.errors) {
-      return
-    }
     logger.error('Failed to update profile', {
       error: error.message,
       status: error.response?.status,
@@ -471,18 +464,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.profile-page {
-  width: 100%;
-  padding: 24px;
-  min-height: 100vh;
-}
-
-.profile-container {
-  max-width: 800px;
-  margin: 0 auto;
-  width: 100%;
-}
-
 .profile-card {
   margin-bottom: 24px;
   transition:
