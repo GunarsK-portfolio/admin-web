@@ -125,7 +125,14 @@ export function createSaveHandler(options) {
 
       showModal.value = false
       resetForm()
-      await onSuccess()
+
+      // Reload data with separate error handling
+      try {
+        await onSuccess()
+      } catch (reloadError) {
+        message.warning(`${entityName} saved, but failed to reload data`)
+        logger.error(`Failed to reload ${entityName} after save`, { error: reloadError.message })
+      }
     } catch (error) {
       message.error(`Failed to save ${entityName}`)
       logger.error(`Failed to save ${entityName}`, { error: error.message })
@@ -160,6 +167,13 @@ export function createDeleteHandler(options) {
   const { dialog, service, entityName, message, onSuccess, getConfirmText } = options
 
   return (item) => {
+    // Validate item has ID
+    if (!item?.id) {
+      logger.error(`Cannot delete ${entityName}: missing ID`)
+      message.error(`Cannot delete ${entityName}: invalid item`)
+      return
+    }
+
     const itemText = getConfirmText ? getConfirmText(item) : `this ${entityName}`
 
     dialog.warning({
@@ -172,7 +186,16 @@ export function createDeleteHandler(options) {
           await service(item.id)
           message.success(`${entityName} deleted successfully`)
           logger.info(`${entityName} deleted`, { id: item.id })
-          await onSuccess()
+
+          // Reload data with separate error handling
+          try {
+            await onSuccess()
+          } catch (reloadError) {
+            message.warning(`${entityName} deleted, but failed to reload data`)
+            logger.error(`Failed to reload ${entityName} after delete`, {
+              error: reloadError.message,
+            })
+          }
         } catch (error) {
           message.error(`Failed to delete ${entityName}`)
           logger.error(`Failed to delete ${entityName}`, { error: error.message })

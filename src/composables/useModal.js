@@ -1,11 +1,18 @@
 import { ref, nextTick } from 'vue'
 
 /**
- * Deep clones an object using JSON serialization
+ * Deep clones an object using structuredClone with JSON fallback
+ * structuredClone handles Date, RegExp, Map, Set, etc.
+ * Falls back to JSON serialization for older browsers
  * @param {Object} obj - Object to clone
  * @returns {Object} Cloned object
  */
 function deepClone(obj) {
+  // Use structuredClone if available (modern browsers)
+  if (typeof structuredClone !== 'undefined') {
+    return structuredClone(obj)
+  }
+  // Fallback to JSON serialization (doesn't handle Date objects)
   return JSON.parse(JSON.stringify(obj))
 }
 

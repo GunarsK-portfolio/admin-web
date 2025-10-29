@@ -90,13 +90,32 @@ export const dateAfter = (getStartDate, trigger = 'blur') => ({
     const startDate = getStartDate()
     if (!startDate) return true
 
-    // Convert to string to safely check length
+    // Convert to string to safely check format
     const startStr = String(startDate)
     const endStr = String(value)
 
-    // Detect format: if it has 10 chars (yyyy-MM-dd), use as-is; otherwise append -01 for month format
-    const startFull = startStr.length === 10 ? startStr : startStr + '-01'
-    const endFull = endStr.length === 10 ? endStr : endStr + '-01'
+    // Regex patterns for date formats
+    const fullDatePattern = /^\d{4}-\d{2}-\d{2}$/
+    const monthPattern = /^\d{4}-\d{2}$/
+
+    // Determine format and normalize dates
+    let startFull, endFull
+
+    if (fullDatePattern.test(startStr)) {
+      startFull = startStr
+    } else if (monthPattern.test(startStr)) {
+      startFull = startStr + '-01'
+    } else {
+      return new Error('Invalid start date format')
+    }
+
+    if (fullDatePattern.test(endStr)) {
+      endFull = endStr
+    } else if (monthPattern.test(endStr)) {
+      endFull = endStr + '-01'
+    } else {
+      return new Error('Invalid end date format')
+    }
 
     const isValid = new Date(endFull) >= new Date(startFull)
     if (isValid) return true
