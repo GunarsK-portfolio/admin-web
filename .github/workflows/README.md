@@ -36,11 +36,13 @@ Add these to your README.md:
 Using Task:
 
 ```bash
-task lint           # Run ESLint
-task format-check   # Check Prettier formatting
-task build          # Build for production
-task audit          # Run security audit
-task ci             # Run all CI checks locally
+task lint         # Run ESLint
+task lint:fix     # Fix ESLint issues
+task format       # Format code with Prettier
+task format:check # Check Prettier formatting
+task build        # Build for production
+task audit        # Run security audit
+task ci:all       # Run all CI checks
 ```
 
 ## Configuration Files
