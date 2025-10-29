@@ -5,6 +5,9 @@
  */
 export function toMonthFormat(dateString) {
   if (!dateString) return null
+  if (typeof dateString !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])/.test(dateString)) {
+    return null
+  }
   return dateString.substring(0, 7)
 }
 
@@ -15,6 +18,9 @@ export function toMonthFormat(dateString) {
  */
 export function fromMonthFormat(monthString) {
   if (!monthString) return null
+  if (typeof monthString !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(monthString)) {
+    return null
+  }
   return `${monthString}-01`
 }
 
@@ -25,5 +31,11 @@ export function fromMonthFormat(monthString) {
  */
 export function toDateFormat(dateString) {
   if (!dateString) return null
+  if (
+    typeof dateString !== 'string' ||
+    !/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])/.test(dateString)
+  ) {
+    return null
+  }
   return dateString.substring(0, 10)
 }

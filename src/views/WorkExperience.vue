@@ -109,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, computed, h, onMounted } from 'vue'
+import { ref, computed, h, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NSpace,
@@ -186,8 +186,8 @@ const columns = [
     title: 'Actions',
     key: 'actions',
     render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEdit },
-      { icon: TrashOutline, onClick: handleDelete, type: 'error' },
+      { icon: CreateOutline, onClick: handleEdit, label: 'Edit work experience' },
+      { icon: TrashOutline, onClick: handleDelete, type: 'error', label: 'Delete work experience' },
     ]),
   },
 ]
@@ -303,6 +303,16 @@ function resetForm() {
     isCurrent: false,
   }
 }
+
+// Clear end date when "Currently working here" is checked
+watch(
+  () => form.value.isCurrent,
+  (isCurrent) => {
+    if (isCurrent) {
+      form.value.endDate = null
+    }
+  }
+)
 
 onMounted(() => {
   loadExperience()

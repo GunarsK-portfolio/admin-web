@@ -69,7 +69,7 @@
             </n-form-item>
           </n-card>
 
-          <n-grid :x-gap="24" :y-gap="24" :cols="1" :m="2">
+          <n-grid :x-gap="24" :y-gap="24" :cols="1">
             <n-grid-item>
               <n-card title="Avatar" class="profile-card">
                 <n-space vertical>

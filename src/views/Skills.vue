@@ -257,7 +257,7 @@ const filteredTypes = computed(() => {
 const skillTypeOptions = computed(() => {
   return skillTypes.value.map((type) => ({
     label: type.name,
-    value: type.id,
+    value: Number(type.id),
   }))
 })
 
@@ -286,8 +286,8 @@ const skillColumns = [
     title: 'Actions',
     key: 'actions',
     render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEditSkill },
-      { icon: TrashOutline, onClick: handleDeleteSkill, type: 'error' },
+      { icon: CreateOutline, onClick: handleEditSkill, label: 'Edit skill' },
+      { icon: TrashOutline, onClick: handleDeleteSkill, type: 'error', label: 'Delete skill' },
     ]),
   },
 ]
@@ -311,8 +311,8 @@ const typeColumns = [
     title: 'Actions',
     key: 'actions',
     render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEditType },
-      { icon: TrashOutline, onClick: handleDeleteType, type: 'error' },
+      { icon: CreateOutline, onClick: handleEditType, label: 'Edit skill type' },
+      { icon: TrashOutline, onClick: handleDeleteType, type: 'error', label: 'Delete skill type' },
     ]),
   },
 ]

@@ -3,11 +3,12 @@ import { NButton, NIcon, NSpace } from 'naive-ui'
 import { toMonthFormat, toDateFormat } from './dateHelpers'
 
 /**
- * Creates string comparison sorter
+ * Creates string comparison sorter (case-insensitive)
  * @param {string} key - Property name to sort by
  * @returns {Function} Sorter function
  */
-export const stringSorter = (key) => (a, b) => (a[key] || '').localeCompare(b[key] || '')
+export const stringSorter = (key) => (a, b) =>
+  (a[key] || '').localeCompare(b[key] || '', undefined, { sensitivity: 'base' })
 
 /**
  * Creates number comparison sorter
@@ -25,14 +26,14 @@ export const dateSorter = (key) => (a, b) => new Date(a[key] || 0) - new Date(b[
 
 /**
  * Creates action buttons renderer for table rows
- * @param {Array} actions - Action configs with icon, onClick, type properties
+ * @param {Array} actions - Action configs with icon, onClick, type, label properties
  * @returns {Function} Render function
  */
 export function createActionsRenderer(actions) {
   return (row) =>
     h(
       NSpace,
-      {},
+      { size: 8 },
       {
         default: () =>
           actions.map((action) =>
@@ -41,7 +42,12 @@ export function createActionsRenderer(actions) {
               {
                 size: 'small',
                 type: action.type || 'default',
-                onClick: () => action.onClick(row),
+                'aria-label': action.label,
+                title: action.label,
+                onClick: (e) => {
+                  e.stopPropagation()
+                  action.onClick(row)
+                },
               },
               {
                 icon: () => h(NIcon, null, { default: () => h(action.icon) }),

@@ -14,6 +14,6 @@ export default {
   },
 
   async deleteFile(fileId) {
-    return filesApi.delete(`/files/${fileId}`)
+    return filesApi.delete(`/files/${encodeURIComponent(fileId)}`)
   },
 }
