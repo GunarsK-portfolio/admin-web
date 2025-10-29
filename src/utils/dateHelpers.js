@@ -5,10 +5,9 @@
  */
 export function toMonthFormat(dateString) {
   if (!dateString) return null
-  if (typeof dateString !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])/.test(dateString)) {
-    return null
-  }
-  return dateString.substring(0, 7)
+  const match = typeof dateString === 'string' && dateString.match(/^\d{4}-(0[1-9]|1[0-2])/)
+  if (!match) return null
+  return match[0]
 }
 
 /**
@@ -31,11 +30,9 @@ export function fromMonthFormat(monthString) {
  */
 export function toDateFormat(dateString) {
   if (!dateString) return null
-  if (
-    typeof dateString !== 'string' ||
-    !/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])/.test(dateString)
-  ) {
-    return null
-  }
-  return dateString.substring(0, 10)
+  const match =
+    typeof dateString === 'string' &&
+    dateString.match(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])/)
+  if (!match) return null
+  return match[0]
 }
