@@ -36,7 +36,26 @@ export const email = (trigger = 'blur') => ({
 })
 
 /**
+ * Creates URL validation rule
+ * @param {string} trigger - Validation trigger event
+ * @returns {Object} Naive UI validation rule
+ */
+export const url = (trigger = 'blur') => ({
+  validator: (_rule, value) => {
+    if (!value) return true
+    try {
+      new URL(value)
+      return true
+    } catch {
+      return new Error('Please enter a valid URL')
+    }
+  },
+  trigger,
+})
+
+/**
  * Creates date range validation rule
+ * Supports both full dates (yyyy-MM-dd) and month dates (yyyy-MM)
  * @param {Function} getStartDate - Function that returns the start date value
  * @param {string} trigger - Validation trigger event
  * @returns {Object} Naive UI validation rule
@@ -46,8 +65,11 @@ export const dateAfter = (getStartDate, trigger = 'blur') => ({
     if (!value) return true
     const startDate = getStartDate()
     if (!startDate) return true
-    const startFull = startDate + '-01'
-    const endFull = value + '-01'
+
+    // Detect format: if it has 10 chars (yyyy-MM-dd), use as-is; otherwise append -01 for month format
+    const startFull = startDate.length === 10 ? startDate : startDate + '-01'
+    const endFull = value.length === 10 ? value : value + '-01'
+
     const isValid = new Date(endFull) >= new Date(startFull)
     if (isValid) return true
     return new Error('End date must be after or equal to start date')

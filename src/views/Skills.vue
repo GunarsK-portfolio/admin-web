@@ -1,12 +1,7 @@
 <template>
   <div class="page">
     <n-space vertical size="large" class="page-container">
-      <n-button text @click="router.push('/dashboard')">
-        <template #icon>
-          <n-icon><ArrowBackOutline /></n-icon>
-        </template>
-        Back to Dashboard
-      </n-button>
+      <BackButton />
 
       <n-page-header title="Skills Management" subtitle="Manage your skills and skill categories" />
 
@@ -15,23 +10,8 @@
         <n-tab-pane name="skills" tab="Skills">
           <n-space vertical :size="16">
             <n-space justify="space-between">
-              <n-input
-                v-model:value="skillsSearch"
-                placeholder="Search skills..."
-                aria-label="Search skills"
-                clearable
-                class="search-input"
-              >
-                <template #prefix>
-                  <n-icon><SearchOutline /></n-icon>
-                </template>
-              </n-input>
-              <n-button type="primary" @click="showSkillModal = true">
-                <template #icon>
-                  <n-icon><AddOutline /></n-icon>
-                </template>
-                Add Skill
-              </n-button>
+              <SearchInput v-model="skillsSearch" placeholder="Search skills..." />
+              <AddButton label="Add Skill" @click="openSkillModal" />
             </n-space>
 
             <n-spin :show="loadingSkills">
@@ -49,23 +29,8 @@
         <n-tab-pane name="types" tab="Skill Types">
           <n-space vertical :size="16">
             <n-space justify="space-between">
-              <n-input
-                v-model:value="typesSearch"
-                placeholder="Search skill types..."
-                aria-label="Search skill types"
-                clearable
-                class="search-input"
-              >
-                <template #prefix>
-                  <n-icon><SearchOutline /></n-icon>
-                </template>
-              </n-input>
-              <n-button type="primary" @click="showTypeModal = true">
-                <template #icon>
-                  <n-icon><AddOutline /></n-icon>
-                </template>
-                Add Skill Type
-              </n-button>
+              <SearchInput v-model="typesSearch" placeholder="Search skill types..." />
+              <AddButton label="Add Skill Type" @click="openTypeModal" />
             </n-space>
 
             <n-spin :show="loadingTypes">
@@ -111,12 +76,12 @@
       </n-form>
 
       <template #footer>
-        <n-space justify="end">
-          <n-button @click="handleCancelSkill">Cancel</n-button>
-          <n-button type="primary" :loading="savingSkill" @click="handleSaveSkill">
-            {{ editingSkill ? 'Update' : 'Create' }}
-          </n-button>
-        </n-space>
+        <ModalFooter
+          :loading="savingSkill"
+          :editing="editingSkill"
+          @cancel="closeSkillModal"
+          @save="handleSaveSkill"
+        />
       </template>
     </n-modal>
 
@@ -147,70 +112,69 @@
       </n-form>
 
       <template #footer>
-        <n-space justify="end">
-          <n-button @click="handleCancelType">Cancel</n-button>
-          <n-button type="primary" :loading="savingType" @click="handleSaveType">
-            {{ editingType ? 'Update' : 'Create' }}
-          </n-button>
-        </n-space>
+        <ModalFooter
+          :loading="savingType"
+          :editing="editingType"
+          @cancel="closeTypeModal"
+          @save="handleSaveType"
+        />
       </template>
     </n-modal>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import {
   NSpace,
   NPageHeader,
-  NButton,
-  NIcon,
   NTabs,
   NTabPane,
-  NInput,
   NDataTable,
   NSpin,
   NModal,
   NForm,
   NFormItem,
+  NInput,
   NSelect,
   NSwitch,
   NInputNumber,
-  useMessage,
-  useDialog,
 } from 'naive-ui'
-import {
-  ArrowBackOutline,
-  AddOutline,
-  SearchOutline,
-  CreateOutline,
-  TrashOutline,
-} from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
+import BackButton from '../components/shared/BackButton.vue'
+import SearchInput from '../components/shared/SearchInput.vue'
+import AddButton from '../components/shared/AddButton.vue'
+import ModalFooter from '../components/shared/ModalFooter.vue'
+import { useViewServices } from '../composables/useViewServices'
+import { useModal } from '../composables/useModal'
 import skillsService from '../services/skills'
-import { logger } from '../utils/logger'
-import { required, requiredNumber, validateForm, normalizeString } from '../utils/validation'
+import { required, requiredNumber, validateForm } from '../utils/validation'
 import { stringSorter, createActionsRenderer } from '../utils/tableHelpers'
+import { createSearchFilter } from '../utils/filterHelpers'
+import { createDataLoader, createSaveHandler, createDeleteHandler } from '../utils/crudHelpers'
 
-const router = useRouter()
-const message = useMessage()
-const dialog = useDialog()
+const { message, dialog } = useViewServices()
 
 // Skills state
 const skills = ref([])
 const loadingSkills = ref(false)
 const skillsSearch = ref('')
-const showSkillModal = ref(false)
-const editingSkill = ref(null)
-const savingSkill = ref(false)
-const skillFormRef = ref(null)
-
-const skillForm = ref({
+const {
+  showModal: showSkillModal,
+  editing: editingSkill,
+  form: skillForm,
+  formRef: skillFormRef,
+  openModal: openSkillModal,
+  closeModal: closeSkillModal,
+  openEditModal: openEditSkillModal,
+  resetForm: resetSkillForm,
+} = useModal({
   skill: '',
   skillTypeId: null,
   isVisible: true,
   displayOrder: 0,
 })
+const savingSkill = ref(false)
 
 const skillRules = {
   skill: [required('Skill name')],
@@ -221,47 +185,128 @@ const skillRules = {
 const skillTypes = ref([])
 const loadingTypes = ref(false)
 const typesSearch = ref('')
-const showTypeModal = ref(false)
-const editingType = ref(null)
-const savingType = ref(false)
-const typeFormRef = ref(null)
-
-const typeForm = ref({
+const {
+  showModal: showTypeModal,
+  editing: editingType,
+  form: typeForm,
+  formRef: typeFormRef,
+  openModal: openTypeModal,
+  closeModal: closeTypeModal,
+  openEditModal: openEditTypeModal,
+  resetForm: resetTypeForm,
+} = useModal({
   name: '',
   description: '',
   displayOrder: 0,
 })
+const savingType = ref(false)
 
 const typeRules = {
   name: [required('Name')],
 }
 
 // Computed
-const filteredSkills = computed(() => {
-  if (!skillsSearch.value) return skills.value
-  const search = normalizeString(skillsSearch.value)
-  return skills.value.filter((skill) => {
-    const skillName = normalizeString(skill.skill)
-    const typeName = normalizeString(skill.skillType?.name)
-    return skillName.includes(search) || typeName.includes(search)
-  })
-})
+const filteredSkills = createSearchFilter(skills, skillsSearch, ['skill', 'skillType.name'])
 
-const filteredTypes = computed(() => {
-  if (!typesSearch.value) return skillTypes.value
-  const search = normalizeString(typesSearch.value)
-  return skillTypes.value.filter((type) => {
-    const name = normalizeString(type.name)
-    const description = normalizeString(type.description)
-    return name.includes(search) || description.includes(search)
-  })
-})
+const filteredTypes = createSearchFilter(skillTypes, typesSearch, ['name', 'description'])
 
 const skillTypeOptions = computed(() => {
   return skillTypes.value.map((type) => ({
     label: type.name,
     value: Number(type.id),
   }))
+})
+
+// Data loaders
+const loadSkills = createDataLoader({
+  loading: loadingSkills,
+  data: skills,
+  service: skillsService.getAllSkills,
+  entityName: 'skills',
+  message,
+})
+
+const loadSkillTypes = createDataLoader({
+  loading: loadingTypes,
+  data: skillTypes,
+  service: skillsService.getAllSkillTypes,
+  entityName: 'skill types',
+  message,
+})
+
+function handleEditSkill(skill) {
+  openEditSkillModal(skill, (s) => ({
+    skill: s.skill,
+    skillTypeId: Number(s.skillTypeId),
+    isVisible: s.isVisible ?? true,
+    displayOrder: s.displayOrder || 0,
+  }))
+}
+
+const handleSaveSkill = createSaveHandler({
+  formRef: skillFormRef,
+  saving: savingSkill,
+  editing: editingSkill,
+  form: skillForm,
+  showModal: showSkillModal,
+  service: {
+    create: skillsService.createSkill,
+    update: skillsService.updateSkill,
+  },
+  entityName: 'Skill',
+  message,
+  onSuccess: loadSkills,
+  resetForm: () => resetSkillForm(),
+  validateForm,
+})
+
+const handleDeleteSkill = createDeleteHandler({
+  dialog,
+  service: skillsService.deleteSkill,
+  entityName: 'Skill',
+  message,
+  onSuccess: loadSkills,
+  getConfirmText: (skill) => `"${skill.skill}"`,
+})
+
+function handleEditType(type) {
+  openEditTypeModal(type, (t) => ({
+    name: t.name,
+    description: t.description || '',
+    displayOrder: t.displayOrder || 0,
+  }))
+}
+
+const handleSaveType = createSaveHandler({
+  formRef: typeFormRef,
+  saving: savingType,
+  editing: editingType,
+  form: typeForm,
+  showModal: showTypeModal,
+  service: {
+    create: skillsService.createSkillType,
+    update: skillsService.updateSkillType,
+  },
+  entityName: 'Skill type',
+  message,
+  onSuccess: async () => {
+    await loadSkillTypes()
+    await loadSkills()
+  },
+  resetForm: () => resetTypeForm(),
+  validateForm,
+})
+
+const handleDeleteType = createDeleteHandler({
+  dialog,
+  service: skillsService.deleteSkillType,
+  entityName: 'Skill type',
+  message,
+  onSuccess: async () => {
+    await loadSkillTypes()
+    await loadSkills()
+  },
+  getConfirmText: (type) => `"${type.name}"? This may affect existing skills`,
 })
 
 // Skills table columns
@@ -322,176 +367,6 @@ const typeColumns = [
 
 const skillsPagination = { pageSize: 10 }
 const typesPagination = { pageSize: 10 }
-
-// Methods
-async function loadSkills() {
-  loadingSkills.value = true
-  try {
-    const response = await skillsService.getAllSkills()
-    skills.value = response.data || []
-  } catch (error) {
-    logger.error('Failed to load skills', { error: error.message })
-    message.error('Failed to load skills')
-  } finally {
-    loadingSkills.value = false
-  }
-}
-
-async function loadSkillTypes() {
-  loadingTypes.value = true
-  try {
-    const response = await skillsService.getAllSkillTypes()
-    skillTypes.value = response.data || []
-  } catch (error) {
-    logger.error('Failed to load skill types', { error: error.message })
-    message.error('Failed to load skill types')
-  } finally {
-    loadingTypes.value = false
-  }
-}
-
-function handleEditSkill(skill) {
-  editingSkill.value = skill
-  skillForm.value = {
-    skill: skill.skill,
-    skillTypeId: Number(skill.skillTypeId),
-    isVisible: skill.isVisible ?? true,
-    displayOrder: skill.displayOrder || 0,
-  }
-  showSkillModal.value = true
-}
-
-async function handleSaveSkill() {
-  if (!(await validateForm(skillFormRef))) return
-
-  savingSkill.value = true
-  try {
-    if (editingSkill.value) {
-      await skillsService.updateSkill(editingSkill.value.id, skillForm.value)
-      message.success('Skill updated successfully')
-    } else {
-      await skillsService.createSkill(skillForm.value)
-      message.success('Skill created successfully')
-    }
-
-    showSkillModal.value = false
-    resetSkillForm()
-    await loadSkills()
-  } catch (error) {
-    logger.error('Failed to save skill', { error: error.message })
-    message.error('Failed to save skill')
-  } finally {
-    savingSkill.value = false
-  }
-}
-
-function handleDeleteSkill(skill) {
-  dialog.warning({
-    title: 'Delete Skill',
-    content: `Are you sure you want to delete "${skill.skill}"?`,
-    positiveText: 'Delete',
-    negativeText: 'Cancel',
-    onPositiveClick: async () => {
-      try {
-        await skillsService.deleteSkill(skill.id)
-        message.success('Skill deleted successfully')
-        await loadSkills()
-      } catch (error) {
-        logger.error('Failed to delete skill', { error: error.message })
-        message.error('Failed to delete skill')
-      }
-    },
-  })
-}
-function resetSkillForm() {
-  editingSkill.value = null
-  skillForm.value = {
-    skill: '',
-    skillTypeId: null,
-    isVisible: true,
-    displayOrder: 0,
-  }
-  nextTick(() => {
-    skillFormRef.value?.restoreValidation()
-  })
-}
-
-function handleCancelSkill() {
-  showSkillModal.value = false
-  resetSkillForm()
-}
-
-function handleEditType(type) {
-  editingType.value = type
-  typeForm.value = {
-    name: type.name,
-    description: type.description || '',
-    displayOrder: type.displayOrder || 0,
-  }
-  showTypeModal.value = true
-}
-
-async function handleSaveType() {
-  if (!(await validateForm(typeFormRef))) return
-
-  savingType.value = true
-  try {
-    if (editingType.value) {
-      await skillsService.updateSkillType(editingType.value.id, typeForm.value)
-      message.success('Skill type updated successfully')
-    } else {
-      await skillsService.createSkillType(typeForm.value)
-      message.success('Skill type created successfully')
-    }
-
-    showTypeModal.value = false
-    resetTypeForm()
-    await loadSkillTypes()
-    await loadSkills()
-  } catch (error) {
-    logger.error('Failed to save skill type', { error: error.message })
-    message.error('Failed to save skill type')
-  } finally {
-    savingType.value = false
-  }
-}
-
-function handleDeleteType(type) {
-  dialog.warning({
-    title: 'Delete Skill Type',
-    content: `Are you sure you want to delete "${type.name}"? This may affect existing skills.`,
-    positiveText: 'Delete',
-    negativeText: 'Cancel',
-    onPositiveClick: async () => {
-      try {
-        await skillsService.deleteSkillType(type.id)
-        message.success('Skill type deleted successfully')
-        await loadSkillTypes()
-        await loadSkills()
-      } catch (error) {
-        logger.error('Failed to delete skill type', { error: error.message })
-        message.error('Failed to delete skill type')
-      }
-    },
-  })
-}
-
-function resetTypeForm() {
-  editingType.value = null
-  typeForm.value = {
-    name: '',
-    description: '',
-    displayOrder: 0,
-  }
-  nextTick(() => {
-    typeFormRef.value?.restoreValidation()
-  })
-}
-
-function handleCancelType() {
-  showTypeModal.value = false
-  resetTypeForm()
-}
 
 onMounted(() => {
   loadSkillTypes()

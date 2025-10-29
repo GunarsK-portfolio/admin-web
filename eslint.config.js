@@ -22,6 +22,7 @@ export default [
         setInterval: 'readonly',
         clearInterval: 'readonly',
         fetch: 'readonly',
+        URL: 'readonly',
       },
     },
     rules: {

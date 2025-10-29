@@ -1,0 +1,292 @@
+<template>
+  <div class="page">
+    <n-space vertical size="large" class="page-container">
+      <BackButton />
+
+      <n-page-header
+        title="Certifications Management"
+        subtitle="Manage your professional certifications and credentials"
+      />
+
+      <n-card>
+        <n-space vertical size="large">
+          <n-space justify="space-between">
+            <SearchInput
+              v-model="search"
+              placeholder="Search by name, issuer, or credential ID..."
+              aria-label="Search certifications"
+            />
+            <AddButton label="Add Certification" @click="openModal" />
+          </n-space>
+
+          <n-spin :show="loading">
+            <n-data-table
+              :columns="columns"
+              :data="filteredCertifications"
+              :pagination="{ pageSize: 10 }"
+            />
+          </n-spin>
+        </n-space>
+      </n-card>
+    </n-space>
+
+    <n-modal
+      v-model:show="showModal"
+      preset="card"
+      :title="editing ? 'Edit Certification' : 'Add Certification'"
+      class="modal-medium"
+    >
+      <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
+        <n-form-item label="Certification Name" path="name">
+          <n-input v-model:value="form.name" placeholder="Enter certification name" />
+        </n-form-item>
+
+        <n-form-item label="Issuer" path="issuer">
+          <n-input v-model:value="form.issuer" placeholder="Enter issuing organization" />
+        </n-form-item>
+
+        <n-space class="date-fields">
+          <n-form-item label="Issue Date" path="issueDate" class="date-field">
+            <n-date-picker
+              v-model:formatted-value="form.issueDate"
+              type="date"
+              value-format="yyyy-MM-dd"
+              class="date-picker-full"
+            />
+          </n-form-item>
+
+          <n-form-item label="Expiry Date" path="expiryDate" class="date-field">
+            <n-date-picker
+              v-model:formatted-value="form.expiryDate"
+              type="date"
+              value-format="yyyy-MM-dd"
+              class="date-picker-full"
+              clearable
+            />
+          </n-form-item>
+        </n-space>
+
+        <n-form-item label="Credential ID" path="credentialId">
+          <n-input
+            v-model:value="form.credentialId"
+            placeholder="Enter credential or reference ID (optional)"
+          />
+        </n-form-item>
+
+        <n-form-item label="Credential URL" path="credentialUrl">
+          <n-input
+            v-model:value="form.credentialUrl"
+            placeholder="Enter URL to verify credential (optional)"
+          />
+        </n-form-item>
+      </n-form>
+
+      <template #footer>
+        <ModalFooter :loading="saving" :editing="editing" @cancel="closeModal" @save="handleSave" />
+      </template>
+    </n-modal>
+  </div>
+</template>
+
+<script setup>
+import { ref, h, onMounted } from 'vue'
+import {
+  NSpace,
+  NPageHeader,
+  NButton,
+  NIcon,
+  NCard,
+  NDataTable,
+  NSpin,
+  NTag,
+  NModal,
+  NForm,
+  NFormItem,
+  NInput,
+  NDatePicker,
+} from 'naive-ui'
+import { CreateOutline, TrashOutline, LinkOutline } from '@vicons/ionicons5'
+import certificationsService from '../services/certifications'
+import { required, dateAfter, url, validateForm } from '../utils/validation'
+import { createActionsRenderer, stringSorter, dateSorter } from '../utils/tableHelpers'
+import { toDateFormat } from '../utils/dateHelpers'
+import { createSearchFilter } from '../utils/filterHelpers'
+import { createDataLoader, createSaveHandler, createDeleteHandler } from '../utils/crudHelpers'
+import { useViewServices } from '../composables/useViewServices'
+import { useModal } from '../composables/useModal'
+import { useDataState } from '../composables/useDataState'
+import BackButton from '../components/shared/BackButton.vue'
+import SearchInput from '../components/shared/SearchInput.vue'
+import AddButton from '../components/shared/AddButton.vue'
+import ModalFooter from '../components/shared/ModalFooter.vue'
+
+// Services
+const { message, dialog } = useViewServices()
+
+// Data state
+const { data: certifications, loading, search } = useDataState()
+
+// Modal state
+const { showModal, editing, form, formRef, openModal, closeModal, openEditModal, resetForm } =
+  useModal({
+    name: '',
+    issuer: '',
+    issueDate: null,
+    expiryDate: null,
+    credentialId: '',
+    credentialUrl: '',
+  })
+
+// Saving state
+const saving = ref(false)
+
+const rules = {
+  name: [required('Certification name')],
+  issuer: [required('Issuer')],
+  issueDate: [required('Issue date')],
+  expiryDate: [dateAfter(() => form.value.issueDate)],
+  credentialUrl: [url()],
+}
+
+const renderExpiryStatus = (row) => {
+  if (!row.expiryDate) {
+    return h(NTag, { type: 'default', size: 'small' }, { default: () => 'No Expiry' })
+  }
+
+  const expiryDate = new Date(row.expiryDate)
+  const now = new Date()
+  const isExpired = expiryDate < now
+
+  return h(
+    NTag,
+    { type: isExpired ? 'error' : 'success', size: 'small' },
+    { default: () => (isExpired ? 'Expired' : 'Valid') }
+  )
+}
+
+const renderCredentialLink = (row) => {
+  if (!row.credentialUrl) {
+    return null
+  }
+
+  return h(
+    NButton,
+    {
+      text: true,
+      tag: 'a',
+      href: row.credentialUrl,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      type: 'info',
+      size: 'small',
+    },
+    {
+      icon: () => h(NIcon, null, { default: () => h(LinkOutline) }),
+      default: () => 'Verify',
+    }
+  )
+}
+
+const filteredCertifications = createSearchFilter(certifications, search, [
+  'name',
+  'issuer',
+  'credentialId',
+])
+
+const loadCertifications = createDataLoader({
+  loading,
+  data: certifications,
+  service: certificationsService.getAllCertifications,
+  entityName: 'certifications',
+  message,
+})
+
+function handleEdit(certification) {
+  openEditModal(certification, (cert) => ({
+    name: cert.name,
+    issuer: cert.issuer,
+    issueDate: toDateFormat(cert.issueDate),
+    expiryDate: toDateFormat(cert.expiryDate),
+    credentialId: cert.credentialId || '',
+    credentialUrl: cert.credentialUrl || '',
+  }))
+}
+
+const handleSave = createSaveHandler({
+  formRef,
+  saving,
+  editing,
+  form,
+  showModal,
+  service: {
+    create: certificationsService.createCertification,
+    update: certificationsService.updateCertification,
+  },
+  entityName: 'Certification',
+  message,
+  onSuccess: loadCertifications,
+  resetForm: () => resetForm(),
+  validateForm,
+  transformPayload: (formData) => ({
+    ...formData,
+    credentialId: formData.credentialId || undefined,
+    credentialUrl: formData.credentialUrl || undefined,
+    expiryDate: formData.expiryDate || undefined,
+  }),
+})
+
+const handleDelete = createDeleteHandler({
+  dialog,
+  service: certificationsService.deleteCertification,
+  entityName: 'Certification',
+  message,
+  onSuccess: loadCertifications,
+  getConfirmText: (cert) => `"${cert.name}"`,
+})
+
+const columns = [
+  { title: 'Name', key: 'name', sorter: stringSorter('name') },
+  { title: 'Issuer', key: 'issuer', sorter: stringSorter('issuer') },
+  {
+    title: 'Issue Date',
+    key: 'issueDate',
+    sorter: dateSorter('issueDate'),
+    render: (row) => toDateFormat(row.issueDate),
+  },
+  {
+    title: 'Expiry Date',
+    key: 'expiryDate',
+    sorter: dateSorter('expiryDate'),
+    render: (row) => toDateFormat(row.expiryDate, 'N/A'),
+  },
+  { title: 'Status', key: 'status', render: renderExpiryStatus },
+  { title: 'Credential', key: 'credential', render: renderCredentialLink },
+  {
+    title: 'Actions',
+    key: 'actions',
+    render: createActionsRenderer([
+      { icon: CreateOutline, onClick: handleEdit, label: 'Edit certification' },
+      { icon: TrashOutline, onClick: handleDelete, type: 'error', label: 'Delete certification' },
+    ]),
+  },
+]
+
+onMounted(() => {
+  loadCertifications()
+})
+</script>
+
+<style scoped>
+.date-fields {
+  display: flex;
+  gap: 16px;
+}
+
+.date-field {
+  flex: 1;
+}
+
+.date-picker-full {
+  width: 100%;
+}
+</style>

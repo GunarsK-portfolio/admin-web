@@ -33,6 +33,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/certifications',
+    name: 'Certifications',
+    component: () => import('../views/Certifications.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/403',
     name: 'Forbidden',
     component: () => import('../errors/Forbidden.vue'),
