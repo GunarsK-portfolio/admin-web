@@ -8,14 +8,14 @@ import { toMonthFormat, toDateFormat } from './dateHelpers'
  * @returns {Function} Sorter function
  */
 export const stringSorter = (key) => (a, b) =>
-  (a[key] || '').localeCompare(b[key] || '', undefined, { sensitivity: 'base' })
+  String(a?.[key] ?? '').localeCompare(String(b?.[key] ?? ''), undefined, { sensitivity: 'base' })
 
 /**
  * Creates number comparison sorter
  * @param {string} key - Property name to sort by
  * @returns {Function} Sorter function
  */
-export const numberSorter = (key) => (a, b) => (a[key] || 0) - (b[key] || 0)
+export const numberSorter = (key) => (a, b) => (a?.[key] ?? 0) - (b?.[key] ?? 0)
 
 /**
  * Creates date comparison sorter

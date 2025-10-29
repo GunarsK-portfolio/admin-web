@@ -18,6 +18,7 @@
               <n-input
                 v-model:value="skillsSearch"
                 placeholder="Search skills..."
+                aria-label="Search skills"
                 clearable
                 class="search-input"
               >
@@ -39,6 +40,7 @@
                 :data="filteredSkills"
                 :pagination="skillsPagination"
                 :bordered="false"
+                row-key="id"
               />
             </n-spin>
           </n-space>
@@ -51,6 +53,7 @@
               <n-input
                 v-model:value="typesSearch"
                 placeholder="Search skill types..."
+                aria-label="Search skill types"
                 clearable
                 class="search-input"
               >
@@ -72,6 +75,7 @@
                 :data="filteredTypes"
                 :pagination="typesPagination"
                 :bordered="false"
+                row-key="id"
               />
             </n-spin>
           </n-space>

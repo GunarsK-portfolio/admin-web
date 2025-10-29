@@ -25,11 +25,12 @@ export const requiredNumber = (fieldName, trigger = 'change') => ({
 
 /**
  * Creates email validation rule
+ * More comprehensive regex that prevents common invalid patterns
  * @param {string} trigger - Validation trigger event
  * @returns {Object} Naive UI validation rule
  */
 export const email = (trigger = 'blur') => ({
-  pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
   message: 'Please enter a valid email address',
   trigger,
 })
@@ -71,11 +72,21 @@ export async function validateForm(formRef) {
 
 /**
  * Validates that a required value is not null, undefined, or empty
+ *
+ * Behavior:
+ * - Without type option: Rejects null/undefined and empty strings. Allows 0, false, [], {}
+ * - With type option: Enforces specific type validation
+ *
  * @param {any} value - Value to validate
  * @param {string} paramName - Parameter name for error message
  * @param {Object} options - Validation options
  * @param {string} options.type - Expected type ('string', 'number', 'object', 'array')
  * @throws {Error} If value is invalid
+ *
+ * @example
+ * validateRequired(userId, 'User ID') // Allows any value except null/undefined/empty string
+ * validateRequired(payload, 'Payload', { type: 'object' }) // Requires non-null object (not array)
+ * validateRequired(count, 'Count', { type: 'number' }) // Requires valid number (0 is valid)
  */
 export function validateRequired(value, paramName = 'Parameter', options = {}) {
   // Check for null/undefined
@@ -108,7 +119,8 @@ export function validateRequired(value, paramName = 'Parameter', options = {}) {
         break
     }
   } else {
-    // Default: check for empty string
+    // Default: check for empty string only
+    // Note: Allows falsy values like 0, false, [], {} - these may be legitimate
     if (typeof value === 'string' && value.trim() === '') {
       throw new Error(`${paramName} is required`)
     }

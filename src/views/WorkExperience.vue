@@ -19,6 +19,7 @@
             <n-input
               v-model:value="search"
               placeholder="Search by company, position, or description..."
+              aria-label="Search work experience"
               class="search-input"
               clearable
             >
@@ -39,6 +40,7 @@
               :columns="columns"
               :data="filteredExperience"
               :pagination="{ pageSize: 10 }"
+              row-key="id"
             />
           </n-spin>
         </n-space>
