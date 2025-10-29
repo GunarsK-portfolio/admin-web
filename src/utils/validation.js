@@ -68,3 +68,15 @@ export async function validateForm(formRef) {
     return false
   }
 }
+
+/**
+ * Validates that a required value is not null, undefined, or empty
+ * @param {any} value - Value to validate
+ * @param {string} paramName - Parameter name for error message
+ * @throws {Error} If value is invalid
+ */
+export function validateRequired(value, paramName = 'Parameter') {
+  if (value == null || String(value).trim() === '') {
+    throw new Error(`${paramName} is required`)
+  }
+}

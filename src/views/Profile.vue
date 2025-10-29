@@ -149,6 +149,7 @@
                           tag="a"
                           :href="formData.resumeFile.url"
                           target="_blank"
+                          rel="noopener noreferrer"
                           size="small"
                         >
                           <template #icon>

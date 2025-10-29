@@ -7,23 +7,11 @@ const getLogLevel = () => {
   return 'info'
 }
 
-// Browser transport with pretty printing in development
-const browserTransport = {
-  target: 'pino-pretty',
-  options: {
-    colorize: true,
-    translateTime: 'HH:MM:ss',
-    ignore: 'pid,hostname',
-  },
-}
-
 // Create base logger
 const baseLogger = pino({
   level: getLogLevel(),
   browser: {
     asObject: true,
-    // Use pretty printing in development, JSON in production
-    ...(import.meta.env.DEV ? browserTransport : {}),
   },
   base: {
     app: 'admin-web',
@@ -172,7 +160,6 @@ export function setUserContext(user) {
   logger.setContext({
     user: {
       id: user.id,
-      email: user.email,
     },
   })
 }

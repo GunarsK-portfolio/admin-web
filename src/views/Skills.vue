@@ -157,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NSpace,
@@ -351,7 +351,7 @@ function handleEditSkill(skill) {
   editingSkill.value = skill
   skillForm.value = {
     skill: skill.skill,
-    skillTypeId: skill.skillTypeId,
+    skillTypeId: Number(skill.skillTypeId),
     isVisible: skill.isVisible ?? true,
     displayOrder: skill.displayOrder || 0,
   }
@@ -408,6 +408,9 @@ function resetSkillForm() {
     isVisible: true,
     displayOrder: 0,
   }
+  nextTick(() => {
+    skillFormRef.value?.restoreValidation()
+  })
 }
 
 function handleEditType(type) {
@@ -472,6 +475,9 @@ function resetTypeForm() {
     description: '',
     displayOrder: 0,
   }
+  nextTick(() => {
+    typeFormRef.value?.restoreValidation()
+  })
 }
 
 onMounted(() => {

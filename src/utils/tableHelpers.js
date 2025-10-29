@@ -22,7 +22,13 @@ export const numberSorter = (key) => (a, b) => (a[key] || 0) - (b[key] || 0)
  * @param {string} key - Property name to sort by
  * @returns {Function} Sorter function
  */
-export const dateSorter = (key) => (a, b) => new Date(a[key] || 0) - new Date(b[key] || 0)
+export const dateSorter = (key) => (a, b) => {
+  const aTime = new Date(a[key] || 0).getTime()
+  const bTime = new Date(b[key] || 0).getTime()
+  const aValid = !isNaN(aTime) ? aTime : 0
+  const bValid = !isNaN(bTime) ? bTime : 0
+  return aValid - bValid
+}
 
 /**
  * Creates action buttons renderer for table rows

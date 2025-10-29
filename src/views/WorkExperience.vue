@@ -18,7 +18,7 @@
           <n-space justify="space-between">
             <n-input
               v-model:value="search"
-              placeholder="Search by company or position..."
+              placeholder="Search by company, position, or description..."
               class="search-input"
               clearable
             >
@@ -109,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, computed, h, onMounted, watch } from 'vue'
+import { ref, computed, h, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NSpace,
@@ -302,6 +302,9 @@ function resetForm() {
     endDate: null,
     isCurrent: false,
   }
+  nextTick(() => {
+    formRef.value?.restoreValidation()
+  })
 }
 
 // Clear end date when "Currently working here" is checked
