@@ -40,7 +40,6 @@
               :columns="columns"
               :data="filteredExperience"
               :pagination="{ pageSize: 10 }"
-              row-key="id"
             />
           </n-spin>
         </n-space>

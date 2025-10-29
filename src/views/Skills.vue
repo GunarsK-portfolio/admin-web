@@ -40,7 +40,6 @@
                 :data="filteredSkills"
                 :pagination="skillsPagination"
                 :bordered="false"
-                row-key="id"
               />
             </n-spin>
           </n-space>
@@ -75,7 +74,6 @@
                 :data="filteredTypes"
                 :pagination="typesPagination"
                 :bordered="false"
-                row-key="id"
               />
             </n-spin>
           </n-space>
