@@ -210,7 +210,7 @@ const filteredExperience = computed(() => {
 async function loadExperience() {
   loading.value = true
   try {
-    const response = await workExperienceService.getAllWorkExperience()
+    const response = await workExperienceService.getAllWorkExperiences()
     experiences.value = response.data || []
     logger.info('Work experience loaded', { count: experiences.value.length })
   } catch (error) {

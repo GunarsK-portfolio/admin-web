@@ -2,7 +2,7 @@ import { api } from './api'
 import { validateRequired } from '../utils/validation'
 
 export default {
-  getAllWorkExperience() {
+  getAllWorkExperiences() {
     return api.get('/portfolio/experience')
   },
   getWorkExperienceById(id) {
