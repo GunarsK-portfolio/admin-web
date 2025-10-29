@@ -1,22 +1,22 @@
 <template>
-  <n-button text @click="router.push(to)">
-    <template #icon>
-      <n-icon><ArrowBackOutline /></n-icon>
-    </template>
-    {{ label }}
-  </n-button>
+  <router-link v-slot="{ navigate, href }" :to="to" custom>
+    <n-button text tag="a" :href="href" @click="navigate">
+      <template #icon>
+        <n-icon><ArrowBackOutline /></n-icon>
+      </template>
+      {{ label }}
+    </n-button>
+  </router-link>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import { NButton, NIcon } from 'naive-ui'
 import { ArrowBackOutline } from '@vicons/ionicons5'
 
-const router = useRouter()
-
 defineProps({
   to: {
-    type: String,
+    type: [String, Object],
     default: '/dashboard',
   },
   label: {

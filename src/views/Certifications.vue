@@ -107,7 +107,7 @@ import {
 } from 'naive-ui'
 import { CreateOutline, TrashOutline, LinkOutline } from '@vicons/ionicons5'
 import certificationsService from '../services/certifications'
-import { required, dateAfter, url, validateForm } from '../utils/validation'
+import { required, dateAfter, url, validateForm, isValidHttpUrl } from '../utils/validation'
 import { createActionsRenderer, stringSorter, dateSorter } from '../utils/tableHelpers'
 import { toDateFormat } from '../utils/dateHelpers'
 import { createSearchFilter } from '../utils/filterHelpers'
@@ -153,8 +153,13 @@ const renderExpiryStatus = (row) => {
     return h(NTag, { type: 'default', size: 'small' }, { default: () => 'No Expiry' })
   }
 
+  // Normalize dates to noon local time to avoid timezone edge cases
   const expiryDate = new Date(row.expiryDate)
+  expiryDate.setHours(12, 0, 0, 0)
+
   const now = new Date()
+  now.setHours(12, 0, 0, 0)
+
   const isExpired = expiryDate < now
 
   return h(
@@ -165,7 +170,7 @@ const renderExpiryStatus = (row) => {
 }
 
 const renderCredentialLink = (row) => {
-  if (!row.credentialUrl) {
+  if (!row.credentialUrl || !isValidHttpUrl(row.credentialUrl)) {
     return null
   }
 
@@ -176,7 +181,7 @@ const renderCredentialLink = (row) => {
       tag: 'a',
       href: row.credentialUrl,
       target: '_blank',
-      rel: 'noopener noreferrer',
+      rel: 'noopener noreferrer nofollow',
       type: 'info',
       size: 'small',
     },

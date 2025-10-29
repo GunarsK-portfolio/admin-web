@@ -1,11 +1,11 @@
 <template>
   <n-input
-    :model-value="modelValue"
+    :value="modelValue"
     :placeholder="placeholder"
     :aria-label="ariaLabel"
     class="search-input"
     clearable
-    @update:model-value="$emit('update:modelValue', $event)"
+    @update:value="$emit('update:modelValue', $event)"
   >
     <template #prefix>
       <n-icon><SearchOutline /></n-icon>

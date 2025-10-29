@@ -1,6 +1,15 @@
 import { ref, nextTick } from 'vue'
 
 /**
+ * Deep clones an object using JSON serialization
+ * @param {Object} obj - Object to clone
+ * @returns {Object} Cloned object
+ */
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj))
+}
+
+/**
  * Creates a modal controller with form state management
  * Handles modal open/close, form reset, and edit mode
  *
@@ -26,7 +35,7 @@ import { ref, nextTick } from 'vue'
 export function useModal(defaultFormValues) {
   const showModal = ref(false)
   const editing = ref(null)
-  const form = ref({ ...defaultFormValues })
+  const form = ref(deepClone(defaultFormValues))
   const formRef = ref(null)
 
   /**
@@ -34,7 +43,7 @@ export function useModal(defaultFormValues) {
    */
   const resetForm = () => {
     editing.value = null
-    form.value = { ...defaultFormValues }
+    form.value = deepClone(defaultFormValues)
     nextTick(() => {
       formRef.value?.restoreValidation()
     })
@@ -63,7 +72,7 @@ export function useModal(defaultFormValues) {
    */
   const openEditModal = (entity, transformFn) => {
     editing.value = entity
-    form.value = transformFn ? transformFn(entity) : { ...entity }
+    form.value = transformFn ? transformFn(entity) : deepClone(entity)
     showModal.value = true
   }
 

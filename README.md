@@ -1,6 +1,7 @@
 # Admin Web
 
 ![CI](https://github.com/GunarsK-portfolio/admin-web/workflows/CI/badge.svg)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/GunarsK-portfolio/admin-web?utm_source=oss&utm_medium=github&utm_campaign=GunarsK-portfolio%2Fadmin-web&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 Admin panel for managing portfolio content built with Vue.js.
 

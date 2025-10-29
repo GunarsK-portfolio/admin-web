@@ -36,22 +36,46 @@ export const email = (trigger = 'blur') => ({
 })
 
 /**
- * Creates URL validation rule
- * @param {string} trigger - Validation trigger event
+ * Creates URL validation rule with protocol restrictions
+ * @param {Object} options - Validation options
+ * @param {Array<string>} options.protocols - Allowed protocols (default: ['http:', 'https:'])
+ * @param {string} options.trigger - Validation trigger event
  * @returns {Object} Naive UI validation rule
  */
-export const url = (trigger = 'blur') => ({
-  validator: (_rule, value) => {
-    if (!value) return true
-    try {
-      new URL(value)
-      return true
-    } catch {
-      return new Error('Please enter a valid URL')
-    }
-  },
-  trigger,
-})
+export const url = (options = {}) => {
+  const { protocols = ['http:', 'https:'], trigger = 'blur' } = options
+
+  return {
+    validator: (_rule, value) => {
+      if (!value) return true
+      try {
+        const urlObj = new URL(value)
+        if (!protocols.includes(urlObj.protocol)) {
+          return new Error(`URL must use one of the following protocols: ${protocols.join(', ')}`)
+        }
+        return true
+      } catch {
+        return new Error('Please enter a valid URL')
+      }
+    },
+    trigger,
+  }
+}
+
+/**
+ * Checks if a URL string is a valid HTTP/HTTPS URL
+ * @param {string} urlString - URL to validate
+ * @returns {boolean} True if valid HTTP/HTTPS URL
+ */
+export function isValidHttpUrl(urlString) {
+  if (!urlString) return false
+  try {
+    const url = new URL(urlString)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
 
 /**
  * Creates date range validation rule
@@ -66,9 +90,13 @@ export const dateAfter = (getStartDate, trigger = 'blur') => ({
     const startDate = getStartDate()
     if (!startDate) return true
 
+    // Convert to string to safely check length
+    const startStr = String(startDate)
+    const endStr = String(value)
+
     // Detect format: if it has 10 chars (yyyy-MM-dd), use as-is; otherwise append -01 for month format
-    const startFull = startDate.length === 10 ? startDate : startDate + '-01'
-    const endFull = value.length === 10 ? value : value + '-01'
+    const startFull = startStr.length === 10 ? startStr : startStr + '-01'
+    const endFull = endStr.length === 10 ? endStr : endStr + '-01'
 
     const isValid = new Date(endFull) >= new Date(startFull)
     if (isValid) return true

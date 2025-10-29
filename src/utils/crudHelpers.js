@@ -28,8 +28,22 @@ export function createDataLoader(options) {
     try {
       const response = await service()
       const result = response.data || []
-      data.value = transform ? transform(result) : result
-      logger.info(`${entityName} loaded`, { count: data.value.length })
+
+      // Apply transform with error handling
+      if (transform) {
+        try {
+          data.value = transform(result)
+        } catch (transformError) {
+          logger.error(`Failed to transform ${entityName} data`, { error: transformError.message })
+          data.value = result // Fallback to untransformed data
+        }
+      } else {
+        data.value = result
+      }
+
+      // Safely log count - check if data is array
+      const count = Array.isArray(data.value) ? data.value.length : 'N/A'
+      logger.info(`${entityName} loaded`, { count })
     } catch (error) {
       message.error(`Failed to load ${entityName}`)
       logger.error(`Failed to load ${entityName}`, { error: error.message })
