@@ -164,6 +164,11 @@ export const logger = new Logger(baseLogger)
  * @param {Object} user - User object
  */
 export function setUserContext(user) {
+  if (!user || typeof user !== 'object') {
+    logger.warn('setUserContext called with invalid user', { user })
+    return
+  }
+
   logger.setContext({
     user: {
       id: user.id,
