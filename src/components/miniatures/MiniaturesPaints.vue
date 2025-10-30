@@ -18,6 +18,7 @@
     v-model:show="showModal"
     preset="card"
     :title="editing ? 'Edit Paint' : 'Add Paint'"
+    :aria-label="editing ? 'Edit Paint' : 'Add Paint'"
     class="modal-medium"
   >
     <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
@@ -58,6 +59,7 @@
 
 <script setup>
 import { ref, h, onMounted } from 'vue'
+import { PAINT_TYPE_OPTIONS, PAINT_TYPE_COLORS } from '@/constants/miniatures'
 import {
   NSpace,
   NSpin,
@@ -100,21 +102,8 @@ const { showModal, editing, form, formRef, openModal, closeModal, openEditModal,
 // Saving state
 const saving = ref(false)
 
-const paintTypeOptions = [
-  { label: 'Base', value: 'Base' },
-  { label: 'Layer', value: 'Layer' },
-  { label: 'Shade', value: 'Shade' },
-  { label: 'Wash', value: 'Wash' },
-  { label: 'Contrast', value: 'Contrast' },
-  { label: 'Dry', value: 'Dry' },
-  { label: 'Technical', value: 'Technical' },
-  { label: 'Metallic', value: 'Metallic' },
-  { label: 'Air', value: 'Air' },
-  { label: 'Primer', value: 'Primer' },
-  { label: 'Edge', value: 'Edge' },
-  { label: 'Glaze', value: 'Glaze' },
-  { label: 'Ink', value: 'Ink' },
-]
+// Use shared paint type options
+const paintTypeOptions = PAINT_TYPE_OPTIONS
 
 const rules = {
   name: [required('Paint name')],
@@ -137,25 +126,9 @@ const renderColorSwatch = (row) => {
 }
 
 const renderPaintType = (row) => {
-  const typeColors = {
-    Base: 'default',
-    Layer: 'info',
-    Shade: 'warning',
-    Wash: 'warning',
-    Contrast: 'success',
-    Dry: 'info',
-    Technical: 'error',
-    Metallic: 'warning',
-    Air: 'info',
-    Primer: 'default',
-    Edge: 'info',
-    Glaze: 'success',
-    Ink: 'error',
-  }
-
   return h(
     NTag,
-    { type: typeColors[row.paintType] || 'default', size: 'small' },
+    { type: PAINT_TYPE_COLORS[row.paintType] || 'default', size: 'small' },
     { default: () => row.paintType }
   )
 }

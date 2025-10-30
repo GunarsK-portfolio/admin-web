@@ -15,6 +15,11 @@ const certExists = fs.existsSync(keyPath) && fs.existsSync(certPath)
 
 export default defineConfig({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   server: {
     port: 8081,
     host: true,

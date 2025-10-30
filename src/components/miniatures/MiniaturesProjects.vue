@@ -195,14 +195,14 @@ const loadThemes = async () => {
 function handleEdit(project) {
   openEditModal(project, (p) => ({
     name: p.name,
-    themeId: p.themeId || null,
-    description: p.description || '',
-    scale: p.scale || '',
-    manufacturer: p.manufacturer || '',
-    difficulty: p.difficulty || null,
-    timeSpent: p.timeSpent || null,
+    themeId: p.themeId ?? null,
+    description: p.description ?? '',
+    scale: p.scale ?? '',
+    manufacturer: p.manufacturer ?? '',
+    difficulty: p.difficulty ?? null,
+    timeSpent: p.timeSpent ?? null,
     completedDate: toDateFormat(p.completedDate),
-    displayOrder: p.displayOrder || 0,
+    displayOrder: p.displayOrder ?? 0,
   }))
 }
 
@@ -223,14 +223,14 @@ const handleSave = createSaveHandler({
   validateForm,
   transformPayload: (formData) => ({
     ...formData,
-    themeId: formData.themeId || undefined,
-    description: formData.description || undefined,
-    scale: formData.scale || undefined,
-    manufacturer: formData.manufacturer || undefined,
-    difficulty: formData.difficulty || undefined,
-    timeSpent: formData.timeSpent || undefined,
-    completedDate: formData.completedDate || undefined,
-    displayOrder: formData.displayOrder || 0,
+    themeId: formData.themeId ?? undefined,
+    description: formData.description ?? undefined,
+    scale: formData.scale ?? undefined,
+    manufacturer: formData.manufacturer ?? undefined,
+    difficulty: formData.difficulty ?? undefined,
+    timeSpent: formData.timeSpent ?? undefined,
+    completedDate: formData.completedDate ?? undefined,
+    displayOrder: formData.displayOrder ?? 0,
   }),
 })
 
@@ -245,7 +245,7 @@ const handleDelete = createDeleteHandler({
 
 const columns = [
   { title: 'Title', key: 'name', sorter: stringSorter('name') },
-  { title: 'Theme', key: 'theme.name' },
+  { title: 'Theme', key: 'theme.name', render: (row) => row.theme?.name ?? '—' },
   { title: 'Scale', key: 'scale' },
   { title: 'Difficulty', key: 'difficulty' },
   {
