@@ -127,7 +127,7 @@ const renderColorSwatch = (row) => {
       display: 'inline-block',
     },
     role: 'img',
-    ariaLabel: `Color: ${row.colorHex}`,
+    'aria-label': `Color: ${row.colorHex}`,
   })
 }
 
