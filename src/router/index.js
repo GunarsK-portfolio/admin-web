@@ -39,6 +39,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/miniatures',
+    name: 'Miniatures',
+    component: () => import('../views/Miniatures.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/403',
     name: 'Forbidden',
     component: () => import('../errors/Forbidden.vue'),
