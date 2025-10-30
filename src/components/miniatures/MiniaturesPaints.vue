@@ -46,7 +46,7 @@
             maxlength="7"
             style="flex: 1"
           />
-          <div class="color-preview" :style="{ backgroundColor: form.colorHex || '#ffffff' }" />
+          <div class="color-preview" :style="{ backgroundColor: safeHexColor(form.colorHex) }" />
         </n-space>
       </n-form-item>
     </n-form>
@@ -112,12 +112,22 @@ const rules = {
   colorHex: [required('Color hex'), hexColor()],
 }
 
+// Validate hex color format to prevent CSS injection
+const isValidHex = (hex) => {
+  return /^#[0-9A-Fa-f]{6}$/.test(hex)
+}
+
+// Safe hex color - returns validated hex or safe fallback
+const safeHexColor = (hex, fallback = '#ffffff') => {
+  return isValidHex(hex) ? hex : fallback
+}
+
 const renderColorSwatch = (row) => {
   return h('div', {
     style: {
       width: '40px',
       height: '24px',
-      backgroundColor: row.colorHex,
+      backgroundColor: safeHexColor(row.colorHex, '#cccccc'),
       border: '1px solid #e0e0e0',
       borderRadius: '4px',
       display: 'inline-block',
