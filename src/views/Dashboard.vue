@@ -62,10 +62,12 @@
 
         <n-grid-item>
           <n-card>
-            <h3 class="card-title">Miniature Projects</h3>
-            <p class="card-description">Add and manage your miniature painting projects</p>
+            <h3 class="card-title">Miniatures</h3>
+            <p class="card-description">Manage projects, themes, and paint collection</p>
             <div class="card-actions">
-              <n-button type="primary" size="small">Manage</n-button>
+              <n-button type="primary" size="small" @click="router.push({ name: 'Miniatures' })">
+                Manage
+              </n-button>
             </div>
           </n-card>
         </n-grid-item>

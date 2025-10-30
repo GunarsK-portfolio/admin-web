@@ -78,6 +78,18 @@ export function isValidHttpUrl(urlString) {
 }
 
 /**
+ * Creates hex color validation rule
+ * Validates hex color format (#RRGGBB or #RGB)
+ * @param {string} trigger - Validation trigger event
+ * @returns {Object} Naive UI validation rule
+ */
+export const hexColor = (trigger = 'blur') => ({
+  pattern: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
+  message: 'Please enter a valid hex color (e.g., #FF5733 or #F57)',
+  trigger,
+})
+
+/**
  * Creates date range validation rule
  * Supports both full dates (yyyy-MM-dd) and month dates (yyyy-MM)
  * @param {Function} getStartDate - Function that returns the start date value
