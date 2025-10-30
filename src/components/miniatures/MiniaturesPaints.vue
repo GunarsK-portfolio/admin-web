@@ -3,7 +3,7 @@
     <n-space justify="space-between">
       <SearchInput
         v-model="search"
-        placeholder="Search by name, manufacturer, or type..."
+        placeholder="Search by name, manufacturer, type, or color..."
         aria-label="Search paints"
       />
       <AddButton label="Add Paint" @click="openModal" />
@@ -39,15 +39,12 @@
       </n-form-item>
 
       <n-form-item label="Color (Hex)" path="colorHex">
-        <n-space align="center">
-          <n-input
-            v-model:value="form.colorHex"
-            placeholder="#RRGGBB"
-            maxlength="7"
-            style="flex: 1"
-          />
-          <div class="color-preview" :style="{ backgroundColor: safeHexColor(form.colorHex) }" />
-        </n-space>
+        <n-color-picker
+          v-model:value="form.colorHex"
+          :modes="['hex']"
+          :show-alpha="false"
+          :actions="['confirm']"
+        />
       </n-form-item>
     </n-form>
 
@@ -70,6 +67,7 @@ import {
   NFormItem,
   NInput,
   NSelect,
+  NColorPicker,
 } from 'naive-ui'
 import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
 import miniaturesService from '../../services/miniatures'
@@ -112,14 +110,10 @@ const rules = {
   colorHex: [required('Color hex'), hexColor()],
 }
 
-// Validate hex color format to prevent CSS injection
-const isValidHex = (hex) => {
-  return /^#[0-9A-Fa-f]{6}$/.test(hex)
-}
-
-// Safe hex color - returns validated hex or safe fallback
-const safeHexColor = (hex, fallback = '#ffffff') => {
-  return isValidHex(hex) ? hex : fallback
+// Safe hex color - returns validated hex or safe fallback for table display
+const safeHexColor = (hex, fallback = '#cccccc') => {
+  const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex)
+  return isValidHex ? hex : fallback
 }
 
 const renderColorSwatch = (row) => {
@@ -127,11 +121,13 @@ const renderColorSwatch = (row) => {
     style: {
       width: '40px',
       height: '24px',
-      backgroundColor: safeHexColor(row.colorHex, '#cccccc'),
+      backgroundColor: safeHexColor(row.colorHex),
       border: '1px solid #e0e0e0',
       borderRadius: '4px',
       display: 'inline-block',
     },
+    role: 'img',
+    ariaLabel: `Color: ${row.colorHex}`,
   })
 }
 
@@ -143,7 +139,12 @@ const renderPaintType = (row) => {
   )
 }
 
-const filteredPaints = createSearchFilter(paints, search, ['name', 'manufacturer', 'paintType'])
+const filteredPaints = createSearchFilter(paints, search, [
+  'name',
+  'manufacturer',
+  'paintType',
+  'colorHex',
+])
 
 const loadPaints = createDataLoader({
   loading,
@@ -193,7 +194,7 @@ const columns = [
   { title: 'Name', key: 'name', sorter: stringSorter('name') },
   { title: 'Manufacturer', key: 'manufacturer', sorter: stringSorter('manufacturer') },
   { title: 'Type', key: 'paintType', sorter: stringSorter('paintType'), render: renderPaintType },
-  { title: 'Hex Code', key: 'colorHex' },
+  { title: 'Hex Code', key: 'colorHex', sorter: stringSorter('colorHex') },
   {
     title: 'Actions',
     key: 'actions',
@@ -208,12 +209,3 @@ onMounted(() => {
   loadPaints()
 })
 </script>
-
-<style scoped>
-.color-preview {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-}
-</style>
