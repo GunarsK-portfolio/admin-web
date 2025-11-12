@@ -3,6 +3,7 @@ import { env } from '../config/env'
 
 export const api = axios.create({
   baseURL: env.apiUrl,
+  timeout: 30000, // 30 second timeout
 })
 
 // Add auth token to requests
