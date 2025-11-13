@@ -72,7 +72,7 @@
                     <n-space vertical align="center">
                       <n-avatar
                         :size="120"
-                        :src="addSourceToFileUrl(formData.avatarFile?.url)"
+                        :src="addSourceToFileUrl(formData.avatarFile.url)"
                         round
                       >
                         <template #fallback>
