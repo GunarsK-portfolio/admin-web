@@ -70,7 +70,11 @@
                 <n-space vertical>
                   <div v-if="formData.avatarFile">
                     <n-space vertical align="center">
-                      <n-avatar :size="120" :src="formData.avatarFile?.url" round>
+                      <n-avatar
+                        :size="120"
+                        :src="addSourceToFileUrl(formData.avatarFile?.url)"
+                        round
+                      >
                         <template #fallback>
                           {{ formData.name?.charAt(0)?.toUpperCase() || 'U' }}
                         </template>
@@ -142,7 +146,7 @@
                       <n-space>
                         <n-button
                           tag="a"
-                          :href="formData.resumeFile.url"
+                          :href="addSourceToFileUrl(formData.resumeFile.url)"
                           target="_blank"
                           rel="noopener noreferrer"
                           size="small"
@@ -253,6 +257,7 @@ import { logger } from '../utils/logger'
 import { formatFileSize } from '../utils/fileHelpers'
 import { required, email, validateForm } from '../utils/validation'
 import { createDataLoader } from '../utils/crudHelpers'
+import { addSourceToFileUrl } from '../utils/fileUrl'
 import ImageCropperModal from '../components/shared/ImageCropperModal.vue'
 
 const { message } = useViewServices()
