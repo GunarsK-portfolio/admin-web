@@ -116,7 +116,7 @@
                 <div v-for="image in projectImages" :key="image.id" class="image-card">
                   <n-image
                     :src="image.url"
-                    :alt="image.caption || 'Project image'"
+                    :alt="image.caption || `${form.name || 'Miniature'} project image`"
                     object-fit="cover"
                     height="120"
                     width="120"
@@ -145,6 +145,7 @@
             <n-upload
               v-model:file-list="fileList"
               :custom-request="handleImageUpload"
+              :before-upload="validateImageFile"
               :show-file-list="false"
               accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
               :disabled="uploadingImage"
@@ -206,6 +207,7 @@ import { createActionsRenderer, stringSorter, numberSorter } from '../../utils/t
 import { toDateFormat } from '../../utils/dateHelpers'
 import { createSearchFilter } from '../../utils/filterHelpers'
 import { createDataLoader, createSaveHandler, createDeleteHandler } from '../../utils/crudHelpers'
+import { createFileValidator, FILE_VALIDATION } from '../../utils/fileHelpers'
 import { useViewServices } from '../../composables/useViewServices'
 import { useModal } from '../../composables/useModal'
 import { useDataState } from '../../composables/useDataState'
@@ -242,6 +244,9 @@ const projectImages = computed(() => editing.value?.images || [])
 const uploadingImage = ref(false)
 const deletingImage = ref(null)
 const fileList = ref([])
+
+// Image validation
+const validateImageFile = createFileValidator(FILE_VALIDATION.IMAGE, message)
 
 const difficultyOptions = [
   { label: 'Beginner', value: 'Beginner' },
@@ -333,6 +338,24 @@ const handleDelete = createDeleteHandler({
 })
 
 // Image handlers
+async function refreshProject(projectId) {
+  const response = await miniaturesService.getProjectById(projectId)
+  const updatedProject = response.data
+
+  // Update project in local list
+  const index = projects.value.findIndex((p) => p.id === projectId)
+  if (index !== -1) {
+    projects.value[index] = updatedProject
+  }
+
+  // Update editing object if this is the currently edited project
+  if (editing.value?.id === projectId) {
+    editing.value = updatedProject
+  }
+
+  return updatedProject
+}
+
 async function handleImageUpload({ file }) {
   if (!editing.value) return
 
@@ -347,14 +370,8 @@ async function handleImageUpload({ file }) {
 
     message.success('Image uploaded successfully')
 
-    // Reload project data to show new image
-    await loadProjects()
-
-    // Refresh editing object with updated data
-    const updatedProject = projects.value.find((p) => p.id === editing.value.id)
-    if (updatedProject) {
-      editing.value = updatedProject
-    }
+    // Refresh only the updated project
+    await refreshProject(editing.value.id)
 
     // Clear the file list to prevent re-upload
     fileList.value = []
@@ -372,14 +389,8 @@ async function handleDeleteImage(imageId) {
     await miniaturesService.deleteProjectImage(imageId)
     message.success('Image deleted successfully')
 
-    // Reload project data to remove deleted image
-    await loadProjects()
-
-    // Refresh editing object with updated data
-    const updatedProject = projects.value.find((p) => p.id === editing.value.id)
-    if (updatedProject) {
-      editing.value = updatedProject
-    }
+    // Refresh only the updated project
+    await refreshProject(editing.value.id)
   } catch (error) {
     console.error('Failed to delete image:', error)
     message.error(error.response?.data?.error || 'Failed to delete image')
