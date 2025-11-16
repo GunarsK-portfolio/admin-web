@@ -45,6 +45,18 @@ export default {
     validateRequired(id, 'Project ID')
     return api.delete(`/miniatures/projects/${encodeURIComponent(id)}`)
   },
+  addImageToProject(projectId, fileId, caption = '') {
+    validateRequired(projectId, 'Project ID')
+    validateRequired(fileId, 'File ID')
+    return api.post(`/miniatures/projects/${encodeURIComponent(projectId)}/images`, {
+      fileId,
+      caption,
+    })
+  },
+  deleteProjectImage(imageId) {
+    validateRequired(imageId, 'Image ID')
+    return api.delete(`/files/${encodeURIComponent(imageId)}`)
+  },
 
   // Paints
   getAllPaints() {

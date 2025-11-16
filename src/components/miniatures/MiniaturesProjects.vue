@@ -106,6 +106,64 @@
             </n-form-item-gi>
           </n-grid>
         </n-collapse-item>
+
+        <!-- Images Section (only for editing existing projects) -->
+        <n-collapse-item v-if="editing" title="Project Images" name="images">
+          <n-space vertical :size="16">
+            <!-- Image Gallery -->
+            <div v-if="projectImages.length > 0" class="image-gallery">
+              <n-space :size="12">
+                <div v-for="image in projectImages" :key="image.id" class="image-card">
+                  <n-image
+                    :src="image.url"
+                    :alt="image.caption || 'Project image'"
+                    object-fit="cover"
+                    height="120"
+                    width="120"
+                  />
+                  <div class="image-actions">
+                    <n-button
+                      size="small"
+                      type="error"
+                      :loading="deletingImage === image.id"
+                      @click="handleDeleteImage(image.id)"
+                    >
+                      <template #icon>
+                        <n-icon><TrashOutline /></n-icon>
+                      </template>
+                    </n-button>
+                  </div>
+                  <div v-if="image.caption" class="image-caption">
+                    {{ image.caption }}
+                  </div>
+                </div>
+              </n-space>
+            </div>
+            <n-empty v-else description="No images uploaded yet" size="small" />
+
+            <!-- Upload Section -->
+            <n-upload
+              v-model:file-list="fileList"
+              :custom-request="handleImageUpload"
+              :show-file-list="false"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              :disabled="uploadingImage"
+              multiple
+            >
+              <n-upload-dragger>
+                <div class="upload-icon">
+                  <n-icon size="48" :depth="3">
+                    <CloudUploadOutline />
+                  </n-icon>
+                </div>
+                <n-text class="upload-text"> Click or drag images to upload </n-text>
+                <n-text depth="3" class="upload-hint">
+                  Supported formats: JPEG, PNG, GIF, WebP (Max 10MB)
+                </n-text>
+              </n-upload-dragger>
+            </n-upload>
+          </n-space>
+        </n-collapse-item>
       </n-collapse>
     </n-form>
 
@@ -132,8 +190,16 @@ import {
   NCollapseItem,
   NGrid,
   NFormItemGi,
+  NUpload,
+  NUploadDragger,
+  NImage,
+  NEmpty,
+  NButton,
+  NIcon,
+  NText,
 } from 'naive-ui'
-import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline, CloudUploadOutline } from '@vicons/ionicons5'
+import filesService from '../../services/files'
 import miniaturesService from '../../services/miniatures'
 import { required, validateForm } from '../../utils/validation'
 import { createActionsRenderer, stringSorter, numberSorter } from '../../utils/tableHelpers'
@@ -170,6 +236,12 @@ const { showModal, editing, form, formRef, openModal, closeModal, openEditModal,
 
 // Saving state
 const saving = ref(false)
+
+// Image state
+const projectImages = computed(() => editing.value?.images || [])
+const uploadingImage = ref(false)
+const deletingImage = ref(null)
+const fileList = ref([])
 
 const difficultyOptions = [
   { label: 'Beginner', value: 'Beginner' },
@@ -260,6 +332,62 @@ const handleDelete = createDeleteHandler({
   getConfirmText: (project) => `"${project.name}"`,
 })
 
+// Image handlers
+async function handleImageUpload({ file }) {
+  if (!editing.value) return
+
+  uploadingImage.value = true
+  try {
+    // Upload file to files-api
+    const uploadResponse = await filesService.uploadFile(file.file, 'miniature-image')
+    const fileId = uploadResponse.data.id
+
+    // Link uploaded file to project
+    await miniaturesService.addImageToProject(editing.value.id, fileId)
+
+    message.success('Image uploaded successfully')
+
+    // Reload project data to show new image
+    await loadProjects()
+
+    // Refresh editing object with updated data
+    const updatedProject = projects.value.find((p) => p.id === editing.value.id)
+    if (updatedProject) {
+      editing.value = updatedProject
+    }
+
+    // Clear the file list to prevent re-upload
+    fileList.value = []
+  } catch (error) {
+    console.error('Failed to upload image:', error)
+    message.error(error.response?.data?.error || 'Failed to upload image')
+  } finally {
+    uploadingImage.value = false
+  }
+}
+
+async function handleDeleteImage(imageId) {
+  deletingImage.value = imageId
+  try {
+    await miniaturesService.deleteProjectImage(imageId)
+    message.success('Image deleted successfully')
+
+    // Reload project data to remove deleted image
+    await loadProjects()
+
+    // Refresh editing object with updated data
+    const updatedProject = projects.value.find((p) => p.id === editing.value.id)
+    if (updatedProject) {
+      editing.value = updatedProject
+    }
+  } catch (error) {
+    console.error('Failed to delete image:', error)
+    message.error(error.response?.data?.error || 'Failed to delete image')
+  } finally {
+    deletingImage.value = null
+  }
+}
+
 const columns = [
   { title: 'Title', key: 'name', sorter: stringSorter('name') },
   { title: 'Theme', key: 'theme.name', render: (row) => row.theme?.name ?? '—' },
@@ -286,3 +414,51 @@ onMounted(() => {
   loadThemes()
 })
 </script>
+
+<style scoped>
+.image-gallery {
+  width: 100%;
+}
+
+.image-card {
+  position: relative;
+  display: inline-block;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--n-border-color);
+}
+
+.image-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 4px;
+}
+
+.image-caption {
+  padding: 4px 8px;
+  font-size: 12px;
+  background: var(--n-color-modal);
+  border-top: 1px solid var(--n-border-color);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-icon {
+  margin-bottom: 12px;
+}
+
+.upload-text {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.upload-hint {
+  display: block;
+  font-size: 14px;
+}
+</style>
