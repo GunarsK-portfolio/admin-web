@@ -87,16 +87,6 @@
             </div>
           </n-card>
         </n-grid-item>
-
-        <n-grid-item>
-          <n-card>
-            <h3 class="card-title">Images</h3>
-            <p class="card-description">Upload and manage project images</p>
-            <div class="card-actions">
-              <n-button type="primary" size="small">Upload</n-button>
-            </div>
-          </n-card>
-        </n-grid-item>
       </n-grid>
 
       <n-alert type="info" class="dashboard-info">
