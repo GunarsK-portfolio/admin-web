@@ -21,32 +21,27 @@
     class="modal-medium"
   >
     <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
-      <n-collapse :default-expanded-names="['basic']">
-        <!-- Theme Information Section -->
-        <n-collapse-item title="Theme Information" name="basic">
-          <n-form-item label="Theme Name" path="name">
-            <n-input v-model:value="form.name" placeholder="Enter theme name" />
-          </n-form-item>
+      <n-form-item label="Theme Name" path="name">
+        <n-input v-model:value="form.name" placeholder="Enter theme name" />
+      </n-form-item>
 
-          <n-form-item label="Description" path="description">
-            <n-input
-              v-model:value="form.description"
-              type="textarea"
-              placeholder="Enter theme description"
-              :autosize="{ minRows: 3, maxRows: 6 }"
-            />
-          </n-form-item>
+      <n-form-item label="Description" path="description">
+        <n-input
+          v-model:value="form.description"
+          type="textarea"
+          placeholder="Enter theme description"
+          :autosize="{ minRows: 3, maxRows: 6 }"
+        />
+      </n-form-item>
 
-          <n-form-item label="Display Order" path="displayOrder">
-            <n-input-number
-              v-model:value="form.displayOrder"
-              :min="0"
-              placeholder="Order (0 = first)"
-              class="full-width"
-            />
-          </n-form-item>
-        </n-collapse-item>
-      </n-collapse>
+      <n-form-item label="Display Order" path="displayOrder">
+        <n-input-number
+          v-model:value="form.displayOrder"
+          :min="0"
+          placeholder="Order (0 = first)"
+          class="full-width"
+        />
+      </n-form-item>
     </n-form>
 
     <template #footer>
@@ -57,18 +52,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import {
-  NSpace,
-  NSpin,
-  NDataTable,
-  NModal,
-  NForm,
-  NFormItem,
-  NInput,
-  NInputNumber,
-  NCollapse,
-  NCollapseItem,
-} from 'naive-ui'
+import { NSpace, NSpin, NDataTable, NModal, NForm, NFormItem, NInput, NInputNumber } from 'naive-ui'
 import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
 import miniaturesService from '../../services/miniatures'
 import { required, validateForm } from '../../utils/validation'

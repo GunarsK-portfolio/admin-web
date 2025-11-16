@@ -22,36 +22,31 @@
     class="modal-medium"
   >
     <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
-      <n-collapse :default-expanded-names="['basic']">
-        <!-- Paint Information Section -->
-        <n-collapse-item title="Paint Information" name="basic">
-          <n-form-item label="Paint Name" path="name">
-            <n-input v-model:value="form.name" placeholder="Enter paint name" />
-          </n-form-item>
+      <n-form-item label="Paint Name" path="name">
+        <n-input v-model:value="form.name" placeholder="Enter paint name" />
+      </n-form-item>
 
-          <n-form-item label="Manufacturer" path="manufacturer">
-            <n-input v-model:value="form.manufacturer" placeholder="Enter manufacturer name" />
-          </n-form-item>
+      <n-form-item label="Manufacturer" path="manufacturer">
+        <n-input v-model:value="form.manufacturer" placeholder="Enter manufacturer name" />
+      </n-form-item>
 
-          <n-form-item label="Paint Type" path="paintType">
-            <n-select
-              v-model:value="form.paintType"
-              :options="paintTypeOptions"
-              placeholder="Select paint type"
-              class="full-width"
-            />
-          </n-form-item>
+      <n-form-item label="Paint Type" path="paintType">
+        <n-select
+          v-model:value="form.paintType"
+          :options="paintTypeOptions"
+          placeholder="Select paint type"
+          class="full-width"
+        />
+      </n-form-item>
 
-          <n-form-item label="Color (Hex)" path="colorHex">
-            <n-color-picker
-              v-model:value="form.colorHex"
-              :modes="['hex']"
-              :show-alpha="false"
-              :actions="['confirm']"
-            />
-          </n-form-item>
-        </n-collapse-item>
-      </n-collapse>
+      <n-form-item label="Color (Hex)" path="colorHex">
+        <n-color-picker
+          v-model:value="form.colorHex"
+          :modes="['hex']"
+          :show-alpha="false"
+          :actions="['confirm']"
+        />
+      </n-form-item>
     </n-form>
 
     <template #footer>
@@ -74,8 +69,6 @@ import {
   NInput,
   NSelect,
   NColorPicker,
-  NCollapse,
-  NCollapseItem,
 } from 'naive-ui'
 import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
 import miniaturesService from '../../services/miniatures'
