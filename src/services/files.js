@@ -7,11 +7,19 @@ export default {
     formData.append('file', file)
     formData.append('fileType', fileType)
 
-    return filesApi.post('/files', formData, {
+    const response = await filesApi.post('/files', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
+
+    // Transform the URL from /api/v1/files/... to /files-api/v1/files/...
+    // to match the Traefik routing configuration
+    if (response.data?.url && response.data.url.startsWith('/api/v1/files/')) {
+      response.data.url = response.data.url.replace('/api/v1/files/', '/files-api/v1/files/')
+    }
+
+    return response
   },
 
   async deleteFile(fileId) {
