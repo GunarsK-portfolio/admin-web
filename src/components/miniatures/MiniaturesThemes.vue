@@ -34,6 +34,60 @@
         />
       </n-form-item>
 
+      <n-form-item label="Cover Image" path="coverImageId">
+        <n-space vertical class="full-width">
+          <div v-if="currentCoverImage">
+            <n-space vertical align="center">
+              <n-avatar
+                :size="120"
+                :src="addSourceToFileUrl(currentCoverImage.fileUrl || currentCoverImage.url)"
+              />
+              <n-text depth="3" class="file-info">
+                {{ currentCoverImage.fileName }} ({{ formatFileSize(currentCoverImage.fileSize) }})
+              </n-text>
+              <n-button
+                size="small"
+                type="error"
+                :loading="deletingCoverImage"
+                @click="handleRemoveCoverImage"
+              >
+                <template #icon>
+                  <n-icon><TrashOutline /></n-icon>
+                </template>
+                Remove Image
+              </n-button>
+            </n-space>
+          </div>
+          <n-upload
+            v-model:file-list="coverImageFileList"
+            :custom-request="handleCoverImageUpload"
+            :before-upload="validateCoverImage"
+            :show-file-list="false"
+            :max="1"
+            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+            :disabled="uploadingCoverImage"
+          >
+            <n-upload-dragger>
+              <div class="upload-icon">
+                <n-icon size="48" :depth="3">
+                  <CloudUploadOutline />
+                </n-icon>
+              </div>
+              <n-text class="upload-text">
+                {{
+                  currentCoverImage
+                    ? 'Click or drag to replace image'
+                    : 'Click or drag image to this area to upload'
+                }}
+              </n-text>
+              <n-text depth="3" class="upload-hint">
+                Supported formats: JPEG, PNG, GIF, WebP (Max 10MB)
+              </n-text>
+            </n-upload-dragger>
+          </n-upload>
+        </n-space>
+      </n-form-item>
+
       <n-form-item label="Display Order" path="displayOrder">
         <n-input-number
           v-model:value="form.displayOrder"
@@ -51,14 +105,39 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { NSpace, NSpin, NDataTable, NModal, NForm, NFormItem, NInput, NInputNumber } from 'naive-ui'
-import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
+import { ref, computed, onMounted } from 'vue'
+import {
+  NSpace,
+  NSpin,
+  NDataTable,
+  NModal,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NUpload,
+  NUploadDragger,
+  NIcon,
+  NText,
+  NAvatar,
+  NButton,
+} from 'naive-ui'
+import { CreateOutline, TrashOutline, CloudUploadOutline } from '@vicons/ionicons5'
 import miniaturesService from '../../services/miniatures'
+import filesService from '../../services/files'
 import { required, validateForm } from '../../utils/validation'
+import { addSourceToFileUrl } from '../../utils/fileUrl'
+import {
+  formatFileSize,
+  FILE_VALIDATION,
+  createFileValidator,
+  createFileUploadHandler,
+  createFileDeleteHandler,
+} from '../../utils/fileHelpers'
 import { createActionsRenderer, stringSorter, numberSorter } from '../../utils/tableHelpers'
 import { createSearchFilter } from '../../utils/filterHelpers'
 import { createDataLoader, createSaveHandler, createDeleteHandler } from '../../utils/crudHelpers'
+import { logger } from '../../utils/logger'
 import { useViewServices } from '../../composables/useViewServices'
 import { useModal } from '../../composables/useModal'
 import { useDataState } from '../../composables/useDataState'
@@ -77,11 +156,18 @@ const { showModal, editing, form, formRef, openModal, closeModal, openEditModal,
   useModal({
     name: '',
     description: '',
+    coverImageId: null,
     displayOrder: 0,
   })
 
 // Saving state
 const saving = ref(false)
+
+// Cover image upload state
+const uploadingCoverImage = ref(false)
+const deletingCoverImage = ref(false)
+const coverImageFileList = ref([])
+const currentCoverImage = computed(() => editing.value?.coverImageFile || null)
 
 const rules = {
   name: [required('Theme name')],
@@ -101,9 +187,37 @@ function handleEdit(theme) {
   openEditModal(theme, (t) => ({
     name: t.name,
     description: t.description || '',
+    coverImageId: t.coverImageId ?? null,
     displayOrder: t.displayOrder || 0,
   }))
 }
+
+const handleCoverImageUpload = createFileUploadHandler({
+  uploading: uploadingCoverImage,
+  fileList: coverImageFileList,
+  form,
+  editing,
+  service: filesService.uploadFile,
+  message,
+  fileType: 'miniature-image',
+  fileIdField: 'coverImageId',
+  fileObjectField: 'coverImageFile',
+  logger,
+})
+
+const handleRemoveCoverImage = createFileDeleteHandler({
+  deleting: deletingCoverImage,
+  form,
+  editing,
+  service: filesService.deleteFile,
+  message,
+  fileIdField: 'coverImageId',
+  fileObjectField: 'coverImageFile',
+  entityName: 'cover image',
+  logger,
+})
+
+const validateCoverImage = createFileValidator(FILE_VALIDATION.IMAGE, message)
 
 const handleSave = createSaveHandler({
   formRef,
@@ -121,8 +235,9 @@ const handleSave = createSaveHandler({
   resetForm: () => resetForm(),
   validateForm,
   transformPayload: (formData) => ({
-    ...formData,
+    name: formData.name,
     description: formData.description || undefined,
+    coverImageId: formData.coverImageId ?? undefined,
     displayOrder: formData.displayOrder || 0,
   }),
 })
