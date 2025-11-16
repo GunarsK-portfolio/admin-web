@@ -311,11 +311,18 @@ import skillsService from '../services/skills'
 import filesService from '../services/files'
 import { required, validateForm } from '../utils/validation'
 import { addSourceToFileUrl } from '../utils/fileUrl'
-import { formatFileSize, FILE_VALIDATION, createFileValidator } from '../utils/fileHelpers'
+import {
+  formatFileSize,
+  FILE_VALIDATION,
+  createFileValidator,
+  createFileUploadHandler,
+  createFileDeleteHandler,
+} from '../utils/fileHelpers'
 import { createActionsRenderer, stringSorter, numberSorter } from '../utils/tableHelpers'
 import { toDateFormat } from '../utils/dateHelpers'
 import { createSearchFilter } from '../utils/filterHelpers'
 import { createDataLoader, createSaveHandler, createDeleteHandler } from '../utils/crudHelpers'
+import { logger } from '../utils/logger'
 import { useViewServices } from '../composables/useViewServices'
 import { useModal } from '../composables/useModal'
 import { useDataState } from '../composables/useDataState'
@@ -454,39 +461,30 @@ watch(
   }
 )
 
-async function handleImageUpload({ file }) {
-  uploadingImage.value = true
-  try {
-    const response = await filesService.uploadFile(file.file, 'portfolio-image')
-    const fileData = response.data || response
+const handleImageUpload = createFileUploadHandler({
+  uploading: uploadingImage,
+  fileList: imageFileList,
+  form,
+  editing,
+  service: filesService.uploadFile,
+  message,
+  fileType: 'portfolio-image',
+  fileIdField: 'imageFileId',
+  fileObjectField: 'imageFile',
+  logger,
+})
 
-    form.value.imageFileId = fileData.id
-
-    // Update or create the editing object to show the new image
-    if (editing.value) {
-      editing.value.imageFile = fileData
-    } else {
-      // For new projects, create a temporary editing object to show the image
-      editing.value = { imageFile: fileData }
-    }
-
-    message.success('Image uploaded successfully')
-    return { file }
-  } catch (error) {
-    message.error(`Failed to upload image: ${error.message || 'Unknown error'}`)
-    return false
-  } finally {
-    uploadingImage.value = false
-    imageFileList.value = []
-  }
-}
-
-function handleRemoveImage() {
-  form.value.imageFileId = null
-  if (editing.value) {
-    editing.value.imageFile = null
-  }
-}
+const handleRemoveImage = createFileDeleteHandler({
+  deleting: deletingImage,
+  form,
+  editing,
+  service: filesService.deleteFile,
+  message,
+  fileIdField: 'imageFileId',
+  fileObjectField: 'imageFile',
+  entityName: 'image',
+  logger,
+})
 
 const handleSave = createSaveHandler({
   formRef,

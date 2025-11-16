@@ -7,7 +7,7 @@ import { env } from '../config/env'
  */
 function validateEnvironment() {
   if (!env.filesApiUrl) {
-    throw new Error('FILES_API_URL is not configured. Check your .env file.')
+    throw new Error('VITE_FILES_API_URL is not configured. Check your .env file.')
   }
 }
 
