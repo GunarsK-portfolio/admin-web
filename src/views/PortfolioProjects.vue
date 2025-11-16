@@ -140,6 +140,7 @@
                 <n-upload
                   v-model:file-list="imageFileList"
                   :custom-request="handleImageUpload"
+                  :before-upload="createFileValidator(FILE_VALIDATION.IMAGE, message)"
                   :show-file-list="false"
                   :max="1"
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -310,7 +311,7 @@ import skillsService from '../services/skills'
 import filesService from '../services/files'
 import { required, validateForm } from '../utils/validation'
 import { addSourceToFileUrl } from '../utils/fileUrl'
-import { formatFileSize } from '../utils/fileHelpers'
+import { formatFileSize, FILE_VALIDATION, createFileValidator } from '../utils/fileHelpers'
 import { createActionsRenderer, stringSorter, numberSorter } from '../utils/tableHelpers'
 import { toDateFormat } from '../utils/dateHelpers'
 import { createSearchFilter } from '../utils/filterHelpers'

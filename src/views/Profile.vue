@@ -100,6 +100,7 @@
                   <n-upload
                     v-model:file-list="avatarFileList"
                     :custom-request="handleAvatarSelect"
+                    :before-upload="createFileValidator(FILE_VALIDATION.IMAGE, message)"
                     :show-file-list="false"
                     :max="1"
                     accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -173,6 +174,7 @@
                   <n-upload
                     v-model:file-list="resumeFileList"
                     :custom-request="handleResumeUpload"
+                    :before-upload="createFileValidator(FILE_VALIDATION.DOCUMENT, message)"
                     :show-file-list="false"
                     :max="1"
                     accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -254,7 +256,7 @@ import { useViewServices } from '../composables/useViewServices'
 import profileService from '../services/profile'
 import filesService from '../services/files'
 import { logger } from '../utils/logger'
-import { formatFileSize } from '../utils/fileHelpers'
+import { formatFileSize, FILE_VALIDATION, createFileValidator } from '../utils/fileHelpers'
 import { required, email, validateForm } from '../utils/validation'
 import { createDataLoader } from '../utils/crudHelpers'
 import { addSourceToFileUrl } from '../utils/fileUrl'
