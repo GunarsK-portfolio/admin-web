@@ -58,6 +58,7 @@
             v-model:value="skillForm.skillTypeId"
             :options="skillTypeOptions"
             placeholder="Select skill type"
+            class="full-width"
           />
         </n-form-item>
 

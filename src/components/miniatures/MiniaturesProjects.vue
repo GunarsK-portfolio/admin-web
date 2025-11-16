@@ -30,6 +30,7 @@
           v-model:value="form.themeId"
           :options="themeOptions"
           placeholder="Select theme (optional)"
+          class="full-width"
           clearable
         />
       </n-form-item>
@@ -59,6 +60,7 @@
             v-model:value="form.difficulty"
             :options="difficultyOptions"
             placeholder="Select difficulty"
+            class="full-width"
             clearable
           />
         </n-form-item>
@@ -278,9 +280,5 @@ onMounted(() => {
 
 .form-field {
   flex: 1;
-}
-
-.full-width {
-  width: 100%;
 }
 </style>

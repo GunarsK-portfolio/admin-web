@@ -62,6 +62,22 @@
 
         <n-grid-item>
           <n-card>
+            <h3 class="card-title">Portfolio Projects</h3>
+            <p class="card-description">Manage your professional software projects</p>
+            <div class="card-actions">
+              <n-button
+                type="primary"
+                size="small"
+                @click="router.push({ name: 'PortfolioProjects' })"
+              >
+                Manage
+              </n-button>
+            </div>
+          </n-card>
+        </n-grid-item>
+
+        <n-grid-item>
+          <n-card>
             <h3 class="card-title">Miniatures</h3>
             <p class="card-description">Manage projects, themes, and paint collection</p>
             <div class="card-actions">

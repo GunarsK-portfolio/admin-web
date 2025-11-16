@@ -45,6 +45,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/portfolio-projects',
+    name: 'PortfolioProjects',
+    component: () => import('../views/PortfolioProjects.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/403',
     name: 'Forbidden',
     component: () => import('../errors/Forbidden.vue'),

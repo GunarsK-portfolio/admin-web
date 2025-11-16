@@ -35,6 +35,7 @@
           v-model:value="form.paintType"
           :options="paintTypeOptions"
           placeholder="Select paint type"
+          class="full-width"
         />
       </n-form-item>
 
