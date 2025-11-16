@@ -120,7 +120,9 @@
                       "
                     />
                     <n-text depth="3" class="file-info">
-                      {{ currentProjectImage.fileName || currentProjectImage.originalFilename }}
+                      {{ currentProjectImage.fileName }} ({{
+                        formatFileSize(currentProjectImage.fileSize)
+                      }})
                     </n-text>
                     <n-button
                       size="small"
@@ -309,7 +311,7 @@ import filesService from '../services/files'
 import { required, validateForm } from '../utils/validation'
 import { addSourceToFileUrl } from '../utils/fileUrl'
 import { createActionsRenderer, stringSorter, numberSorter } from '../utils/tableHelpers'
-import { toDateFormat } from '../utils/dateHelpers'
+import { toDateFormat, formatFileSize } from '../utils/dateHelpers'
 import { createSearchFilter } from '../utils/filterHelpers'
 import { createDataLoader, createSaveHandler, createDeleteHandler } from '../utils/crudHelpers'
 import { useViewServices } from '../composables/useViewServices'
@@ -569,16 +571,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.form-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.form-field {
-  flex: 1;
-}
-
 .upload-icon {
   margin-bottom: 8px;
 }
