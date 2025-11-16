@@ -47,33 +47,43 @@
     </n-space>
 
     <!-- Add/Edit Skill Modal -->
-    <n-modal v-model:show="showSkillModal" preset="card" title="Skill" class="modal-small">
-      <n-form ref="skillFormRef" :model="skillForm" :rules="skillRules">
-        <n-form-item label="Skill Name" path="skill">
-          <n-input v-model:value="skillForm.skill" placeholder="e.g., Vue.js" />
-        </n-form-item>
+    <n-modal
+      v-model:show="showSkillModal"
+      preset="card"
+      :title="editingSkill ? 'Edit Skill' : 'Add Skill'"
+      class="modal-small"
+    >
+      <n-form ref="skillFormRef" :model="skillForm" :rules="skillRules" label-placement="top">
+        <n-collapse :default-expanded-names="['basic']">
+          <!-- Skill Information Section -->
+          <n-collapse-item title="Skill Information" name="basic">
+            <n-form-item label="Skill Name" path="skill">
+              <n-input v-model:value="skillForm.skill" placeholder="e.g., Vue.js" />
+            </n-form-item>
 
-        <n-form-item label="Skill Type" path="skillTypeId">
-          <n-select
-            v-model:value="skillForm.skillTypeId"
-            :options="skillTypeOptions"
-            placeholder="Select skill type"
-            class="full-width"
-          />
-        </n-form-item>
+            <n-form-item label="Skill Type" path="skillTypeId">
+              <n-select
+                v-model:value="skillForm.skillTypeId"
+                :options="skillTypeOptions"
+                placeholder="Select skill type"
+                class="full-width"
+              />
+            </n-form-item>
 
-        <n-form-item label="Visible" path="isVisible">
-          <n-switch v-model:value="skillForm.isVisible" />
-        </n-form-item>
+            <n-form-item label="Visible" path="isVisible">
+              <n-switch v-model:value="skillForm.isVisible" />
+            </n-form-item>
 
-        <n-form-item label="Display Order" path="displayOrder">
-          <n-input-number
-            v-model:value="skillForm.displayOrder"
-            :min="0"
-            placeholder="Order"
-            class="full-width"
-          />
-        </n-form-item>
+            <n-form-item label="Display Order" path="displayOrder">
+              <n-input-number
+                v-model:value="skillForm.displayOrder"
+                :min="0"
+                placeholder="Order"
+                class="full-width"
+              />
+            </n-form-item>
+          </n-collapse-item>
+        </n-collapse>
       </n-form>
 
       <template #footer>
@@ -87,29 +97,39 @@
     </n-modal>
 
     <!-- Add/Edit Skill Type Modal -->
-    <n-modal v-model:show="showTypeModal" preset="card" title="Skill Type" class="modal-small">
-      <n-form ref="typeFormRef" :model="typeForm" :rules="typeRules">
-        <n-form-item label="Name" path="name">
-          <n-input v-model:value="typeForm.name" placeholder="e.g., Frontend" />
-        </n-form-item>
+    <n-modal
+      v-model:show="showTypeModal"
+      preset="card"
+      :title="editingType ? 'Edit Skill Type' : 'Add Skill Type'"
+      class="modal-small"
+    >
+      <n-form ref="typeFormRef" :model="typeForm" :rules="typeRules" label-placement="top">
+        <n-collapse :default-expanded-names="['basic']">
+          <!-- Type Information Section -->
+          <n-collapse-item title="Type Information" name="basic">
+            <n-form-item label="Name" path="name">
+              <n-input v-model:value="typeForm.name" placeholder="e.g., Frontend" />
+            </n-form-item>
 
-        <n-form-item label="Description" path="description">
-          <n-input
-            v-model:value="typeForm.description"
-            type="textarea"
-            placeholder="Brief description"
-            :autosize="{ minRows: 2, maxRows: 4 }"
-          />
-        </n-form-item>
+            <n-form-item label="Description" path="description">
+              <n-input
+                v-model:value="typeForm.description"
+                type="textarea"
+                placeholder="Brief description"
+                :autosize="{ minRows: 2, maxRows: 4 }"
+              />
+            </n-form-item>
 
-        <n-form-item label="Display Order" path="displayOrder">
-          <n-input-number
-            v-model:value="typeForm.displayOrder"
-            :min="0"
-            placeholder="Order"
-            class="full-width"
-          />
-        </n-form-item>
+            <n-form-item label="Display Order" path="displayOrder">
+              <n-input-number
+                v-model:value="typeForm.displayOrder"
+                :min="0"
+                placeholder="Order"
+                class="full-width"
+              />
+            </n-form-item>
+          </n-collapse-item>
+        </n-collapse>
       </n-form>
 
       <template #footer>
@@ -140,6 +160,8 @@ import {
   NSelect,
   NSwitch,
   NInputNumber,
+  NCollapse,
+  NCollapseItem,
 } from 'naive-ui'
 import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
 import BackButton from '../components/shared/BackButton.vue'

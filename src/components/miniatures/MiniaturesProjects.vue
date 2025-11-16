@@ -21,81 +21,92 @@
     class="modal-large"
   >
     <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
-      <n-form-item label="Project Title" path="name">
-        <n-input v-model:value="form.name" placeholder="Enter project title" />
-      </n-form-item>
+      <n-collapse :default-expanded-names="['basic']">
+        <!-- Basic Information Section -->
+        <n-collapse-item title="Basic Information" name="basic">
+          <n-form-item label="Project Title" path="name">
+            <n-input v-model:value="form.name" placeholder="Enter project title" />
+          </n-form-item>
 
-      <n-form-item label="Theme" path="themeId">
-        <n-select
-          v-model:value="form.themeId"
-          :options="themeOptions"
-          placeholder="Select theme (optional)"
-          class="full-width"
-          clearable
-        />
-      </n-form-item>
+          <n-form-item label="Theme" path="themeId">
+            <n-select
+              v-model:value="form.themeId"
+              :options="themeOptions"
+              placeholder="Select theme (optional)"
+              class="full-width"
+              clearable
+            />
+          </n-form-item>
 
-      <n-form-item label="Description" path="description">
-        <n-input
-          v-model:value="form.description"
-          type="textarea"
-          placeholder="Enter project description"
-          :autosize="{ minRows: 3, maxRows: 6 }"
-        />
-      </n-form-item>
+          <n-form-item label="Description" path="description">
+            <n-input
+              v-model:value="form.description"
+              type="textarea"
+              placeholder="Enter project description"
+              :autosize="{ minRows: 3, maxRows: 6 }"
+            />
+          </n-form-item>
+        </n-collapse-item>
 
-      <n-space class="form-row">
-        <n-form-item label="Scale" path="scale" class="form-field">
-          <n-input v-model:value="form.scale" placeholder="e.g., 28mm, 1:35" />
-        </n-form-item>
+        <!-- Project Details Section -->
+        <n-collapse-item title="Project Details" name="details">
+          <n-grid :cols="2" :x-gap="16">
+            <n-form-item-gi label="Scale" path="scale">
+              <n-input v-model:value="form.scale" placeholder="e.g., 28mm, 1:35" />
+            </n-form-item-gi>
 
-        <n-form-item label="Manufacturer" path="manufacturer" class="form-field">
-          <n-input v-model:value="form.manufacturer" placeholder="e.g., Games Workshop" />
-        </n-form-item>
-      </n-space>
+            <n-form-item-gi label="Manufacturer" path="manufacturer">
+              <n-input v-model:value="form.manufacturer" placeholder="e.g., Games Workshop" />
+            </n-form-item-gi>
+          </n-grid>
 
-      <n-space class="form-row">
-        <n-form-item label="Difficulty" path="difficulty" class="form-field">
-          <n-select
-            v-model:value="form.difficulty"
-            :options="difficultyOptions"
-            placeholder="Select difficulty"
-            class="full-width"
-            clearable
-          />
-        </n-form-item>
+          <n-grid :cols="2" :x-gap="16">
+            <n-form-item-gi label="Difficulty" path="difficulty">
+              <n-select
+                v-model:value="form.difficulty"
+                :options="difficultyOptions"
+                placeholder="Select difficulty"
+                class="full-width"
+                clearable
+              />
+            </n-form-item-gi>
 
-        <n-form-item label="Time Spent (hours)" path="timeSpent" class="form-field">
-          <n-input-number
-            v-model:value="form.timeSpent"
-            :min="0"
-            :step="0.5"
-            placeholder="Hours"
-            class="full-width"
-          />
-        </n-form-item>
-      </n-space>
+            <n-form-item-gi label="Time Spent (hours)" path="timeSpent">
+              <n-input-number
+                v-model:value="form.timeSpent"
+                :min="0"
+                :step="0.5"
+                placeholder="Hours"
+                class="full-width"
+              />
+            </n-form-item-gi>
+          </n-grid>
+        </n-collapse-item>
 
-      <n-space class="form-row">
-        <n-form-item label="Completed Date" path="completedDate" class="form-field">
-          <n-date-picker
-            v-model:formatted-value="form.completedDate"
-            type="date"
-            value-format="yyyy-MM-dd"
-            class="full-width"
-            clearable
-          />
-        </n-form-item>
+        <!-- Metadata Section -->
+        <n-collapse-item title="Metadata" name="metadata">
+          <n-grid :cols="2" :x-gap="16">
+            <n-form-item-gi label="Completed Date" path="completedDate">
+              <n-date-picker
+                v-model:formatted-value="form.completedDate"
+                type="date"
+                value-format="yyyy-MM-dd"
+                class="full-width"
+                clearable
+              />
+            </n-form-item-gi>
 
-        <n-form-item label="Display Order" path="displayOrder" class="form-field">
-          <n-input-number
-            v-model:value="form.displayOrder"
-            :min="0"
-            placeholder="Order"
-            class="full-width"
-          />
-        </n-form-item>
-      </n-space>
+            <n-form-item-gi label="Display Order" path="displayOrder">
+              <n-input-number
+                v-model:value="form.displayOrder"
+                :min="0"
+                placeholder="Order"
+                class="full-width"
+              />
+            </n-form-item-gi>
+          </n-grid>
+        </n-collapse-item>
+      </n-collapse>
     </n-form>
 
     <template #footer>
@@ -117,6 +128,10 @@ import {
   NInputNumber,
   NSelect,
   NDatePicker,
+  NCollapse,
+  NCollapseItem,
+  NGrid,
+  NFormItemGi,
 } from 'naive-ui'
 import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
 import miniaturesService from '../../services/miniatures'
@@ -271,14 +286,3 @@ onMounted(() => {
   loadThemes()
 })
 </script>
-
-<style scoped>
-.form-row {
-  display: flex;
-  gap: 16px;
-}
-
-.form-field {
-  flex: 1;
-}
-</style>
