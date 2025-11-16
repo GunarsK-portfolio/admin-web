@@ -36,48 +36,56 @@
       class="modal-medium"
     >
       <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
-        <n-form-item label="Company" path="company">
-          <n-input v-model:value="form.company" placeholder="Enter company name" />
-        </n-form-item>
+        <n-collapse :default-expanded-names="['basic']">
+          <!-- Basic Information Section -->
+          <n-collapse-item title="Basic Information" name="basic">
+            <n-form-item label="Company" path="company">
+              <n-input v-model:value="form.company" placeholder="Enter company name" />
+            </n-form-item>
 
-        <n-form-item label="Position" path="position">
-          <n-input v-model:value="form.position" placeholder="Enter job position" />
-        </n-form-item>
+            <n-form-item label="Position" path="position">
+              <n-input v-model:value="form.position" placeholder="Enter job position" />
+            </n-form-item>
 
-        <n-form-item label="Description" path="description">
-          <n-input
-            v-model:value="form.description"
-            type="textarea"
-            placeholder="Describe your responsibilities and achievements (Markdown supported)"
-            :autosize="{ minRows: 4, maxRows: 10 }"
-          />
-        </n-form-item>
+            <n-form-item label="Description" path="description">
+              <n-input
+                v-model:value="form.description"
+                type="textarea"
+                placeholder="Describe your responsibilities and achievements (Markdown supported)"
+                :autosize="{ minRows: 4, maxRows: 10 }"
+              />
+            </n-form-item>
+          </n-collapse-item>
 
-        <n-space class="date-fields">
-          <n-form-item label="Start Date" path="startDate" class="date-field">
-            <n-date-picker
-              v-model:formatted-value="form.startDate"
-              type="month"
-              value-format="yyyy-MM"
-              class="date-picker-full"
-            />
-          </n-form-item>
+          <!-- Timeline Section -->
+          <n-collapse-item title="Timeline" name="timeline">
+            <n-grid :cols="2" :x-gap="16">
+              <n-form-item-gi label="Start Date" path="startDate">
+                <n-date-picker
+                  v-model:formatted-value="form.startDate"
+                  type="month"
+                  value-format="yyyy-MM"
+                  class="full-width"
+                />
+              </n-form-item-gi>
 
-          <n-form-item label="End Date" path="endDate" class="date-field">
-            <n-date-picker
-              v-model:formatted-value="form.endDate"
-              type="month"
-              value-format="yyyy-MM"
-              class="date-picker-full"
-              :disabled="form.isCurrent"
-              clearable
-            />
-          </n-form-item>
-        </n-space>
+              <n-form-item-gi label="End Date" path="endDate">
+                <n-date-picker
+                  v-model:formatted-value="form.endDate"
+                  type="month"
+                  value-format="yyyy-MM"
+                  class="full-width"
+                  :disabled="form.isCurrent"
+                  clearable
+                />
+              </n-form-item-gi>
+            </n-grid>
 
-        <n-form-item path="isCurrent">
-          <n-checkbox v-model:checked="form.isCurrent">Currently working here</n-checkbox>
-        </n-form-item>
+            <n-form-item path="isCurrent">
+              <n-checkbox v-model:checked="form.isCurrent">Currently working here</n-checkbox>
+            </n-form-item>
+          </n-collapse-item>
+        </n-collapse>
       </n-form>
 
       <template #footer>
@@ -102,6 +110,10 @@ import {
   NInput,
   NDatePicker,
   NCheckbox,
+  NCollapse,
+  NCollapseItem,
+  NGrid,
+  NFormItemGi,
 } from 'naive-ui'
 import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
 import BackButton from '../components/shared/BackButton.vue'
@@ -231,18 +243,3 @@ onMounted(() => {
   loadExperience()
 })
 </script>
-
-<style scoped>
-.date-fields {
-  display: flex;
-  gap: 16px;
-}
-
-.date-field {
-  flex: 1;
-}
-
-.date-picker-full {
-  width: 100%;
-}
-</style>

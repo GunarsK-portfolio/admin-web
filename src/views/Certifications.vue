@@ -37,48 +37,56 @@
       class="modal-medium"
     >
       <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
-        <n-form-item label="Certification Name" path="name">
-          <n-input v-model:value="form.name" placeholder="Enter certification name" />
-        </n-form-item>
+        <n-collapse :default-expanded-names="['basic']">
+          <!-- Basic Information Section -->
+          <n-collapse-item title="Basic Information" name="basic">
+            <n-form-item label="Certification Name" path="name">
+              <n-input v-model:value="form.name" placeholder="Enter certification name" />
+            </n-form-item>
 
-        <n-form-item label="Issuer" path="issuer">
-          <n-input v-model:value="form.issuer" placeholder="Enter issuing organization" />
-        </n-form-item>
+            <n-form-item label="Issuer" path="issuer">
+              <n-input v-model:value="form.issuer" placeholder="Enter issuing organization" />
+            </n-form-item>
 
-        <n-space class="date-fields">
-          <n-form-item label="Issue Date" path="issueDate" class="date-field">
-            <n-date-picker
-              v-model:formatted-value="form.issueDate"
-              type="date"
-              value-format="yyyy-MM-dd"
-              class="date-picker-full"
-            />
-          </n-form-item>
+            <n-grid :cols="2" :x-gap="16">
+              <n-form-item-gi label="Issue Date" path="issueDate">
+                <n-date-picker
+                  v-model:formatted-value="form.issueDate"
+                  type="date"
+                  value-format="yyyy-MM-dd"
+                  class="full-width"
+                />
+              </n-form-item-gi>
 
-          <n-form-item label="Expiry Date" path="expiryDate" class="date-field">
-            <n-date-picker
-              v-model:formatted-value="form.expiryDate"
-              type="date"
-              value-format="yyyy-MM-dd"
-              class="date-picker-full"
-              clearable
-            />
-          </n-form-item>
-        </n-space>
+              <n-form-item-gi label="Expiry Date" path="expiryDate">
+                <n-date-picker
+                  v-model:formatted-value="form.expiryDate"
+                  type="date"
+                  value-format="yyyy-MM-dd"
+                  class="full-width"
+                  clearable
+                />
+              </n-form-item-gi>
+            </n-grid>
+          </n-collapse-item>
 
-        <n-form-item label="Credential ID" path="credentialId">
-          <n-input
-            v-model:value="form.credentialId"
-            placeholder="Enter credential or reference ID (optional)"
-          />
-        </n-form-item>
+          <!-- Credential Details Section -->
+          <n-collapse-item title="Credential Details" name="credential">
+            <n-form-item label="Credential ID" path="credentialId">
+              <n-input
+                v-model:value="form.credentialId"
+                placeholder="Enter credential or reference ID (optional)"
+              />
+            </n-form-item>
 
-        <n-form-item label="Credential URL" path="credentialUrl">
-          <n-input
-            v-model:value="form.credentialUrl"
-            placeholder="Enter URL to verify credential (optional)"
-          />
-        </n-form-item>
+            <n-form-item label="Credential URL" path="credentialUrl">
+              <n-input
+                v-model:value="form.credentialUrl"
+                placeholder="Enter URL to verify credential (optional)"
+              />
+            </n-form-item>
+          </n-collapse-item>
+        </n-collapse>
       </n-form>
 
       <template #footer>
@@ -104,6 +112,10 @@ import {
   NFormItem,
   NInput,
   NDatePicker,
+  NCollapse,
+  NCollapseItem,
+  NGrid,
+  NFormItemGi,
 } from 'naive-ui'
 import { CreateOutline, TrashOutline, LinkOutline } from '@vicons/ionicons5'
 import certificationsService from '../services/certifications'
@@ -280,18 +292,3 @@ onMounted(() => {
   loadCertifications()
 })
 </script>
-
-<style scoped>
-.date-fields {
-  display: flex;
-  gap: 16px;
-}
-
-.date-field {
-  flex: 1;
-}
-
-.date-picker-full {
-  width: 100%;
-}
-</style>
