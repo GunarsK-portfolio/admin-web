@@ -113,7 +113,7 @@ export function createSaveHandler(options) {
     try {
       const payload = transformPayload ? transformPayload(form.value) : form.value
 
-      if (editing.value) {
+      if (editing.value?.id) {
         await service.update(editing.value.id, payload)
         message.success(`${entityName} updated successfully`)
         logger.info(`${entityName} updated`, { id: editing.value.id })
