@@ -43,7 +43,12 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=manual-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build Docker image with build args
         env:
@@ -68,7 +73,7 @@ jobs:
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success() || failure()
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -81,7 +86,9 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-      - name: Trigger App Runner deployment
+      - name: Get Service ARN
+        id: service-arn
+        if: success()
         run: |
           SERVICE_ARN=$(aws apprunner list-services \
             --query "ServiceSummaryList[?ServiceName=='$APP_RUNNER_SERVICE'].ServiceArn" \
@@ -92,15 +99,17 @@ jobs:
             exit 1
           fi
 
-          aws apprunner start-deployment --service-arn $SERVICE_ARN
+          echo "arn=$SERVICE_ARN" >> $GITHUB_OUTPUT
+
+      - name: Trigger App Runner deployment
+        if: success()
+        run: |
+          aws apprunner start-deployment --service-arn ${{ steps.service-arn.outputs.arn }}
           echo "Deployment triggered for $APP_RUNNER_SERVICE"
 
       - name: Wait for deployment
+        if: success()
         run: |
-          SERVICE_ARN=$(aws apprunner list-services \
-            --query "ServiceSummaryList[?ServiceName=='$APP_RUNNER_SERVICE'].ServiceArn" \
-            --output text)
-
           echo "Waiting for deployment to complete..."
-          aws apprunner wait service-running --service-arn $SERVICE_ARN
+          aws apprunner wait service-running --service-arn ${{ steps.service-arn.outputs.arn }}
           echo "Deployment completed successfully"
