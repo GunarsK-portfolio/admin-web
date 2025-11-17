@@ -56,9 +56,9 @@ jobs:
           IMAGE_TAG: ${{ steps.version.outputs.version }}
         run: |
           docker build \
-            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL || 'https://admin.gk.codes/admin-api/v1' }} \
-            --build-arg VITE_AUTH_URL=${{ secrets.VITE_AUTH_URL || 'https://admin.gk.codes/auth/v1' }} \
-            --build-arg VITE_FILES_API_URL=${{ secrets.VITE_FILES_API_URL || 'https://admin.gk.codes/files-api/v1' }} \
+            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+            --build-arg VITE_AUTH_URL=${{ secrets.VITE_AUTH_URL }} \
+            --build-arg VITE_FILES_API_URL=${{ secrets.VITE_FILES_API_URL }} \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             .
@@ -91,6 +91,7 @@ jobs:
         if: success()
         run: |
           SERVICE_ARN=$(aws apprunner list-services \
+            --region ${{ env.AWS_REGION }} \
             --query "ServiceSummaryList[?ServiceName=='$APP_RUNNER_SERVICE'].ServiceArn" \
             --output text)
 
@@ -104,12 +105,17 @@ jobs:
       - name: Trigger App Runner deployment
         if: success()
         run: |
-          aws apprunner start-deployment --service-arn ${{ steps.service-arn.outputs.arn }}
+          aws apprunner start-deployment \
+            --region ${{ env.AWS_REGION }} \
+            --service-arn ${{ steps.service-arn.outputs.arn }}
           echo "Deployment triggered for $APP_RUNNER_SERVICE"
 
       - name: Wait for deployment
         if: success()
         run: |
           echo "Waiting for deployment to complete..."
-          aws apprunner wait service-running --service-arn ${{ steps.service-arn.outputs.arn }}
+          aws apprunner wait service-running \
+            --region ${{ env.AWS_REGION }} \
+            --service-arn ${{ steps.service-arn.outputs.arn }} \
+            --max-attempts 60
           echo "Deployment completed successfully"
