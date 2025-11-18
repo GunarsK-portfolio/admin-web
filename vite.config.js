@@ -13,12 +13,17 @@ const keyPath = path.join(certDir, keyFile)
 const certPath = path.join(certDir, certFile)
 const certExists = fs.existsSync(keyPath) && fs.existsSync(certPath)
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [vue()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  build: {
+    // Disable source maps in production to prevent source code exposure
+    // Enable for development and staging for debugging
+    sourcemap: mode !== 'production',
   },
   server: {
     port: 8081,
@@ -30,4 +35,4 @@ export default defineConfig({
         }
       : false,
   },
-})
+}))
