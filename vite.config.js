@@ -20,6 +20,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    // Disable source maps in production to prevent source code exposure
+    sourcemap: false,
+  },
   server: {
     port: 8081,
     host: true,
