@@ -128,7 +128,7 @@ jobs:
           format: 'table'
           severity: 'CRITICAL,HIGH,MEDIUM'
 
-  # Job 5: Secret scanning with gitleaks
+  # Job 5: Secret scanning with TruffleHog
   secret-scan:
     name: Secret Scanning
     runs-on: ubuntu-latest
@@ -138,11 +138,12 @@ jobs:
         with:
           fetch-depth: 0 # Full history for scanning
 
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} # Optional: for commercial use
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ""
+          head: ${{ github.ref }}
 
   # Summary job - require all to pass
   ci-success:
