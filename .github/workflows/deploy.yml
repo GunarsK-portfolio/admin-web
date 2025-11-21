@@ -102,13 +102,17 @@ jobs:
 
           echo "arn=$SERVICE_ARN" >> $GITHUB_OUTPUT
 
-      - name: Trigger App Runner deployment
+      - name: Update App Runner service with new image
         if: success()
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.version.outputs.version }}
         run: |
-          aws apprunner start-deployment \
+          aws apprunner update-service \
             --region ${{ env.AWS_REGION }} \
-            --service-arn ${{ steps.service-arn.outputs.arn }}
-          echo "Deployment triggered for $APP_RUNNER_SERVICE"
+            --service-arn ${{ steps.service-arn.outputs.arn }} \
+            --source-configuration "{\"ImageRepository\":{\"ImageIdentifier\":\"$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\",\"ImageRepositoryType\":\"ECR\"}}"
+          echo "Deployment triggered for $APP_RUNNER_SERVICE with image tag $IMAGE_TAG"
 
       - name: Wait for deployment
         if: success()
