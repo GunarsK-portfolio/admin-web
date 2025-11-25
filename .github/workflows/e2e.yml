@@ -148,7 +148,7 @@ jobs:
       - name: Run E2E tests
         working-directory: e2e-tests
         run: |
-          pytest e2e/ -v --tb=short --timeout=300
+          python -m pytest e2e/ -v --tb=short --timeout=300
         continue-on-error: true
         id: e2e_tests
 
