@@ -1,0 +1,183 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout admin-web
+        uses: actions/checkout@v6
+        with:
+          path: admin-web
+
+      - name: Checkout infrastructure
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/infrastructure
+          path: infrastructure
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout e2e-tests
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/e2e-tests
+          path: e2e-tests
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout backend services
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/auth-service
+          path: auth-service
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout admin-api
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/admin-api
+          path: admin-api
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout files-api
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/files-api
+          path: files-api
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout public-api
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/public-api
+          path: public-api
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout public-web
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/public-web
+          path: public-web
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout database
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/database
+          path: database
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout portfolio-common
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/portfolio-common
+          path: portfolio-common
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: e2e-tests/requirements.txt
+
+      - name: Install E2E dependencies
+        working-directory: e2e-tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Create infrastructure .env
+        working-directory: infrastructure
+        run: |
+          cp .env.example .env
+          echo "ADMIN_USERNAME=${{ secrets.TEST_ADMIN_USERNAME }}" >> .env
+          echo "ADMIN_PASSWORD=${{ secrets.TEST_ADMIN_PASSWORD }}" >> .env
+
+      - name: Start infrastructure
+        working-directory: infrastructure
+        run: |
+          docker compose up -d --build
+          echo "Waiting for services to start..."
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for PostgreSQL..."
+          timeout 120 bash -c 'until docker exec postgres pg_isready -U postgres; do sleep 2; done'
+
+          echo "Waiting for auth-service..."
+          timeout 120 bash -c 'until curl -sf http://localhost:8084/health; do sleep 2; done'
+
+          echo "Waiting for admin-api..."
+          timeout 120 bash -c 'until curl -sf http://localhost:8083/health; do sleep 2; done'
+
+          echo "Waiting for public-api..."
+          timeout 120 bash -c 'until curl -sf http://localhost:8082/health; do sleep 2; done'
+
+          echo "Waiting for files-api..."
+          timeout 120 bash -c 'until curl -sf http://localhost:8085/health; do sleep 2; done'
+
+          echo "All services are healthy!"
+
+      - name: Create E2E .env
+        working-directory: e2e-tests
+        run: |
+          cat > .env << EOF
+          TEST_ADMIN_USERNAME=${{ secrets.TEST_ADMIN_USERNAME }}
+          TEST_ADMIN_PASSWORD=${{ secrets.TEST_ADMIN_PASSWORD }}
+          TEST_ADMIN_WEB_URL=http://localhost:81
+          TEST_ADMIN_API_URL=http://localhost:8083
+          TEST_AUTH_API_URL=http://localhost:8084
+          TEST_PUBLIC_WEB_URL=http://localhost:80
+          TEST_PUBLIC_API_URL=http://localhost:8082
+          TEST_HEADLESS=true
+          TEST_TIMEOUT=30000
+          TEST_BROWSER=chromium
+          EOF
+
+      - name: Run E2E tests
+        working-directory: e2e-tests
+        run: |
+          pytest e2e/ -v --tb=short --timeout=300
+        continue-on-error: true
+        id: e2e_tests
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: e2e-test-results
+          path: |
+            e2e-tests/test-results/
+            e2e-tests/*.png
+          retention-days: 7
+
+      - name: Show docker logs on failure
+        if: failure()
+        working-directory: infrastructure
+        run: |
+          echo "=== auth-service logs ==="
+          docker compose logs auth-service --tail=50
+          echo "=== admin-api logs ==="
+          docker compose logs admin-api --tail=50
+          echo "=== admin-web logs ==="
+          docker compose logs admin-web --tail=50
+
+      - name: Stop infrastructure
+        if: always()
+        working-directory: infrastructure
+        run: docker compose down -v
+
+      - name: Check E2E test result
+        if: steps.e2e_tests.outcome == 'failure'
+        run: exit 1
