@@ -109,8 +109,16 @@ jobs:
         working-directory: infrastructure
         run: |
           cp .env.example .env
-          echo "ADMIN_USERNAME=${{ secrets.TEST_ADMIN_USERNAME }}" >> .env
-          echo "ADMIN_PASSWORD=${{ secrets.TEST_ADMIN_PASSWORD }}" >> .env
+          # Update CORS to allow direct container ports (bypassing Traefik)
+          echo "ALLOWED_ORIGINS_ADMIN=https://localhost:8443,http://localhost:81,http://localhost:8081" >> .env
+          echo "ALLOWED_ORIGINS_AUTH=https://localhost:8443,http://localhost:81,http://localhost:8081" >> .env
+          echo "ALLOWED_ORIGINS_FILES=https://localhost:8443,https://localhost,http://localhost:81,http://localhost:80,http://localhost:8081,http://localhost:8080" >> .env
+          echo "ALLOWED_ORIGINS_PUBLIC=https://localhost,http://localhost:80,http://localhost:8080" >> .env
+          # Configure frontend to use direct container ports (bypass Traefik for CI)
+          echo "VITE_ADMIN_API_URL=http://localhost:8083/api/v1" >> .env
+          echo "VITE_ADMIN_AUTH_URL=http://localhost:8084/api/v1/auth" >> .env
+          echo "VITE_ADMIN_FILES_API_URL=http://localhost:8085/api/v1" >> .env
+          echo "VITE_PUBLIC_API_URL=http://localhost:8082/api/v1" >> .env
 
       - name: Start infrastructure
         working-directory: infrastructure
