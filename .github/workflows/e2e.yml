@@ -8,12 +8,13 @@ on:
 env:
   PYTHON_VERSION: '3.12'
   # Service URLs - single source of truth
+  # Use direct container ports (bypass Traefik) to avoid HTTPS redirect issues in CI
   AUTH_SERVICE_URL: http://localhost:8084
   ADMIN_API_URL: http://localhost:8083
   PUBLIC_API_URL: http://localhost:8082
   FILES_API_URL: http://localhost:8085
-  ADMIN_WEB_URL: http://localhost:81
-  PUBLIC_WEB_URL: http://localhost:80
+  ADMIN_WEB_URL: http://localhost:8081
+  PUBLIC_WEB_URL: http://localhost:8080
 
 jobs:
   e2e:
