@@ -132,14 +132,14 @@ jobs:
       - name: Wait for services to be healthy
         run: |
           echo "Starting parallel health checks..."
-          timeout 120 bash -c 'until docker exec postgres pg_isready -U postgres; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -skf ${{ env.AUTH_SERVICE_URL }}/health; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -skf ${{ env.ADMIN_API_URL }}/health; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -skf ${{ env.PUBLIC_API_URL }}/health; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -skf ${{ env.FILES_API_URL }}/health; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -skf ${{ env.ADMIN_WEB_URL }}/; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -skf ${{ env.PUBLIC_WEB_URL }}/; do sleep 2; done' &
-          wait
+          timeout 120 bash -c 'until docker exec postgres pg_isready -U postgres; do sleep 2; done' & pid1=$!
+          timeout 120 bash -c 'until curl -skf ${{ env.AUTH_SERVICE_URL }}/health; do sleep 2; done' & pid2=$!
+          timeout 120 bash -c 'until curl -skf ${{ env.ADMIN_API_URL }}/health; do sleep 2; done' & pid3=$!
+          timeout 120 bash -c 'until curl -skf ${{ env.PUBLIC_API_URL }}/health; do sleep 2; done' & pid4=$!
+          timeout 120 bash -c 'until curl -skf ${{ env.FILES_API_URL }}/health; do sleep 2; done' & pid5=$!
+          timeout 120 bash -c 'until curl -skf ${{ env.ADMIN_WEB_URL }}/; do sleep 2; done' & pid6=$!
+          timeout 120 bash -c 'until curl -skf ${{ env.PUBLIC_WEB_URL }}/; do sleep 2; done' & pid7=$!
+          wait $pid1 $pid2 $pid3 $pid4 $pid5 $pid6 $pid7
           echo "All services are healthy!"
 
       - name: Create E2E .env
