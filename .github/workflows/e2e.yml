@@ -112,6 +112,16 @@ jobs:
           cp .env.example .env
           # Use default HTTPS URLs from .env.example (Traefik routing)
 
+      - name: Generate TLS certificates for Traefik
+        working-directory: infrastructure/docker/traefik/certs
+        run: |
+          openssl req -x509 -newkey rsa:2048 -nodes \
+            -keyout localhost.key \
+            -out localhost.crt \
+            -days 1 \
+            -subj "/CN=localhost" \
+            -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+
       - name: Start infrastructure
         working-directory: infrastructure
         run: |
@@ -171,6 +181,9 @@ jobs:
         run: |
           echo "=== Container status ==="
           docker compose ps -a
+          echo ""
+          echo "=== traefik logs ==="
+          docker compose logs traefik --tail=100
           echo ""
           echo "=== admin-web logs ==="
           docker compose logs admin-web --tail=100
