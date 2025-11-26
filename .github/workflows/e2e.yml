@@ -139,6 +139,28 @@ jobs:
           wait
           echo "All services are healthy!"
 
+      - name: Debug - Check built-in auth URL and test login
+        run: |
+          echo "=== Infrastructure .env VITE settings ==="
+          grep -E "^VITE_" infrastructure/.env || echo "No VITE vars found"
+          echo ""
+          echo "=== Checking auth URL in built frontend ==="
+          docker exec admin-web sh -c "cat /usr/share/nginx/html/assets/*.js" 2>/dev/null | grep -oE 'https?://[^"'\'']*' | sort -u | head -20 || echo "No URLs found in JS"
+          echo ""
+          echo "=== Testing direct auth endpoint with curl ==="
+          curl -s -X POST ${{ env.AUTH_SERVICE_URL }}/api/v1/auth/login \
+            -H "Content-Type: application/json" \
+            -H "Origin: http://localhost:8081" \
+            -d '{"username":"admin","password":"admin123"}' \
+            -w "\nHTTP Status: %{http_code}\n"
+          echo ""
+          echo "=== Testing CORS preflight ==="
+          curl -s -X OPTIONS ${{ env.AUTH_SERVICE_URL }}/api/v1/auth/login \
+            -H "Origin: http://localhost:8081" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: Content-Type" \
+            -w "\nHTTP Status: %{http_code}\n" -D -
+
       - name: Create E2E .env
         working-directory: e2e-tests
         run: |
