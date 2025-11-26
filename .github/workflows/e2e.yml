@@ -121,6 +121,7 @@ jobs:
             -days 1 \
             -subj "/CN=localhost" \
             -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          chmod 644 localhost.crt localhost.key
 
       - name: Start infrastructure
         working-directory: infrastructure
