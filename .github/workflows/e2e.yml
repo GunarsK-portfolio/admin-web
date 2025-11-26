@@ -151,7 +151,7 @@ jobs:
           curl -s -X POST ${{ env.AUTH_SERVICE_URL }}/api/v1/auth/login \
             -H "Content-Type: application/json" \
             -H "Origin: http://localhost:8081" \
-            -d '{"username":"admin","password":"admin123"}' \
+            -d '{"username":"${{ secrets.TEST_ADMIN_USERNAME }}","password":"${{ secrets.TEST_ADMIN_PASSWORD }}"}' \
             -w "\nHTTP Status: %{http_code}\n"
           echo ""
           echo "=== Testing CORS preflight ==="
