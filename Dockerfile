@@ -27,10 +27,9 @@ ENV VITE_FILES_API_URL=$VITE_FILES_API_URL
 RUN npm run build
 
 # Production stage
-FROM nginx:alpine
+FROM nginx:1.29-alpine3.22
 
-# Update Alpine packages to get latest security fixes
-RUN apk update && apk upgrade --no-cache
+RUN apk upgrade --no-cache
 
 # Copy built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
