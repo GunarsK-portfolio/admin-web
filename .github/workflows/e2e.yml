@@ -144,6 +144,12 @@ jobs:
           echo "=== Infrastructure .env VITE settings ==="
           grep -E "^VITE_" infrastructure/.env || echo "No VITE vars found"
           echo ""
+          echo "=== Infrastructure .env CORS settings ==="
+          grep -E "ALLOWED_ORIGINS" infrastructure/.env || echo "No CORS vars found"
+          echo ""
+          echo "=== Auth service container ALLOWED_ORIGINS ==="
+          docker exec auth-service printenv ALLOWED_ORIGINS || echo "ALLOWED_ORIGINS not set in container"
+          echo ""
           echo "=== Checking auth URL in built frontend ==="
           docker exec admin-web sh -c "cat /usr/share/nginx/html/assets/*.js" 2>/dev/null | grep -oE 'https?://[^"'\'']*' | sort -u | head -20 || echo "No URLs found in JS"
           echo ""
@@ -174,6 +180,78 @@ jobs:
           echo "TEST_HEADLESS=true" >> .env
           echo "TEST_TIMEOUT=300000" >> .env
           echo "TEST_BROWSER=chromium" >> .env
+
+      - name: Debug - Test browser login with network capture
+        working-directory: e2e-tests
+        run: |
+          python3 << 'EOF'
+          from playwright.sync_api import sync_playwright
+          import json
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              context = browser.new_context()
+              page = context.new_page()
+
+              # Capture console messages
+              console_messages = []
+              page.on("console", lambda msg: console_messages.append(f"{msg.type}: {msg.text}"))
+
+              # Capture network requests/responses
+              requests = []
+              def on_request(request):
+                  requests.append(f">> {request.method} {request.url}")
+              def on_response(response):
+                  requests.append(f"<< {response.status} {response.url}")
+              page.on("request", on_request)
+              page.on("response", on_response)
+
+              print("=== Loading login page ===")
+              page.goto("${{ env.ADMIN_WEB_URL }}/login")
+              page.wait_for_load_state("networkidle")
+              page.wait_for_timeout(2000)
+
+              print("\n=== Network requests during page load ===")
+              for r in requests:
+                  print(r)
+
+              print("\n=== Console messages ===")
+              for msg in console_messages:
+                  print(msg)
+
+              requests.clear()
+              console_messages.clear()
+
+              print("\n=== Filling login form ===")
+              username_input = page.locator('input[type="text"]').first
+              password_input = page.locator('input[type="password"]').first
+
+              username_input.fill("${{ secrets.TEST_ADMIN_USERNAME }}")
+              password_input.fill("${{ secrets.TEST_ADMIN_PASSWORD }}")
+              page.wait_for_timeout(500)
+
+              print("\n=== Clicking login button ===")
+              login_btn = page.locator('button:has-text("Login")').first
+              login_btn.click()
+              page.wait_for_load_state("networkidle")
+              page.wait_for_timeout(3000)
+
+              print("\n=== Network requests during login ===")
+              for r in requests:
+                  print(r)
+
+              print("\n=== Console messages after login ===")
+              for msg in console_messages:
+                  print(msg)
+
+              print(f"\n=== Final URL: {page.url} ===")
+              print(f"=== Login successful: {'dashboard' in page.url} ===")
+
+              page.screenshot(path="/tmp/debug_login.png")
+              print("\nScreenshot saved to /tmp/debug_login.png")
+
+              browser.close()
+          EOF
 
       - name: Run E2E tests
         working-directory: e2e-tests
