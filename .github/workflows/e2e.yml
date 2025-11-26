@@ -8,13 +8,14 @@ on:
 env:
   PYTHON_VERSION: '3.12'
   # Service URLs - single source of truth
-  # Use direct container ports (bypass Traefik) to avoid HTTPS redirect issues in CI
-  AUTH_SERVICE_URL: http://localhost:8084
-  ADMIN_API_URL: http://localhost:8083
-  PUBLIC_API_URL: http://localhost:8082
-  FILES_API_URL: http://localhost:8085
-  ADMIN_WEB_URL: http://localhost:8081
-  PUBLIC_WEB_URL: http://localhost:8080
+  # Use Traefik HTTPS ports (same as production routing)
+  # Playwright configured with ignoreHTTPSErrors for self-signed certs
+  AUTH_SERVICE_URL: https://localhost:8443/auth/v1
+  ADMIN_API_URL: https://localhost:8443/admin-api/v1
+  PUBLIC_API_URL: https://localhost/api/v1
+  FILES_API_URL: https://localhost:8443/files-api/v1
+  ADMIN_WEB_URL: https://localhost:8443
+  PUBLIC_WEB_URL: https://localhost
 
 jobs:
   e2e:
@@ -109,16 +110,7 @@ jobs:
         working-directory: infrastructure
         run: |
           cp .env.example .env
-          # Update CORS to allow direct container ports (bypassing Traefik)
-          echo "ALLOWED_ORIGINS_ADMIN=https://localhost:8443,http://localhost:81,http://localhost:8081" >> .env
-          echo "ALLOWED_ORIGINS_AUTH=https://localhost:8443,http://localhost:81,http://localhost:8081" >> .env
-          echo "ALLOWED_ORIGINS_FILES=https://localhost:8443,https://localhost,http://localhost:81,http://localhost:80,http://localhost:8081,http://localhost:8080" >> .env
-          echo "ALLOWED_ORIGINS_PUBLIC=https://localhost,http://localhost:80,http://localhost:8080" >> .env
-          # Configure frontend to use direct container ports (bypass Traefik for CI)
-          echo "VITE_ADMIN_API_URL=http://localhost:8083/api/v1" >> .env
-          echo "VITE_ADMIN_AUTH_URL=http://localhost:8084/api/v1/auth" >> .env
-          echo "VITE_ADMIN_FILES_API_URL=http://localhost:8085/api/v1" >> .env
-          echo "VITE_PUBLIC_API_URL=http://localhost:8082/api/v1" >> .env
+          # Use default HTTPS URLs from .env.example (Traefik routing)
 
       - name: Start infrastructure
         working-directory: infrastructure
@@ -130,42 +122,14 @@ jobs:
         run: |
           echo "Starting parallel health checks..."
           timeout 120 bash -c 'until docker exec postgres pg_isready -U postgres; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -sf ${{ env.AUTH_SERVICE_URL }}/health; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -sf ${{ env.ADMIN_API_URL }}/health; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -sf ${{ env.PUBLIC_API_URL }}/health; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -sf ${{ env.FILES_API_URL }}/health; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -sf ${{ env.ADMIN_WEB_URL }}/; do sleep 2; done' &
-          timeout 120 bash -c 'until curl -sf ${{ env.PUBLIC_WEB_URL }}/; do sleep 2; done' &
+          timeout 120 bash -c 'until curl -skf ${{ env.AUTH_SERVICE_URL }}/health; do sleep 2; done' &
+          timeout 120 bash -c 'until curl -skf ${{ env.ADMIN_API_URL }}/health; do sleep 2; done' &
+          timeout 120 bash -c 'until curl -skf ${{ env.PUBLIC_API_URL }}/health; do sleep 2; done' &
+          timeout 120 bash -c 'until curl -skf ${{ env.FILES_API_URL }}/health; do sleep 2; done' &
+          timeout 120 bash -c 'until curl -skf ${{ env.ADMIN_WEB_URL }}/; do sleep 2; done' &
+          timeout 120 bash -c 'until curl -skf ${{ env.PUBLIC_WEB_URL }}/; do sleep 2; done' &
           wait
           echo "All services are healthy!"
-
-      - name: Debug - Check built-in auth URL and test login
-        run: |
-          echo "=== Infrastructure .env VITE settings ==="
-          grep -E "^VITE_" infrastructure/.env || echo "No VITE vars found"
-          echo ""
-          echo "=== Infrastructure .env CORS settings ==="
-          grep -E "ALLOWED_ORIGINS" infrastructure/.env || echo "No CORS vars found"
-          echo ""
-          echo "=== Auth service container ALLOWED_ORIGINS ==="
-          docker exec auth-service printenv ALLOWED_ORIGINS || echo "ALLOWED_ORIGINS not set in container"
-          echo ""
-          echo "=== Checking auth URL in built frontend ==="
-          docker exec admin-web sh -c "cat /usr/share/nginx/html/assets/*.js" 2>/dev/null | grep -oE 'https?://[^"'\'']*' | sort -u | head -20 || echo "No URLs found in JS"
-          echo ""
-          echo "=== Testing direct auth endpoint with curl ==="
-          curl -s -X POST ${{ env.AUTH_SERVICE_URL }}/api/v1/auth/login \
-            -H "Content-Type: application/json" \
-            -H "Origin: http://localhost:8081" \
-            -d '{"username":"${{ secrets.TEST_ADMIN_USERNAME }}","password":"${{ secrets.TEST_ADMIN_PASSWORD }}"}' \
-            -w "\nHTTP Status: %{http_code}\n"
-          echo ""
-          echo "=== Testing CORS preflight ==="
-          curl -s -X OPTIONS ${{ env.AUTH_SERVICE_URL }}/api/v1/auth/login \
-            -H "Origin: http://localhost:8081" \
-            -H "Access-Control-Request-Method: POST" \
-            -H "Access-Control-Request-Headers: Content-Type" \
-            -w "\nHTTP Status: %{http_code}\n" -D -
 
       - name: Create E2E .env
         working-directory: e2e-tests
@@ -180,78 +144,7 @@ jobs:
           echo "TEST_HEADLESS=true" >> .env
           echo "TEST_TIMEOUT=300000" >> .env
           echo "TEST_BROWSER=chromium" >> .env
-
-      - name: Debug - Test browser login with network capture
-        working-directory: e2e-tests
-        run: |
-          python3 << 'EOF'
-          from playwright.sync_api import sync_playwright
-          import json
-
-          with sync_playwright() as p:
-              browser = p.chromium.launch(headless=True)
-              context = browser.new_context()
-              page = context.new_page()
-
-              # Capture console messages
-              console_messages = []
-              page.on("console", lambda msg: console_messages.append(f"{msg.type}: {msg.text}"))
-
-              # Capture network requests/responses
-              requests = []
-              def on_request(request):
-                  requests.append(f">> {request.method} {request.url}")
-              def on_response(response):
-                  requests.append(f"<< {response.status} {response.url}")
-              page.on("request", on_request)
-              page.on("response", on_response)
-
-              print("=== Loading login page ===")
-              page.goto("${{ env.ADMIN_WEB_URL }}/login")
-              page.wait_for_load_state("networkidle")
-              page.wait_for_timeout(2000)
-
-              print("\n=== Network requests during page load ===")
-              for r in requests:
-                  print(r)
-
-              print("\n=== Console messages ===")
-              for msg in console_messages:
-                  print(msg)
-
-              requests.clear()
-              console_messages.clear()
-
-              print("\n=== Filling login form ===")
-              username_input = page.locator('input[type="text"]').first
-              password_input = page.locator('input[type="password"]').first
-
-              username_input.fill("${{ secrets.TEST_ADMIN_USERNAME }}")
-              password_input.fill("${{ secrets.TEST_ADMIN_PASSWORD }}")
-              page.wait_for_timeout(500)
-
-              print("\n=== Clicking login button ===")
-              login_btn = page.locator('button:has-text("Login")').first
-              login_btn.click()
-              page.wait_for_load_state("networkidle")
-              page.wait_for_timeout(3000)
-
-              print("\n=== Network requests during login ===")
-              for r in requests:
-                  print(r)
-
-              print("\n=== Console messages after login ===")
-              for msg in console_messages:
-                  print(msg)
-
-              print(f"\n=== Final URL: {page.url} ===")
-              print(f"=== Login successful: {'dashboard' in page.url} ===")
-
-              page.screenshot(path="/tmp/debug_login.png")
-              print("\nScreenshot saved to /tmp/debug_login.png")
-
-              browser.close()
-          EOF
+          echo "TEST_IGNORE_HTTPS_ERRORS=true" >> .env
 
       - name: Run E2E tests
         working-directory: e2e-tests
