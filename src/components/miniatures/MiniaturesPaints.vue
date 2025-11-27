@@ -9,7 +9,7 @@
       <AddButton label="Add Paint" @click="openModal" />
     </n-space>
 
-    <n-spin :show="loading">
+    <n-spin :show="loading" aria-label="Loading paints">
       <n-data-table :columns="columns" :data="filteredPaints" :pagination="{ pageSize: 15 }" />
     </n-spin>
   </n-space>

@@ -19,7 +19,7 @@
             <AddButton label="Add Project" @click="openModal" />
           </n-space>
 
-          <n-spin :show="loading">
+          <n-spin :show="loading" aria-label="Loading projects">
             <n-data-table
               :columns="columns"
               :data="filteredProjects"

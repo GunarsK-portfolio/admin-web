@@ -8,7 +8,7 @@
         subtitle="Manage your personal information and portfolio details"
       />
 
-      <n-spin :show="loading">
+      <n-spin :show="loading" aria-label="Loading profile data">
         <n-form ref="formRef" :model="formData" :rules="rules">
           <n-card title="Basic Information" class="profile-card">
             <n-form-item label="Full Name" path="name">
@@ -487,5 +487,16 @@ html.dark .profile-card:hover {
 .upload-hint {
   font-size: 12px;
   margin-top: 8px;
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .profile-card {
+    transition: none;
+  }
+
+  .profile-card:hover {
+    transform: none;
+  }
 }
 </style>

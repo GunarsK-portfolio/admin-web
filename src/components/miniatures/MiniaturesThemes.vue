@@ -9,7 +9,7 @@
       <AddButton label="Add Theme" @click="openModal" />
     </n-space>
 
-    <n-spin :show="loading">
+    <n-spin :show="loading" aria-label="Loading themes">
       <n-data-table :columns="columns" :data="filteredThemes" :pagination="{ pageSize: 10 }" />
     </n-spin>
   </n-space>
