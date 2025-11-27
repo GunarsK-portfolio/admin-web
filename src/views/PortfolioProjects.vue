@@ -72,19 +72,22 @@
               <n-input
                 v-model:value="form.description"
                 type="textarea"
-                placeholder="1-2 sentence summary (max 500 characters)"
+                placeholder="Brief project summary (shown in cards/lists)"
                 :autosize="{ minRows: 2, maxRows: 4 }"
                 maxlength="500"
                 show-count
               />
             </n-form-item>
 
-            <n-form-item label="Detailed Description (Markdown)" path="longDescription">
-              <n-input
-                v-model:value="form.longDescription"
-                type="textarea"
+            <n-form-item label="Long Description (Markdown)" path="longDescription">
+              <MdEditor
+                v-model="form.longDescription"
+                language="en-US"
+                :theme="mdEditorTheme"
+                :preview="false"
+                :toolbars="mdToolbars"
                 placeholder="Detailed project description with markdown support"
-                :autosize="{ minRows: 4, maxRows: 10 }"
+                class="md-editor-custom"
               />
             </n-form-item>
           </n-collapse-item>
@@ -302,6 +305,8 @@ import {
   NCollapseItem,
 } from 'naive-ui'
 import { CreateOutline, TrashOutline, CloudUploadOutline } from '@vicons/ionicons5'
+import { MdEditor } from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
 import BackButton from '../components/shared/BackButton.vue'
 import SearchInput from '../components/shared/SearchInput.vue'
 import AddButton from '../components/shared/AddButton.vue'
@@ -326,6 +331,10 @@ import { logger } from '../utils/logger'
 import { useViewServices } from '../composables/useViewServices'
 import { useModal } from '../composables/useModal'
 import { useDataState } from '../composables/useDataState'
+import { THEMES, getStoredTheme } from '../composables/useTheme'
+
+// Theme for MdEditor
+const mdEditorTheme = getStoredTheme() === THEMES.DARK ? 'dark' : 'light'
 
 // Services
 const { message, dialog } = useViewServices()
@@ -399,6 +408,24 @@ const categoryOptions = [
   { label: 'Data Engineering', value: 'Data Engineering' },
   { label: 'Machine Learning', value: 'Machine Learning' },
   { label: 'Other', value: 'Other' },
+]
+
+// Markdown editor toolbar configuration
+const mdToolbars = [
+  'bold',
+  'italic',
+  'strikeThrough',
+  '-',
+  'title',
+  'unorderedList',
+  'orderedList',
+  '-',
+  'code',
+  'codeRow',
+  'link',
+  '-',
+  'revoke',
+  'next',
 ]
 
 const rules = {
@@ -583,5 +610,14 @@ onMounted(() => {
   font-size: 12px;
   margin-top: 8px;
   display: block;
+}
+
+.md-editor-custom {
+  width: 100%;
+  min-height: 200px;
+}
+
+.md-editor-custom :deep(.md-editor) {
+  border-radius: 4px;
 }
 </style>

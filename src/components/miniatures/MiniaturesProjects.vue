@@ -83,6 +83,34 @@
           </n-grid>
         </n-collapse-item>
 
+        <!-- Techniques & Paints Section -->
+        <n-collapse-item title="Techniques & Paints" name="techniques">
+          <n-form-item label="Painting Techniques" path="techniqueIds">
+            <n-select
+              v-model:value="form.techniqueIds"
+              :options="techniqueOptions"
+              :loading="loadingTechniques"
+              placeholder="Select techniques used"
+              multiple
+              filterable
+              clearable
+            />
+          </n-form-item>
+
+          <n-form-item label="Paints Used" path="paintIds">
+            <n-select
+              v-model:value="form.paintIds"
+              :options="paintOptions"
+              :loading="loadingPaints"
+              placeholder="Select paints used"
+              multiple
+              filterable
+              clearable
+              :render-label="renderPaintLabel"
+            />
+          </n-form-item>
+        </n-collapse-item>
+
         <!-- Metadata Section -->
         <n-collapse-item title="Metadata" name="metadata">
           <n-grid :cols="2" :x-gap="16">
@@ -175,7 +203,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, h } from 'vue'
 import {
   NSpace,
   NSpin,
@@ -221,6 +249,11 @@ const { message, dialog } = useViewServices()
 // Data state
 const { data: projects, loading, search } = useDataState()
 const themes = ref([])
+const techniques = ref([])
+const paints = ref([])
+const loadingThemes = ref(false)
+const loadingTechniques = ref(false)
+const loadingPaints = ref(false)
 
 // Modal state
 const { showModal, editing, form, formRef, openModal, closeModal, openEditModal, resetForm } =
@@ -234,6 +267,8 @@ const { showModal, editing, form, formRef, openModal, closeModal, openEditModal,
     timeSpent: null,
     completedDate: null,
     displayOrder: 0,
+    techniqueIds: [],
+    paintIds: [],
   })
 
 // Saving state
@@ -257,6 +292,40 @@ const difficultyOptions = [
 
 const themeOptions = computed(() => themes.value.map((t) => ({ label: t.name, value: t.id })))
 
+const techniqueOptions = computed(() =>
+  techniques.value.map((t) => ({ label: t.name, value: t.id }))
+)
+
+const paintOptions = computed(() =>
+  paints.value.map((p) => ({
+    label: p.name,
+    value: p.id,
+    paint: p,
+  }))
+)
+
+// Custom render for paint labels with color swatch
+function renderPaintLabel(option) {
+  const paint = option.paint
+  if (!paint) return option.label
+
+  return h('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
+    paint.colorHex
+      ? h('span', {
+          style: {
+            width: '12px',
+            height: '12px',
+            borderRadius: '2px',
+            backgroundColor: paint.colorHex,
+            border: '1px solid rgba(128, 128, 128, 0.3)',
+            flexShrink: 0,
+          },
+        })
+      : null,
+    h('span', null, `${paint.name}${paint.manufacturer ? ` (${paint.manufacturer})` : ''}`),
+  ])
+}
+
 const rules = {
   name: [required('Project title')],
 }
@@ -277,14 +346,29 @@ const loadProjects = createDataLoader({
   message,
 })
 
-const loadThemes = async () => {
-  try {
-    const response = await miniaturesService.getAllThemes()
-    themes.value = response.data || []
-  } catch (error) {
-    console.error('Failed to load themes:', error)
-  }
-}
+const loadThemes = createDataLoader({
+  loading: loadingThemes,
+  data: themes,
+  service: miniaturesService.getAllThemes,
+  entityName: 'themes',
+  message,
+})
+
+const loadTechniques = createDataLoader({
+  loading: loadingTechniques,
+  data: techniques,
+  service: miniaturesService.getAllTechniques,
+  entityName: 'techniques',
+  message,
+})
+
+const loadPaints = createDataLoader({
+  loading: loadingPaints,
+  data: paints,
+  service: miniaturesService.getAllPaints,
+  entityName: 'paints',
+  message,
+})
 
 function handleEdit(project) {
   openEditModal(project, (p) => ({
@@ -297,6 +381,9 @@ function handleEdit(project) {
     timeSpent: p.timeSpent ?? null,
     completedDate: toDateFormat(p.completedDate),
     displayOrder: p.displayOrder ?? 0,
+    // Extract IDs from nested junction table structure
+    techniqueIds: p.techniques?.map((t) => t.technique?.id).filter(Boolean) ?? [],
+    paintIds: p.paints?.map((p) => p.paint?.id).filter(Boolean) ?? [],
   }))
 }
 
@@ -313,19 +400,8 @@ const handleSave = createSaveHandler({
   entityName: 'Project',
   message,
   onSuccess: loadProjects,
-  resetForm: () => resetForm(),
+  resetForm,
   validateForm,
-  transformPayload: (formData) => ({
-    ...formData,
-    themeId: formData.themeId ?? undefined,
-    description: formData.description ?? undefined,
-    scale: formData.scale ?? undefined,
-    manufacturer: formData.manufacturer ?? undefined,
-    difficulty: formData.difficulty ?? undefined,
-    timeSpent: formData.timeSpent ?? undefined,
-    completedDate: formData.completedDate ?? undefined,
-    displayOrder: formData.displayOrder ?? 0,
-  }),
 })
 
 const handleDelete = createDeleteHandler({
@@ -423,6 +499,8 @@ const columns = [
 onMounted(() => {
   loadProjects()
   loadThemes()
+  loadTechniques()
+  loadPaints()
 })
 </script>
 
@@ -471,5 +549,11 @@ onMounted(() => {
 .upload-hint {
   display: block;
   font-size: 14px;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
 }
 </style>
