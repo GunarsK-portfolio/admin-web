@@ -58,6 +58,11 @@ export default {
     return api.delete(`/files/${encodeURIComponent(imageId)}`)
   },
 
+  // Techniques
+  getAllTechniques() {
+    return api.get('/miniatures/techniques')
+  },
+
   // Paints
   getAllPaints() {
     return api.get('/miniatures/paints')
