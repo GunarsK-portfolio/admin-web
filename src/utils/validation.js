@@ -30,7 +30,7 @@ export const requiredNumber = (fieldName, trigger = 'change') => ({
  * @returns {Object} Naive UI validation rule
  */
 export const email = (trigger = 'blur') => ({
-  pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+  pattern: /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
   message: 'Please enter a valid email address',
   trigger,
 })

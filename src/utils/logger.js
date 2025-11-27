@@ -133,11 +133,19 @@ class Logger {
 
   _sanitizeHeaders(headers = {}) {
     const sanitized = { ...headers }
-    const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key']
+    const sensitiveHeaders = [
+      'authorization',
+      'cookie',
+      'x-api-key',
+      'x-auth-token',
+      'x-csrf-token',
+      'x-session-id',
+    ]
 
-    sensitiveHeaders.forEach((header) => {
-      if (sanitized[header]) {
-        sanitized[header] = '[REDACTED]'
+    // Case-insensitive header matching
+    Object.keys(sanitized).forEach((key) => {
+      if (sensitiveHeaders.includes(key.toLowerCase())) {
+        sanitized[key] = '[REDACTED]'
       }
     })
 

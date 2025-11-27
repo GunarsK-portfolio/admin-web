@@ -21,7 +21,17 @@ import { logger } from './logger'
  * })
  */
 export function createDataLoader(options) {
+  if (!options) {
+    throw new Error('createDataLoader: options object is required')
+  }
+
   const { loading, data, service, entityName, message, transform } = options
+
+  if (!loading || !data || !service || !entityName || !message) {
+    throw new Error(
+      'createDataLoader: required options missing (loading, data, service, entityName, message)'
+    )
+  }
 
   return async () => {
     loading.value = true
@@ -91,6 +101,10 @@ export function createDataLoader(options) {
  * })
  */
 export function createSaveHandler(options) {
+  if (!options) {
+    throw new Error('createSaveHandler: options object is required')
+  }
+
   const {
     formRef,
     saving,
@@ -105,6 +119,22 @@ export function createSaveHandler(options) {
     transformPayload,
     validateForm,
   } = options
+
+  if (
+    !saving ||
+    !editing ||
+    !form ||
+    !showModal ||
+    !service ||
+    !entityName ||
+    !message ||
+    !onSuccess ||
+    !resetForm
+  ) {
+    throw new Error(
+      'createSaveHandler: required options missing (saving, editing, form, showModal, service, entityName, message, onSuccess, resetForm)'
+    )
+  }
 
   return async () => {
     if (validateForm && !(await validateForm(formRef))) return
@@ -164,7 +194,17 @@ export function createSaveHandler(options) {
  * })
  */
 export function createDeleteHandler(options) {
+  if (!options) {
+    throw new Error('createDeleteHandler: options object is required')
+  }
+
   const { dialog, service, entityName, message, onSuccess, getConfirmText } = options
+
+  if (!dialog || !service || !entityName || !message || !onSuccess) {
+    throw new Error(
+      'createDeleteHandler: required options missing (dialog, service, entityName, message, onSuccess)'
+    )
+  }
 
   return (item) => {
     // Validate item has ID
