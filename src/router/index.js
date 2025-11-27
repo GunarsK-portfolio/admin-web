@@ -89,4 +89,9 @@ router.beforeEach((to, _from, next) => {
   }
 })
 
+router.afterEach((to) => {
+  const title = to.meta.title
+  document.title = title ? `${title} | Admin` : 'Admin'
+})
+
 export default router
