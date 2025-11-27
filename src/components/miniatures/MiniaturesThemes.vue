@@ -38,9 +38,10 @@
         <n-space vertical class="full-width">
           <div v-if="currentCoverImage">
             <n-space vertical align="center">
-              <n-avatar
-                :size="120"
+              <img
                 :src="addSourceToFileUrl(currentCoverImage.fileUrl || currentCoverImage.url)"
+                class="cover-preview"
+                alt="Cover image preview"
               />
               <n-text depth="3" class="file-info">
                 {{ currentCoverImage.fileName }} ({{ formatFileSize(currentCoverImage.fileSize) }})
@@ -81,7 +82,8 @@
                 }}
               </n-text>
               <n-text depth="3" class="upload-hint">
-                Supported formats: JPEG, PNG, GIF, WebP (Max 10MB)
+                Supported formats: JPEG, PNG, GIF, WebP (Max 10MB). Image will be cropped to 2:1
+                ratio.
               </n-text>
             </n-upload-dragger>
           </n-upload>
@@ -102,6 +104,16 @@
       <ModalFooter :loading="saving" :editing="editing" @cancel="closeModal" @save="handleSave" />
     </template>
   </n-modal>
+
+  <ImageCropperModal
+    v-model:show="showCropperModal"
+    :image-src="selectedImageSrc"
+    title="Crop Cover Image"
+    confirm-text="Upload Cover Image"
+    :aspect-ratio="2"
+    @crop="handleCoverImageCrop"
+    @cancel="handleCropperCancel"
+  />
 </template>
 
 <script setup>
@@ -119,7 +131,6 @@ import {
   NUploadDragger,
   NIcon,
   NText,
-  NAvatar,
   NButton,
 } from 'naive-ui'
 import { CreateOutline, TrashOutline, CloudUploadOutline } from '@vicons/ionicons5'
@@ -131,7 +142,6 @@ import {
   formatFileSize,
   FILE_VALIDATION,
   createFileValidator,
-  createFileUploadHandler,
   createFileDeleteHandler,
 } from '../../utils/fileHelpers'
 import { createActionsRenderer, stringSorter, numberSorter } from '../../utils/tableHelpers'
@@ -144,6 +154,7 @@ import { useDataState } from '../../composables/useDataState'
 import SearchInput from '../shared/SearchInput.vue'
 import AddButton from '../shared/AddButton.vue'
 import ModalFooter from '../shared/ModalFooter.vue'
+import ImageCropperModal from '../shared/ImageCropperModal.vue'
 
 // Services
 const { message, dialog } = useViewServices()
@@ -169,6 +180,10 @@ const deletingCoverImage = ref(false)
 const coverImageFileList = ref([])
 const currentCoverImage = computed(() => editing.value?.coverImageFile || null)
 
+// Cropper state
+const showCropperModal = ref(false)
+const selectedImageSrc = ref('')
+
 const rules = {
   name: [required('Theme name')],
 }
@@ -192,18 +207,51 @@ function handleEdit(theme) {
   }))
 }
 
-const handleCoverImageUpload = createFileUploadHandler({
-  uploading: uploadingCoverImage,
-  fileList: coverImageFileList,
-  form,
-  editing,
-  service: filesService.uploadFile,
-  message,
-  fileType: 'miniature-image',
-  fileIdField: 'coverImageId',
-  fileObjectField: 'coverImageFile',
-  logger,
-})
+// Open cropper when image is selected
+function handleCoverImageUpload({ file }) {
+  const reader = new window.FileReader()
+  reader.onload = (e) => {
+    selectedImageSrc.value = e.target.result
+    showCropperModal.value = true
+  }
+  reader.readAsDataURL(file.file)
+  return { file }
+}
+
+// Handle cropped image upload
+async function handleCoverImageCrop(croppedBlob) {
+  uploadingCoverImage.value = true
+  showCropperModal.value = false
+
+  try {
+    const croppedFile = new window.File([croppedBlob], 'cover.jpg', { type: 'image/jpeg' })
+    const uploadResponse = await filesService.uploadFile(croppedFile, 'miniature-image')
+    const fileData = uploadResponse.data
+
+    form.value.coverImageId = fileData.id
+    if (editing.value) {
+      editing.value.coverImageFile = fileData
+    }
+
+    logger.info('Cover image uploaded successfully', { fileId: fileData.id })
+    message.success('Cover image uploaded successfully')
+  } catch (error) {
+    logger.error('Failed to upload cover image', {
+      error: error.message,
+      status: error.response?.status,
+    })
+    message.error('Failed to upload cover image')
+  } finally {
+    uploadingCoverImage.value = false
+    selectedImageSrc.value = ''
+    coverImageFileList.value = []
+  }
+}
+
+function handleCropperCancel() {
+  selectedImageSrc.value = ''
+  coverImageFileList.value = []
+}
 
 const handleRemoveCoverImage = createFileDeleteHandler({
   deleting: deletingCoverImage,
@@ -269,3 +317,14 @@ onMounted(() => {
   loadThemes()
 })
 </script>
+
+<style scoped>
+.cover-preview {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+}
+</style>

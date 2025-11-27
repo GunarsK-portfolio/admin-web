@@ -251,6 +251,7 @@ const { data: projects, loading, search } = useDataState()
 const themes = ref([])
 const techniques = ref([])
 const paints = ref([])
+const loadingThemes = ref(false)
 const loadingTechniques = ref(false)
 const loadingPaints = ref(false)
 
@@ -345,38 +346,29 @@ const loadProjects = createDataLoader({
   message,
 })
 
-const loadThemes = async () => {
-  try {
-    const response = await miniaturesService.getAllThemes()
-    themes.value = response.data || []
-  } catch (error) {
-    console.error('Failed to load themes:', error)
-  }
-}
+const loadThemes = createDataLoader({
+  loading: loadingThemes,
+  data: themes,
+  service: miniaturesService.getAllThemes,
+  entityName: 'themes',
+  message,
+})
 
-const loadTechniques = async () => {
-  loadingTechniques.value = true
-  try {
-    const response = await miniaturesService.getAllTechniques()
-    techniques.value = response.data || []
-  } catch (error) {
-    console.error('Failed to load techniques:', error)
-  } finally {
-    loadingTechniques.value = false
-  }
-}
+const loadTechniques = createDataLoader({
+  loading: loadingTechniques,
+  data: techniques,
+  service: miniaturesService.getAllTechniques,
+  entityName: 'techniques',
+  message,
+})
 
-const loadPaints = async () => {
-  loadingPaints.value = true
-  try {
-    const response = await miniaturesService.getAllPaints()
-    paints.value = response.data || []
-  } catch (error) {
-    console.error('Failed to load paints:', error)
-  } finally {
-    loadingPaints.value = false
-  }
-}
+const loadPaints = createDataLoader({
+  loading: loadingPaints,
+  data: paints,
+  service: miniaturesService.getAllPaints,
+  entityName: 'paints',
+  message,
+})
 
 function handleEdit(project) {
   openEditModal(project, (p) => ({
