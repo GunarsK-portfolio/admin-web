@@ -19,7 +19,7 @@
             <AddButton label="Add Certification" @click="openModal" />
           </n-space>
 
-          <n-spin :show="loading">
+          <n-spin :show="loading" aria-label="Loading certifications">
             <n-data-table
               :columns="columns"
               :data="filteredCertifications"

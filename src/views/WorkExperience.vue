@@ -18,7 +18,7 @@
             <AddButton label="Add Experience" @click="openModal" />
           </n-space>
 
-          <n-spin :show="loading">
+          <n-spin :show="loading" aria-label="Loading work experience">
             <n-data-table
               :columns="columns"
               :data="filteredExperience"

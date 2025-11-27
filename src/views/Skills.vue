@@ -14,7 +14,7 @@
               <AddButton label="Add Skill" @click="openSkillModal" />
             </n-space>
 
-            <n-spin :show="loadingSkills">
+            <n-spin :show="loadingSkills" aria-label="Loading skills">
               <n-data-table
                 :columns="skillColumns"
                 :data="filteredSkills"
@@ -33,7 +33,7 @@
               <AddButton label="Add Skill Type" @click="openTypeModal" />
             </n-space>
 
-            <n-spin :show="loadingTypes">
+            <n-spin :show="loadingTypes" aria-label="Loading skill types">
               <n-data-table
                 :columns="typeColumns"
                 :data="filteredTypes"

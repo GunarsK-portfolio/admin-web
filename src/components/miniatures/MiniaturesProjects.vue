@@ -9,7 +9,7 @@
       <AddButton label="Add Project" @click="openModal" />
     </n-space>
 
-    <n-spin :show="loading">
+    <n-spin :show="loading" aria-label="Loading miniature projects">
       <n-data-table :columns="columns" :data="filteredProjects" :pagination="{ pageSize: 10 }" />
     </n-spin>
   </n-space>
