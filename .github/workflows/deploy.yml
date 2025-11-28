@@ -69,6 +69,7 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
+          exit-code: '1'
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
@@ -106,10 +107,21 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ steps.version.outputs.version }}
         run: |
+          # Get current service configuration to preserve settings
+          CURRENT_CONFIG=$(aws apprunner describe-service \
+            --region ${{ env.AWS_REGION }} \
+            --service-arn ${{ steps.service-arn.outputs.arn }} \
+            --query 'Service.SourceConfiguration' \
+            --output json)
+
+          # Update only the ImageIdentifier while preserving other settings
+          UPDATED_CONFIG=$(echo "$CURRENT_CONFIG" | jq \
+            ".ImageRepository.ImageIdentifier=\"$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\"")
+
           aws apprunner update-service \
             --region ${{ env.AWS_REGION }} \
             --service-arn ${{ steps.service-arn.outputs.arn }} \
-            --source-configuration "{\"ImageRepository\":{\"ImageIdentifier\":\"$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\",\"ImageRepositoryType\":\"ECR\"}}"
+            --source-configuration "$UPDATED_CONFIG"
           echo "Deployment triggered for $APP_RUNNER_SERVICE with image tag $IMAGE_TAG"
 
       - name: Wait for deployment
@@ -129,12 +141,11 @@ jobs:
             if [ "$STATUS" = "RUNNING" ]; then
               echo "Deployment completed successfully"
               exit 0
-            elif [ "$STATUS" = "CREATE_FAILED" ] || [ "$STATUS" = "DELETE_FAILED" ] || [ "$STATUS" = "OPERATION_IN_PROGRESS" ]; then
-              if [ "$STATUS" != "OPERATION_IN_PROGRESS" ]; then
-                echo "Deployment failed with status: $STATUS"
-                exit 1
-              fi
+            elif [ "$STATUS" = "CREATE_FAILED" ] || [ "$STATUS" = "DELETE_FAILED" ] || [ "$STATUS" = "UPDATE_FAILED" ] || [ "$STATUS" = "DELETED" ]; then
+              echo "Deployment failed with status: $STATUS"
+              exit 1
             fi
+            # OPERATION_IN_PROGRESS, PAUSED, or other transient states - continue waiting
             ATTEMPT=$((ATTEMPT + 1))
             sleep 10
           done
