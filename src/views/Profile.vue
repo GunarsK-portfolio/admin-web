@@ -62,6 +62,22 @@
                 :disabled="saving"
               />
             </n-form-item>
+
+            <n-form-item label="GitHub URL" path="github">
+              <n-input
+                v-model:value="formData.github"
+                placeholder="https://github.com/username"
+                :disabled="saving"
+              />
+            </n-form-item>
+
+            <n-form-item label="LinkedIn URL" path="linkedin">
+              <n-input
+                v-model:value="formData.linkedin"
+                placeholder="https://linkedin.com/in/username"
+                :disabled="saving"
+              />
+            </n-form-item>
           </n-card>
 
           <n-grid :x-gap="24" :y-gap="24" :cols="1">
@@ -257,7 +273,7 @@ import profileService from '../services/profile'
 import filesService from '../services/files'
 import { logger } from '../utils/logger'
 import { formatFileSize, FILE_VALIDATION, createFileValidator } from '../utils/fileHelpers'
-import { required, email, validateForm } from '../utils/validation'
+import { required, email, url, validateForm } from '../utils/validation'
 import { createDataLoader } from '../utils/crudHelpers'
 import { addSourceToFileUrl } from '../utils/fileUrl'
 import ImageCropperModal from '../components/shared/ImageCropperModal.vue'
@@ -286,6 +302,8 @@ const formData = ref({
   email: '',
   phone: '',
   location: '',
+  github: '',
+  linkedin: '',
   avatarFileId: null,
   avatarFile: null,
   resumeFileId: null,
@@ -295,6 +313,8 @@ const formData = ref({
 const rules = {
   name: [required('Full name')],
   email: [email()],
+  github: [url()],
+  linkedin: [url()],
 }
 
 const loadProfile = createDataLoader({
@@ -311,6 +331,8 @@ const loadProfile = createDataLoader({
     email: data.email || '',
     phone: data.phone || '',
     location: data.location || '',
+    github: data.github || '',
+    linkedin: data.linkedin || '',
     avatarFileId: data.avatarFileId || null,
     avatarFile: data.avatarFile || null,
     resumeFileId: data.resumeFileId || null,
