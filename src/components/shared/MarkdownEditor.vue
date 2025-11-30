@@ -4,7 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
-import { Markdown } from 'tiptap-markdown'
+import { Markdown } from '@tiptap/markdown'
 import { NButton, NButtonGroup, NTooltip } from 'naive-ui'
 
 const props = defineProps({
@@ -20,6 +20,11 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+// Helper to get markdown from editor
+const getMarkdown = (editor) => {
+  return editor.storage.markdown.manager.serialize(editor.getJSON())
+}
+
 const editor = useEditor({
   content: props.modelValue,
   extensions: [
@@ -34,14 +39,10 @@ const editor = useEditor({
     Link.configure({
       openOnClick: false,
     }),
-    Markdown.configure({
-      html: false,
-      transformPastedText: true,
-      transformCopiedText: true,
-    }),
+    Markdown,
   ],
   onUpdate: ({ editor }) => {
-    const markdown = editor.storage.markdown.getMarkdown()
+    const markdown = getMarkdown(editor)
     emit('update:modelValue', markdown)
   },
 })
@@ -51,9 +52,9 @@ watch(
   () => props.modelValue,
   (newValue) => {
     if (editor.value) {
-      const currentMarkdown = editor.value.storage.markdown.getMarkdown()
+      const currentMarkdown = getMarkdown(editor.value)
       if (newValue !== currentMarkdown) {
-        editor.value.commands.setContent(newValue)
+        editor.value.commands.setContent(newValue, false, { contentType: 'markdown' })
       }
     }
   }
@@ -62,6 +63,16 @@ watch(
 onBeforeUnmount(() => {
   editor.value?.destroy()
 })
+
+// Validate URL to prevent XSS
+const isValidUrl = (url) => {
+  try {
+    const parsed = new URL(url, window.location.origin)
+    return ['http:', 'https:', 'mailto:'].includes(parsed.protocol)
+  } catch {
+    return false
+  }
+}
 
 // Toolbar actions
 const setLink = () => {
@@ -74,18 +85,29 @@ const setLink = () => {
     return
   }
 
+  // Validate URL protocol to prevent javascript: XSS
+  if (!isValidUrl(url)) {
+    window.alert('Only http, https, and mailto links are allowed')
+    return
+  }
+
   editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
 }
+
+// History state helpers
+const canUndo = () => editor.value?.can().undo() ?? false
+const canRedo = () => editor.value?.can().redo() ?? false
 </script>
 
 <template>
   <div class="markdown-editor">
-    <div class="toolbar">
+    <div class="toolbar" role="toolbar" aria-label="Text formatting">
       <n-button-group size="small">
         <n-tooltip trigger="hover">
           <template #trigger>
             <n-button
               :type="editor?.isActive('bold') ? 'primary' : 'default'"
+              aria-label="Bold"
               @click="editor?.chain().focus().toggleBold().run()"
             >
               B
@@ -98,6 +120,7 @@ const setLink = () => {
           <template #trigger>
             <n-button
               :type="editor?.isActive('italic') ? 'primary' : 'default'"
+              aria-label="Italic"
               @click="editor?.chain().focus().toggleItalic().run()"
             >
               <em>I</em>
@@ -110,6 +133,7 @@ const setLink = () => {
           <template #trigger>
             <n-button
               :type="editor?.isActive('strike') ? 'primary' : 'default'"
+              aria-label="Strikethrough"
               @click="editor?.chain().focus().toggleStrike().run()"
             >
               <s>S</s>
@@ -124,6 +148,7 @@ const setLink = () => {
           <template #trigger>
             <n-button
               :type="editor?.isActive('heading', { level: 1 }) ? 'primary' : 'default'"
+              aria-label="Heading 1"
               @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
             >
               H1
@@ -136,6 +161,7 @@ const setLink = () => {
           <template #trigger>
             <n-button
               :type="editor?.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
+              aria-label="Heading 2"
               @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()"
             >
               H2
@@ -148,6 +174,7 @@ const setLink = () => {
           <template #trigger>
             <n-button
               :type="editor?.isActive('heading', { level: 3 }) ? 'primary' : 'default'"
+              aria-label="Heading 3"
               @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()"
             >
               H3
@@ -162,6 +189,7 @@ const setLink = () => {
           <template #trigger>
             <n-button
               :type="editor?.isActive('bulletList') ? 'primary' : 'default'"
+              aria-label="Bullet list"
               @click="editor?.chain().focus().toggleBulletList().run()"
             >
               &bull;
@@ -174,6 +202,7 @@ const setLink = () => {
           <template #trigger>
             <n-button
               :type="editor?.isActive('orderedList') ? 'primary' : 'default'"
+              aria-label="Numbered list"
               @click="editor?.chain().focus().toggleOrderedList().run()"
             >
               1.
@@ -188,6 +217,7 @@ const setLink = () => {
           <template #trigger>
             <n-button
               :type="editor?.isActive('code') ? 'primary' : 'default'"
+              aria-label="Inline code"
               @click="editor?.chain().focus().toggleCode().run()"
             >
               &lt;&gt;
@@ -200,6 +230,7 @@ const setLink = () => {
           <template #trigger>
             <n-button
               :type="editor?.isActive('codeBlock') ? 'primary' : 'default'"
+              aria-label="Code block"
               @click="editor?.chain().focus().toggleCodeBlock().run()"
             >
               { }
@@ -210,7 +241,11 @@ const setLink = () => {
 
         <n-tooltip trigger="hover">
           <template #trigger>
-            <n-button :type="editor?.isActive('link') ? 'primary' : 'default'" @click="setLink">
+            <n-button
+              :type="editor?.isActive('link') ? 'primary' : 'default'"
+              aria-label="Insert link"
+              @click="setLink"
+            >
               Link
             </n-button>
           </template>
@@ -221,21 +256,33 @@ const setLink = () => {
       <n-button-group size="small">
         <n-tooltip trigger="hover">
           <template #trigger>
-            <n-button @click="editor?.chain().focus().undo().run()"> Undo </n-button>
+            <n-button
+              :disabled="!canUndo()"
+              aria-label="Undo"
+              @click="editor?.chain().focus().undo().run()"
+            >
+              Undo
+            </n-button>
           </template>
           Undo
         </n-tooltip>
 
         <n-tooltip trigger="hover">
           <template #trigger>
-            <n-button @click="editor?.chain().focus().redo().run()"> Redo </n-button>
+            <n-button
+              :disabled="!canRedo()"
+              aria-label="Redo"
+              @click="editor?.chain().focus().redo().run()"
+            >
+              Redo
+            </n-button>
           </template>
           Redo
         </n-tooltip>
       </n-button-group>
     </div>
 
-    <editor-content :editor="editor" class="editor-content" />
+    <editor-content :editor="editor" class="editor-content" role="textbox" aria-multiline="true" />
   </div>
 </template>
 
