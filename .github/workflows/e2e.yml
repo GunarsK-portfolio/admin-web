@@ -64,6 +64,13 @@ jobs:
           path: files-api
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout messaging-api
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/messaging-api
+          path: messaging-api
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Checkout public-api
         uses: actions/checkout@v6
         with:
