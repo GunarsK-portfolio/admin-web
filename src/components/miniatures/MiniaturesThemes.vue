@@ -231,6 +231,9 @@ async function handleCoverImageCrop(croppedBlob) {
     form.value.coverImageId = fileData.id
     if (editing.value) {
       editing.value.coverImageFile = fileData
+    } else {
+      // For new entities, create temporary editing object to show the file preview
+      editing.value = { coverImageFile: fileData }
     }
 
     logger.info('Cover image uploaded successfully', { fileId: fileData.id })
