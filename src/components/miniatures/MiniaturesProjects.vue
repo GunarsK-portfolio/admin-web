@@ -448,14 +448,13 @@ async function handleImageUpload({ file }) {
 
     // Refresh only the updated project
     await refreshProject(editing.value.id)
-
-    // Clear the file list to prevent re-upload
-    fileList.value = []
   } catch (error) {
     console.error('Failed to upload image:', error)
     message.error(error.response?.data?.error || 'Failed to upload image')
   } finally {
     uploadingImage.value = false
+    // Always clear file list to prevent duplicate uploads on retry
+    fileList.value = []
   }
 }
 
