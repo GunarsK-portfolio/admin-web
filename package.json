@@ -11,9 +11,14 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@tiptap/extension-link": "^3.11.1",
+    "@tiptap/extension-placeholder": "^3.11.1",
+    "@tiptap/markdown": "^3.11.1",
+    "@tiptap/pm": "^3.11.1",
+    "@tiptap/starter-kit": "^3.11.1",
+    "@tiptap/vue-3": "^3.11.1",
     "@vicons/ionicons5": "^0.13.0",
     "axios": "^1.13.2",
-    "md-editor-v3": "^6.2.0",
     "naive-ui": "^2.43.1",
     "pinia": "^3.0.4",
     "pino": "^10.1.0",

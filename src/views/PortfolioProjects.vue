@@ -80,14 +80,9 @@
             </n-form-item>
 
             <n-form-item label="Long Description (Markdown)" path="longDescription">
-              <MdEditor
+              <MarkdownEditor
                 v-model="form.longDescription"
-                language="en-US"
-                :theme="mdEditorTheme"
-                :preview="false"
-                :toolbars="mdToolbars"
                 placeholder="Detailed project description with markdown support"
-                class="md-editor-custom"
               />
             </n-form-item>
           </n-collapse-item>
@@ -305,12 +300,11 @@ import {
   NCollapseItem,
 } from 'naive-ui'
 import { CreateOutline, TrashOutline, CloudUploadOutline } from '@vicons/ionicons5'
-import { MdEditor } from 'md-editor-v3'
-import 'md-editor-v3/lib/style.css'
 import BackButton from '../components/shared/BackButton.vue'
 import SearchInput from '../components/shared/SearchInput.vue'
 import AddButton from '../components/shared/AddButton.vue'
 import ModalFooter from '../components/shared/ModalFooter.vue'
+import MarkdownEditor from '../components/shared/MarkdownEditor.vue'
 import portfolioProjectsService from '../services/portfolioProjects'
 import skillsService from '../services/skills'
 import filesService from '../services/files'
@@ -331,10 +325,6 @@ import { logger } from '../utils/logger'
 import { useViewServices } from '../composables/useViewServices'
 import { useModal } from '../composables/useModal'
 import { useDataState } from '../composables/useDataState'
-import { THEMES, getStoredTheme } from '../composables/useTheme'
-
-// Theme for MdEditor
-const mdEditorTheme = getStoredTheme() === THEMES.DARK ? 'dark' : 'light'
 
 // Services
 const { message, dialog } = useViewServices()
@@ -408,24 +398,6 @@ const categoryOptions = [
   { label: 'Data Engineering', value: 'Data Engineering' },
   { label: 'Machine Learning', value: 'Machine Learning' },
   { label: 'Other', value: 'Other' },
-]
-
-// Markdown editor toolbar configuration
-const mdToolbars = [
-  'bold',
-  'italic',
-  'strikeThrough',
-  '-',
-  'title',
-  'unorderedList',
-  'orderedList',
-  '-',
-  'code',
-  'codeRow',
-  'link',
-  '-',
-  'revoke',
-  'next',
 ]
 
 const rules = {
@@ -545,7 +517,7 @@ const handleSave = createSaveHandler({
     features: formData.features?.filter((f) => f && f.trim()) ?? [],
     challenges: formData.challenges?.filter((c) => c && c.trim()) ?? [],
     learnings: formData.learnings?.filter((l) => l && l.trim()) ?? [],
-    technologies: formData.technologies ?? [],
+    technologies: (formData.technologies ?? []).map((id) => ({ id })),
     displayOrder: formData.displayOrder ?? 0,
   }),
 })
