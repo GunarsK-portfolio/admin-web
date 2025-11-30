@@ -22,7 +22,7 @@ const emit = defineEmits(['update:modelValue'])
 
 // Helper to get markdown from editor
 const getMarkdown = (editor) => {
-  return editor.storage.markdown.manager.serialize(editor.getJSON())
+  return editor.markdown.serialize(editor.getJSON())
 }
 
 const editor = useEditor({
@@ -42,6 +42,7 @@ const editor = useEditor({
     Markdown,
   ],
   onUpdate: ({ editor }) => {
+    if (!editor) return
     const markdown = getMarkdown(editor)
     emit('update:modelValue', markdown)
   },
