@@ -88,17 +88,12 @@
           </n-card>
         </n-grid-item>
       </n-grid>
-
-      <n-alert type="info" class="dashboard-info">
-        This is a basic admin dashboard. Full CRUD functionality can be implemented by creating
-        dedicated management pages for each content type.
-      </n-alert>
     </div>
   </div>
 </template>
 
 <script setup>
-import { NGrid, NGridItem, NCard, NAlert, NButton } from 'naive-ui'
+import { NGrid, NGridItem, NCard, NButton } from 'naive-ui'
 import { useViewServices } from '../composables/useViewServices'
 
 const { router } = useViewServices()
