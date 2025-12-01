@@ -26,7 +26,6 @@ const getMarkdown = (editor) => {
 }
 
 const editor = useEditor({
-  content: props.modelValue,
   extensions: [
     StarterKit.configure({
       heading: {
@@ -39,8 +38,19 @@ const editor = useEditor({
     Link.configure({
       openOnClick: false,
     }),
-    Markdown,
+    Markdown.configure({
+      html: false,
+      transformPastedText: true,
+      transformCopiedText: true,
+    }),
   ],
+  onCreate: ({ editor }) => {
+    // Set initial content as markdown using the markdown extension's parser
+    if (props.modelValue) {
+      const parsed = editor.markdown.parse(props.modelValue)
+      editor.commands.setContent(parsed)
+    }
+  },
   onUpdate: ({ editor }) => {
     if (!editor) return
     const markdown = getMarkdown(editor)
@@ -55,7 +65,8 @@ watch(
     if (editor.value) {
       const currentMarkdown = getMarkdown(editor.value)
       if (newValue !== currentMarkdown) {
-        editor.value.commands.setContent(newValue, false, { contentType: 'markdown' })
+        const parsed = editor.value.markdown.parse(newValue || '')
+        editor.value.commands.setContent(parsed)
       }
     }
   }
