@@ -45,10 +45,8 @@ const editor = useEditor({
     }),
   ],
   onCreate: ({ editor }) => {
-    // Set initial content as markdown using the markdown extension's parser
     if (props.modelValue) {
-      const parsed = editor.markdown.parse(props.modelValue)
-      editor.commands.setContent(parsed)
+      editor.commands.setContent(props.modelValue, { contentType: 'markdown' })
     }
   },
   onUpdate: ({ editor }) => {
@@ -65,8 +63,7 @@ watch(
     if (editor.value) {
       const currentMarkdown = getMarkdown(editor.value)
       if (newValue !== currentMarkdown) {
-        const parsed = editor.value.markdown.parse(newValue || '')
-        editor.value.commands.setContent(parsed)
+        editor.value.commands.setContent(newValue || '', { contentType: 'markdown' })
       }
     }
   }
