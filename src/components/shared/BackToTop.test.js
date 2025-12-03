@@ -6,6 +6,8 @@ import BackToTop from './BackToTop.vue'
 describe('BackToTop', () => {
   let scrollY = 0
   let scrollToMock
+  const originalScrollTo = window.scrollTo
+  const originalScrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY')
 
   const createScrollEvent = () => new window.Event('scroll')
 
@@ -25,6 +27,10 @@ describe('BackToTop', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
+    window.scrollTo = originalScrollTo
+    if (originalScrollYDescriptor) {
+      Object.defineProperty(window, 'scrollY', originalScrollYDescriptor)
+    }
   })
 
   const createWrapper = () =>
