@@ -46,6 +46,22 @@ tasks:
     cmds:
       - docker run -p 8081:80 admin-web
 
+  # Testing
+  test:
+    desc: Run unit tests
+    cmds:
+      - npm test
+
+  test:watch:
+    desc: Run unit tests in watch mode
+    cmds:
+      - npm run test:watch
+
+  test:coverage:
+    desc: Run unit tests with coverage
+    cmds:
+      - npm run test:coverage
+
   # Code quality
   lint:
     desc: Run ESLint (check only)
@@ -81,10 +97,11 @@ tasks:
 
   # CI/CD
   ci:all:
-    desc: Run all CI checks (format, lint:fix, build, security:audit, lint:markdown)
+    desc: Run all CI checks (format, lint:fix, test, build, security:audit, lint:markdown)
     cmds:
       - task: format
       - task: lint:fix
+      - task: test
       - task: build
       - task: security:audit
       - task: lint:markdown
