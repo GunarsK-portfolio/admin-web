@@ -22,7 +22,7 @@
           {{ selectedMessage.name }} &lt;{{ selectedMessage.email }}&gt;
         </n-descriptions-item>
         <n-descriptions-item label="Status">
-          <n-tag :type="statusType[selectedMessage.status]" size="small">
+          <n-tag :type="getStatusType(selectedMessage.status)" size="small">
             {{ selectedMessage.status }}
           </n-tag>
         </n-descriptions-item>
@@ -71,7 +71,7 @@ import {
 import { EyeOutline } from '@vicons/ionicons5'
 import messagingService from '../../services/messaging'
 import { stringSorter, dateSorter, createActionsRenderer } from '../../utils/tableHelpers'
-import { toDateFormat } from '../../utils/dateHelpers'
+import { toDateFormat, toDateTimeFormat } from '../../utils/dateHelpers'
 import { createSearchFilter } from '../../utils/filterHelpers'
 import { createDataLoader } from '../../utils/crudHelpers'
 import { useViewServices } from '../../composables/useViewServices'
@@ -92,9 +92,8 @@ const statusType = {
   failed: 'error',
 }
 
-function toDateTimeFormat(date) {
-  if (!date) return '—'
-  return new Date(date).toLocaleString()
+function getStatusType(status) {
+  return statusType[status] || 'default'
 }
 
 const filteredMessages = createSearchFilter(messages, search, ['subject', 'name', 'email'])
@@ -130,7 +129,7 @@ const columns = [
     key: 'status',
     width: 100,
     render: (row) =>
-      h(NTag, { type: statusType[row.status], size: 'small' }, { default: () => row.status }),
+      h(NTag, { type: getStatusType(row.status), size: 'small' }, { default: () => row.status }),
   },
   {
     title: 'Sent At',

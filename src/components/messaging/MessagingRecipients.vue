@@ -56,7 +56,7 @@ import {
 import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
 import messagingService from '../../services/messaging'
 import { required, email, validateForm } from '../../utils/validation'
-import { createActionsRenderer, stringSorter } from '../../utils/tableHelpers'
+import { createActionsRenderer, stringSorter, dateSorter } from '../../utils/tableHelpers'
 import { toDateFormat } from '../../utils/dateHelpers'
 import { createSearchFilter } from '../../utils/filterHelpers'
 import { createDataLoader, createSaveHandler, createDeleteHandler } from '../../utils/crudHelpers'
@@ -82,6 +82,7 @@ const saving = ref(false)
 
 const rules = {
   email: [required('Email'), email()],
+  name: [{ max: 100, message: 'Name must be 100 characters or less', trigger: 'blur' }],
 }
 
 const filteredRecipients = createSearchFilter(recipients, search, ['email', 'name'])
@@ -152,6 +153,7 @@ const columns = [
   {
     title: 'Created',
     key: 'createdAt',
+    sorter: dateSorter('createdAt'),
     render: (row) => toDateFormat(row.createdAt),
   },
   {
