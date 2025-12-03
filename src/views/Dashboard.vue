@@ -22,7 +22,7 @@
             <p class="card-description">Manage your skills and skill categories</p>
             <div class="card-actions">
               <n-button type="primary" size="small" @click="router.push({ name: 'Skills' })">
-                Manage Skills
+                Manage
               </n-button>
             </div>
           </n-card>
@@ -82,6 +82,18 @@
             <p class="card-description">Manage projects, themes, and paint collection</p>
             <div class="card-actions">
               <n-button type="primary" size="small" @click="router.push({ name: 'Miniatures' })">
+                Manage
+              </n-button>
+            </div>
+          </n-card>
+        </n-grid-item>
+
+        <n-grid-item>
+          <n-card>
+            <h3 class="card-title">Messaging</h3>
+            <p class="card-description">Manage contact form recipients and view messages</p>
+            <div class="card-actions">
+              <n-button type="primary" size="small" @click="router.push({ name: 'Messaging' })">
                 Manage
               </n-button>
             </div>
