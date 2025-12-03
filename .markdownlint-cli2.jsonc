@@ -1,4 +1,9 @@
 {
   "globs": ["**/*.md"],
-  "ignores": ["node_modules/**"]
+  "ignores": ["node_modules/**"],
+  "config": {
+    "MD013": {
+      "tables": false
+    }
+  }
 }
