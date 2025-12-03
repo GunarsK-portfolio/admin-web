@@ -25,16 +25,24 @@ task test:coverage
 
 ## Test Files
 
-6 test files, 78 tests
+14 test files, 181 tests
 
-| File                   | Tests | Coverage                                     |
-| ---------------------- | ----- | -------------------------------------------- |
-| `validation.test.js`   | 31    | required, email, url, hexColor, dateAfter    |
-| `dateHelpers.test.js`  | 16    | toMonthFormat, fromMonthFormat, toDateFormat |
-| `useModal.test.js`     | 14    | openModal, closeModal, openEditModal         |
-| `auth.test.js`         | 7     | login/logout success/failure, initial state  |
-| `useDataState.test.js` | 6     | initial state, reactivity, loading flow      |
-| `SearchInput.test.js`  | 4     | default props, custom props, emits           |
+| File                   | Tests | Coverage                                           |
+| ---------------------- | ----- | -------------------------------------------------- |
+| `validation.test.js`   | 31    | required, email, url, hexColor, dateAfter          |
+| `crudHelpers.test.js`  | 28    | createDataLoader, createSaveHandler, deleteHandler |
+| `tableHelpers.test.js` | 23    | stringSorter, numberSorter, dateSorter, dateRange  |
+| `useTheme.test.js`     | 17    | getStoredTheme, setStoredTheme, createThemeConfig  |
+| `dateHelpers.test.js`  | 16    | toMonthFormat, fromMonthFormat, toDateFormat       |
+| `useModal.test.js`     | 14    | openModal, closeModal, openEditModal, resetForm    |
+| `Login.test.js`        | 12    | initial state, handleLogin, form state management  |
+| `ModalFooter.test.js`  | 12    | default props, editing states, events, loading     |
+| `BackToTop.test.js`    | 10    | scroll behavior, scrollToTop, lifecycle hooks      |
+| `auth.test.js`         | 7     | login/logout success/failure, initial state        |
+| `BackButton.test.js`   | 7     | default props, custom props, route objects         |
+| `useDataState.test.js` | 6     | initial state, reactivity, loading flow            |
+| `SearchInput.test.js`  | 4     | default props, custom props, emits                 |
+| `AddButton.test.js`    | 4     | label prop, click event, component rendering       |
 
 ## Key Testing Patterns
 
@@ -98,40 +106,60 @@ expect(form.value).toEqual(defaultValues)
 
 ### Utility Functions (`src/utils/`)
 
-- Validation rules (required, email, url, hex colors)
-- Date formatting and parsing
+- Validation rules (required, email, url, hex colors, dateAfter)
+- Date formatting and parsing (toMonthFormat, fromMonthFormat, toDateFormat)
+- CRUD helpers (createDataLoader, createSaveHandler, createDeleteHandler)
+- Table helpers (string/number/date sorters, date range renderer)
 - String normalization
 
 ### Composables (`src/composables/`)
 
 - `useModal` - Modal state and form management
 - `useDataState` - List view data state
+- `useTheme` - Theme detection, storage, and configuration
 
 ### Stores (`src/stores/`)
 
 - `auth` - Authentication state, login/logout flows
 
+### Views (`src/views/`)
+
+- `Login` - Login form, authentication handling
+
 ### Components (`src/components/`)
 
-- Shared components with props and emits
+- `SearchInput` - Search input with v-model
+- `AddButton` - Button for adding new items
+- `BackButton` - Navigation back button
+- `BackToTop` - Scroll-to-top button
+- `ModalFooter` - Modal save/cancel actions
 
 ## Test Structure
 
 ```text
 src/
 ├── __tests__/
-│   └── setup.js           # Global test setup
+│   └── setup.js              # Global test setup
 ├── utils/
 │   ├── validation.test.js
-│   └── dateHelpers.test.js
+│   ├── dateHelpers.test.js
+│   ├── crudHelpers.test.js
+│   └── tableHelpers.test.js
 ├── composables/
 │   ├── useModal.test.js
-│   └── useDataState.test.js
+│   ├── useDataState.test.js
+│   └── useTheme.test.js
 ├── stores/
 │   └── auth.test.js
+├── views/
+│   └── Login.test.js
 └── components/
     └── shared/
-        └── SearchInput.test.js
+        ├── SearchInput.test.js
+        ├── AddButton.test.js
+        ├── BackButton.test.js
+        ├── BackToTop.test.js
+        └── ModalFooter.test.js
 ```
 
 ## Contributing Tests
