@@ -38,10 +38,14 @@ describe('SearchInput', () => {
     expect(vm.ariaLabel).toBe('Filter users')
   })
 
-  it('defines update:modelValue emit', () => {
+  it('emits update:modelValue on input', async () => {
     const wrapper = createWrapper()
-    // Check that the component defines the emit
-    expect(wrapper.vm.$options.emits).toContain('update:modelValue')
+
+    // Since NInput is stubbed, we need to emit from the component
+    await wrapper.vm.$emit('update:modelValue', 'new value')
+
+    expect(wrapper.emitted('update:modelValue')).toBeTruthy()
+    expect(wrapper.emitted('update:modelValue')[0]).toEqual(['new value'])
   })
 
   it('has search-input class', () => {

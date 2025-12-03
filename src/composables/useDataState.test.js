@@ -45,7 +45,7 @@ describe('useDataState', () => {
   })
 
   describe('typical usage pattern', () => {
-    it('simulates data loading flow', async () => {
+    it('simulates data loading flow', () => {
       const { data, loading } = useDataState()
 
       // Start loading

@@ -41,7 +41,4 @@ config.global.stubs = {
 // Reset mocks after each test
 afterEach(() => {
   vi.clearAllMocks()
-  localStorageMock.getItem.mockReset()
-  localStorageMock.setItem.mockReset()
-  localStorageMock.removeItem.mockReset()
 })
