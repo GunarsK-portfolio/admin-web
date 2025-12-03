@@ -51,6 +51,12 @@ const routes = [
     meta: { requiresAuth: true, title: 'Portfolio Projects' },
   },
   {
+    path: '/messaging',
+    name: 'Messaging',
+    component: () => import('../views/Messaging.vue'),
+    meta: { requiresAuth: true, title: 'Messaging' },
+  },
+  {
     path: '/403',
     name: 'Forbidden',
     component: () => import('../errors/Forbidden.vue'),

@@ -14,6 +14,7 @@ env:
   ADMIN_API_URL: https://localhost:8443/admin-api/v1
   PUBLIC_API_URL: https://localhost/api/v1
   FILES_API_URL: https://localhost:8443/files-api/v1
+  MESSAGING_API_URL: https://localhost:8443/messaging-api/v1
   ADMIN_WEB_URL: https://localhost:8443
   PUBLIC_WEB_URL: https://localhost
 
@@ -69,6 +70,13 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/messaging-api
           path: messaging-api
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout messaging-service
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/messaging-service
+          path: messaging-service
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout public-api
@@ -144,9 +152,10 @@ jobs:
           timeout 120 bash -c 'until curl -skf ${{ env.ADMIN_API_URL }}/health; do sleep 2; done' & pid3=$!
           timeout 120 bash -c 'until curl -skf ${{ env.PUBLIC_API_URL }}/health; do sleep 2; done' & pid4=$!
           timeout 120 bash -c 'until curl -skf ${{ env.FILES_API_URL }}/health; do sleep 2; done' & pid5=$!
-          timeout 120 bash -c 'until curl -skf ${{ env.ADMIN_WEB_URL }}/; do sleep 2; done' & pid6=$!
-          timeout 120 bash -c 'until curl -skf ${{ env.PUBLIC_WEB_URL }}/; do sleep 2; done' & pid7=$!
-          wait $pid1 $pid2 $pid3 $pid4 $pid5 $pid6 $pid7
+          timeout 120 bash -c 'until curl -skf ${{ env.MESSAGING_API_URL }}/health; do sleep 2; done' & pid6=$!
+          timeout 120 bash -c 'until curl -skf ${{ env.ADMIN_WEB_URL }}/; do sleep 2; done' & pid7=$!
+          timeout 120 bash -c 'until curl -skf ${{ env.PUBLIC_WEB_URL }}/; do sleep 2; done' & pid8=$!
+          wait $pid1 $pid2 $pid3 $pid4 $pid5 $pid6 $pid7 $pid8
           echo "All services are healthy!"
 
       - name: Create E2E .env

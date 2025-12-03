@@ -37,3 +37,16 @@ export function toDateFormat(dateString, defaultValue = null) {
   if (!match) return defaultValue
   return match[0]
 }
+
+/**
+ * Formats a date/timestamp to locale string for display
+ * @param {string|Date|null} date - Date string, Date object, or null
+ * @param {string} defaultValue - Default value to return if date is null/invalid
+ * @returns {string} Formatted date-time string or defaultValue
+ */
+export function toDateTimeFormat(date, defaultValue = '—') {
+  if (!date) return defaultValue
+  const parsed = new Date(date)
+  if (isNaN(parsed.getTime())) return defaultValue
+  return parsed.toLocaleString()
+}

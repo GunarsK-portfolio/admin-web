@@ -8,7 +8,9 @@ Admin panel for managing portfolio content built with Vue.js.
 ## Features
 
 - User authentication (login/logout)
-- Full CRUD for skills, work experience, and certifications
+- Full CRUD for skills, work experience, certifications, portfolio projects,
+  and miniatures
+- Messaging management (recipients CRUD, contact messages viewing)
 - Profile management with avatar and resume uploads
 - Image upload management with cropping
 - Protected routes with authentication
@@ -90,11 +92,10 @@ docker-compose up -d
 npm install
 ```
 
-1. Create `.env` file (optional):
+1. Create `.env` file (copy from example):
 
-```env
-VITE_API_URL=http://localhost:8083/api/v1
-VITE_AUTH_URL=http://localhost:8084/api/v1/auth
+```bash
+cp .env.example .env
 ```
 
 1. Run development server:
@@ -147,13 +148,7 @@ npm run lint      # Run ESLint
 
 ## Environment Variables
 
-| Variable         | Description  | Default        |
-| ---------------- | ------------ | -------------- |
-| `VITE_API_URL`   | Admin API    | localhost:8443 |
-| `VITE_AUTH_URL`  | Auth service | localhost:8443 |
-| `VITE_CERT_DIR`  | Cert dir     | certs/         |
-| `VITE_CERT_FILE` | Cert file    | localhost.crt  |
-| `VITE_KEY_FILE`  | Key file     | localhost.key  |
+See [.env.example](.env.example) for all available configuration options.
 
 ## Authentication
 
@@ -200,10 +195,12 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 ## API Integration
 
-The app connects to two services:
+The app connects to four backend services:
 
 - **auth-service**: Authentication (login, refresh, logout)
 - **admin-api**: Portfolio content management (CRUD operations)
+- **files-api**: File upload/download (images, avatars, resumes)
+- **messaging-api**: Contact form recipients and messages
 
 API service configuration is in `src/services/`.
 
