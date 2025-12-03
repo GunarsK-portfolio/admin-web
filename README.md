@@ -133,18 +133,18 @@ task security:audit      # Run npm security audit (high/critical only)
 task docker:build        # Build Docker image
 task docker:run          # Run in Docker container
 
+# Testing
+task test                # Run unit tests
+task test:watch          # Run tests in watch mode
+task test:coverage       # Run tests with coverage
+
 # CI/CD
 task ci:all              # Run all CI checks
 ```
 
-Using npm directly:
+## Testing
 
-```bash
-npm run dev       # Start development server
-npm run build     # Build for production
-npm run preview   # Preview production build
-npm run lint      # Run ESLint
-```
+Unit tests use Vitest with Vue Test Utils. See [TESTING.md](TESTING.md) for details.
 
 ## Environment Variables
 
@@ -170,7 +170,7 @@ certificates are available in `../infrastructure/docker/traefik/certs/`.
 ## Building for Production
 
 ```bash
-npm run build
+task build
 ```
 
 Output is in the `dist/` directory.
@@ -181,7 +181,7 @@ The app is containerized with nginx:
 
 ```dockerfile
 # Build stage
-FROM node:18-alpine as build
+FROM node:22-alpine as build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
