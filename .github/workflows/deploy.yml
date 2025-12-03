@@ -59,6 +59,7 @@ jobs:
             --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
             --build-arg VITE_AUTH_URL=${{ secrets.VITE_AUTH_URL }} \
             --build-arg VITE_FILES_API_URL=${{ secrets.VITE_FILES_API_URL }} \
+            --build-arg VITE_MESSAGING_API_URL=${{ secrets.VITE_MESSAGING_API_URL }} \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             .
 
