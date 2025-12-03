@@ -115,8 +115,10 @@ jobs:
             --output json)
 
           # Update only the ImageIdentifier while preserving other settings
+          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           UPDATED_CONFIG=$(echo "$CURRENT_CONFIG" | jq \
-            ".ImageRepository.ImageIdentifier=\"$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\"")
+            --arg image "$IMAGE_URI" \
+            '.ImageRepository.ImageIdentifier = $image')
 
           aws apprunner update-service \
             --region ${{ env.AWS_REGION }} \
