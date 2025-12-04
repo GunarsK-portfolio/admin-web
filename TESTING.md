@@ -25,7 +25,7 @@ task test:coverage
 
 ## Test Files
 
-15 test files, 206 tests
+15 test files, 208 tests
 
 | File                   | Tests | Coverage                                                    |
 | ---------------------- | ----- | ----------------------------------------------------------- |
@@ -38,8 +38,8 @@ task test:coverage
 | `useModal.test.js`     | 14    | openModal, closeModal, openEditModal, resetForm             |
 | `Login.test.js`        | 11    | initial state, handleLogin, form state management           |
 | `ModalFooter.test.js`  | 9     | default props, editing states, events, loading              |
+| `auth.test.js`         | 9     | login/logout, checkAuthStatus, cookie-based auth flow       |
 | `BackToTop.test.js`    | 8     | scroll behavior, scrollToTop, lifecycle hooks               |
-| `auth.test.js`         | 7     | login/logout success/failure, initial state                 |
 | `BackButton.test.js`   | 6     | default props, custom props, route objects                  |
 | `useDataState.test.js` | 6     | initial state, reactivity, loading flow                     |
 | `SearchInput.test.js`  | 4     | default props, custom props, emits                          |

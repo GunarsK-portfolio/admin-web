@@ -46,11 +46,12 @@ export function useTokenRefresh() {
   async function refreshToken() {
     try {
       const response = await authService.refresh()
-      localStorage.setItem('access_token', response.data.access_token)
-      localStorage.setItem('refresh_token', response.data.refresh_token)
+      // Server sets new cookies - no localStorage needed
 
       // Update TTL and reschedule checks
-      await handleTTL(response.data.expires_in)
+      if (response.data.expires_in) {
+        await handleTTL(response.data.expires_in)
+      }
 
       logger.info('Token refreshed successfully', {
         expiresIn: response.data.expires_in,

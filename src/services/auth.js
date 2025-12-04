@@ -1,27 +1,20 @@
 import { authApi } from './authApi'
 
 export default {
+  // Server sets cookies - no token handling needed
   login(username, password) {
     return authApi.post('/login', { username, password })
   },
+  // Server clears cookies - no token handling needed
   logout() {
-    const token = localStorage.getItem('access_token')
-    return authApi.post(
-      '/logout',
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    )
+    return authApi.post('/logout')
   },
+  // Server reads refresh token from cookie
   refresh() {
-    const refreshToken = localStorage.getItem('refresh_token')
-    return authApi.post('/refresh', { refresh_token: refreshToken })
+    return authApi.post('/refresh')
   },
+  // Server reads access token from cookie
   tokenStatus() {
-    const token = localStorage.getItem('access_token')
-    return authApi.get('/token-status', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    return authApi.get('/token-status')
   },
 }
