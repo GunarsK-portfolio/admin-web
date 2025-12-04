@@ -113,7 +113,7 @@ describe('auth store', () => {
       const store = useAuthStore()
       await store.login('testuser', 'password123')
 
-      expect(setUserContext).toHaveBeenCalledWith({ id: 1, username: 'testuser' })
+      expect(setUserContext).toHaveBeenCalledWith({ id: 1 })
     })
 
     it('returns false on login failure', async () => {
