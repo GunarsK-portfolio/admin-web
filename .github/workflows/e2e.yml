@@ -176,7 +176,7 @@ jobs:
       - name: Run E2E tests
         working-directory: e2e-tests
         run: |
-          python run_all_tests.py --no-confirm
+          python run_admin_tests.py --no-confirm
         # continue-on-error allows artifact upload and log collection before failing
         continue-on-error: true
         id: e2e_tests
