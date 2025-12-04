@@ -87,15 +87,21 @@ router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth) {
-    // Check auth status via API (cookie sent automatically)
-    const isValid = await authStore.checkAuthStatus()
-    if (!isValid) {
-      next('/login')
+    // Trust local state for authenticated users; API interceptors handle 401s
+    // Only verify with server if not authenticated locally (cold start/refresh)
+    if (!authStore.isAuthenticated) {
+      const isValid = await authStore.checkAuthStatus()
+      if (!isValid) {
+        next('/login')
+        return
+      }
+    }
+  } else if (to.meta.requiresGuest) {
+    // For guest routes, also verify with server if locally authenticated
+    if (authStore.isAuthenticated) {
+      next('/dashboard')
       return
     }
-  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next('/dashboard')
-    return
   }
 
   next()

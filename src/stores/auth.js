@@ -13,8 +13,13 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authService.tokenStatus()
       isAuthenticated.value = response.data.valid
       return response.data.valid
-    } catch {
+    } catch (error) {
       isAuthenticated.value = false
+      // Log for observability - helps debug auth issues
+      logger.warn('Auth status check failed', {
+        error: error.message,
+        status: error.response?.status,
+      })
       return false
     }
   }
@@ -31,7 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Set user context for future logs
       if (response.data.user_id) {
-        setUserContext({ id: response.data.user_id, username: response.data.username })
+        setUserContext({ id: response.data.user_id })
       }
 
       router.push('/dashboard')
