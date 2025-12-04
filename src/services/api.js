@@ -5,15 +5,7 @@ import { API_TIMEOUTS } from '../config/api'
 export const api = axios.create({
   baseURL: env.apiUrl,
   timeout: API_TIMEOUTS.DEFAULT,
-})
-
-// Add auth token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
+  withCredentials: true, // Send cookies with requests
 })
 
 // Response interceptor to handle TTL headers (will be set up by App.vue)

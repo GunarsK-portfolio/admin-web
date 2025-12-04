@@ -7,6 +7,7 @@ vi.mock('../services/auth', () => ({
   default: {
     login: vi.fn(),
     logout: vi.fn(),
+    tokenStatus: vi.fn(),
   },
 }))
 
@@ -34,31 +35,59 @@ describe('auth store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
-    localStorage.getItem.mockReturnValue(null)
   })
 
   describe('initial state', () => {
-    it('starts unauthenticated when no token in localStorage', () => {
+    it('starts unauthenticated', () => {
       const store = useAuthStore()
-      expect(store.token).toBe(null)
+      expect(store.isAuthenticated).toBe(false)
+    })
+  })
+
+  describe('checkAuthStatus', () => {
+    it('sets authenticated to true when token is valid', async () => {
+      authService.tokenStatus.mockResolvedValue({
+        data: { valid: true, ttl_seconds: 600 },
+      })
+
+      const store = useAuthStore()
+      const result = await store.checkAuthStatus()
+
+      expect(result).toBe(true)
+      expect(store.isAuthenticated).toBe(true)
+    })
+
+    it('sets authenticated to false when token is invalid', async () => {
+      authService.tokenStatus.mockResolvedValue({
+        data: { valid: false, ttl_seconds: 0 },
+      })
+
+      const store = useAuthStore()
+      const result = await store.checkAuthStatus()
+
+      expect(result).toBe(false)
       expect(store.isAuthenticated).toBe(false)
     })
 
-    it('starts authenticated when token exists in localStorage', () => {
-      localStorage.getItem.mockReturnValue('existing-token')
+    it('sets authenticated to false on error', async () => {
+      authService.tokenStatus.mockRejectedValue(new Error('Network error'))
+
       const store = useAuthStore()
-      expect(store.token).toBe('existing-token')
-      expect(store.isAuthenticated).toBe(true)
+      const result = await store.checkAuthStatus()
+
+      expect(result).toBe(false)
+      expect(store.isAuthenticated).toBe(false)
     })
   })
 
   describe('login', () => {
-    it('sets token and navigates on successful login', async () => {
+    it('sets authenticated and navigates on successful login', async () => {
       authService.login.mockResolvedValue({
         data: {
-          access_token: 'new-token',
-          refresh_token: 'refresh-token',
+          success: true,
           expires_in: 3600,
+          user_id: 1,
+          username: 'testuser',
         },
       })
 
@@ -66,29 +95,25 @@ describe('auth store', () => {
       const result = await store.login('testuser', 'password123')
 
       expect(result).toBe(true)
-      expect(store.token).toBe('new-token')
       expect(store.isAuthenticated).toBe(true)
-      expect(localStorage.setItem).toHaveBeenCalledWith('access_token', 'new-token')
-      expect(localStorage.setItem).toHaveBeenCalledWith('refresh_token', 'refresh-token')
       expect(router.push).toHaveBeenCalledWith('/dashboard')
       expect(logger.info).toHaveBeenCalledWith('User logged in successfully', expect.any(Object))
     })
 
     it('sets user context when user data is returned', async () => {
-      const userData = { id: 1, username: 'testuser' }
       authService.login.mockResolvedValue({
         data: {
-          access_token: 'new-token',
-          refresh_token: 'refresh-token',
+          success: true,
           expires_in: 3600,
-          user: userData,
+          user_id: 1,
+          username: 'testuser',
         },
       })
 
       const store = useAuthStore()
       await store.login('testuser', 'password123')
 
-      expect(setUserContext).toHaveBeenCalledWith(userData)
+      expect(setUserContext).toHaveBeenCalledWith({ id: 1, username: 'testuser' })
     })
 
     it('returns false on login failure', async () => {
@@ -98,7 +123,6 @@ describe('auth store', () => {
       const result = await store.login('testuser', 'wrong-password')
 
       expect(result).toBe(false)
-      expect(store.token).toBe(null)
       expect(store.isAuthenticated).toBe(false)
       expect(logger.error).toHaveBeenCalledWith('Login failed', expect.any(Object))
     })
@@ -109,15 +133,11 @@ describe('auth store', () => {
       authService.logout.mockResolvedValue({})
 
       const store = useAuthStore()
-      store.token = 'existing-token'
       store.isAuthenticated = true
 
       await store.logout()
 
-      expect(store.token).toBe(null)
       expect(store.isAuthenticated).toBe(false)
-      expect(localStorage.removeItem).toHaveBeenCalledWith('access_token')
-      expect(localStorage.removeItem).toHaveBeenCalledWith('refresh_token')
       expect(clearUserContext).toHaveBeenCalled()
       expect(router.push).toHaveBeenCalledWith('/login')
       expect(logger.info).toHaveBeenCalledWith('User logged out successfully')
@@ -127,19 +147,15 @@ describe('auth store', () => {
       authService.logout.mockRejectedValue(new Error('Network error'))
 
       const store = useAuthStore()
-      store.token = 'existing-token'
       store.isAuthenticated = true
 
       await store.logout()
 
       // State should still be cleared
-      expect(store.token).toBe(null)
       expect(store.isAuthenticated).toBe(false)
-      expect(localStorage.removeItem).toHaveBeenCalledWith('access_token')
-      expect(localStorage.removeItem).toHaveBeenCalledWith('refresh_token')
       expect(router.push).toHaveBeenCalledWith('/login')
       expect(logger.warn).toHaveBeenCalledWith(
-        'Logout request failed, clearing local session anyway',
+        'Logout request failed, clearing local state anyway',
         expect.any(Object)
       )
     })

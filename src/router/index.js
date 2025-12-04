@@ -83,16 +83,22 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
+  if (to.meta.requiresAuth) {
+    // Check auth status via API (cookie sent automatically)
+    const isValid = await authStore.checkAuthStatus()
+    if (!isValid) {
+      next('/login')
+      return
+    }
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
     next('/dashboard')
-  } else {
-    next()
+    return
   }
+
+  next()
 })
 
 router.afterEach((to) => {

@@ -5,15 +5,23 @@ import router from '../router'
 import { logger, setUserContext, clearUserContext } from '../utils/logger'
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('access_token') || null)
-  const isAuthenticated = ref(!!token.value)
+  // Auth state - no longer tied to localStorage tokens
+  const isAuthenticated = ref(false)
+
+  async function checkAuthStatus() {
+    try {
+      const response = await authService.tokenStatus()
+      isAuthenticated.value = response.data.valid
+      return response.data.valid
+    } catch {
+      isAuthenticated.value = false
+      return false
+    }
+  }
 
   async function login(username, password) {
     try {
       const response = await authService.login(username, password)
-      token.value = response.data.access_token
-      localStorage.setItem('access_token', response.data.access_token)
-      localStorage.setItem('refresh_token', response.data.refresh_token)
       isAuthenticated.value = true
 
       logger.info('User logged in successfully', {
@@ -22,8 +30,8 @@ export const useAuthStore = defineStore('auth', () => {
       })
 
       // Set user context for future logs
-      if (response.data.user) {
-        setUserContext(response.data.user)
+      if (response.data.user_id) {
+        setUserContext({ id: response.data.user_id, username: response.data.username })
       }
 
       router.push('/dashboard')
@@ -43,22 +51,19 @@ export const useAuthStore = defineStore('auth', () => {
       await authService.logout()
       logger.info('User logged out successfully')
     } catch (error) {
-      logger.warn('Logout request failed, clearing local session anyway', {
+      logger.warn('Logout request failed, clearing local state anyway', {
         error: error.message,
       })
     } finally {
-      token.value = null
       isAuthenticated.value = false
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
       clearUserContext()
       router.push('/login')
     }
   }
 
   return {
-    token,
     isAuthenticated,
+    checkAuthStatus,
     login,
     logout,
   }
