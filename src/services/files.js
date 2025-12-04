@@ -1,6 +1,7 @@
 import { filesApi } from './filesApi'
 import { validateRequired } from '../utils/validation'
 import { env } from '../config/env'
+import { convertToWebP, blobToWebPFile } from '../utils/fileHelpers'
 
 /**
  * Validates that environment configuration is available
@@ -39,8 +40,16 @@ function transformFileUrl(relativeUrl) {
 
 export default {
   async uploadFile(file, fileType = 'portfolio-image') {
+    let fileToUpload = file
+
+    // Convert images to WebP for better compression (except documents)
+    if (fileType !== 'document' && file.type?.startsWith('image/')) {
+      const webpBlob = await convertToWebP(file, { quality: 0.85 })
+      fileToUpload = blobToWebPFile(webpBlob, file.name)
+    }
+
     const formData = new window.FormData()
-    formData.append('file', file)
+    formData.append('file', fileToUpload)
     formData.append('fileType', fileType)
 
     const response = await filesApi.post('/files', formData, {

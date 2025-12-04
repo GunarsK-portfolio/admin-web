@@ -1,4 +1,86 @@
 /**
+ * Converts an image file to WebP format for better compression
+ * @param {File|Blob} file - The image file to convert
+ * @param {Object} options - Conversion options
+ * @param {number} options.quality - WebP quality (0.0 to 1.0), default 0.85
+ * @param {number} options.maxWidth - Maximum width (maintains aspect ratio), default null (no resize)
+ * @param {number} options.maxHeight - Maximum height (maintains aspect ratio), default null (no resize)
+ * @returns {Promise<Blob>} WebP blob
+ */
+export async function convertToWebP(file, options = {}) {
+  const { quality = 0.85, maxWidth = null, maxHeight = null } = options
+
+  // Skip if already WebP
+  if (file.type === 'image/webp') {
+    return file
+  }
+
+  // Skip non-image files
+  if (!file.type.startsWith('image/')) {
+    return file
+  }
+
+  return new Promise((resolve, reject) => {
+    const img = new window.Image()
+    const url = URL.createObjectURL(file)
+
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+
+      let { width, height } = img
+
+      // Calculate new dimensions if max constraints provided
+      if (maxWidth && width > maxWidth) {
+        height = (height * maxWidth) / width
+        width = maxWidth
+      }
+      if (maxHeight && height > maxHeight) {
+        width = (width * maxHeight) / height
+        height = maxHeight
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, width, height)
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob)
+          } else {
+            reject(new Error('Failed to convert image to WebP'))
+          }
+        },
+        'image/webp',
+        quality
+      )
+    }
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Failed to load image for conversion'))
+    }
+
+    img.src = url
+  })
+}
+
+/**
+ * Converts a Blob to a File object with WebP extension
+ * @param {Blob} blob - The blob to convert
+ * @param {string} originalName - Original filename
+ * @returns {File} File with .webp extension
+ */
+export function blobToWebPFile(blob, originalName) {
+  const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '')
+  const fileName = `${nameWithoutExt}.webp`
+  return new window.File([blob], fileName, { type: 'image/webp' })
+}
+
+/**
  * Formats file size to human-readable string
  * @param {number} bytes - File size in bytes
  * @returns {string} Formatted file size

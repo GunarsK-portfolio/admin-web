@@ -25,24 +25,25 @@ task test:coverage
 
 ## Test Files
 
-14 test files, 181 tests
+15 test files, 203 tests
 
-| File                   | Tests | Coverage                                           |
-| ---------------------- | ----- | -------------------------------------------------- |
-| `validation.test.js`   | 31    | required, email, url, hexColor, dateAfter          |
-| `crudHelpers.test.js`  | 28    | createDataLoader, createSaveHandler, deleteHandler |
-| `tableHelpers.test.js` | 23    | stringSorter, numberSorter, dateSorter, dateRange  |
-| `useTheme.test.js`     | 17    | getStoredTheme, setStoredTheme, createThemeConfig  |
-| `dateHelpers.test.js`  | 16    | toMonthFormat, fromMonthFormat, toDateFormat       |
-| `useModal.test.js`     | 14    | openModal, closeModal, openEditModal, resetForm    |
-| `Login.test.js`        | 12    | initial state, handleLogin, form state management  |
-| `ModalFooter.test.js`  | 12    | default props, editing states, events, loading     |
-| `BackToTop.test.js`    | 10    | scroll behavior, scrollToTop, lifecycle hooks      |
-| `auth.test.js`         | 7     | login/logout success/failure, initial state        |
-| `BackButton.test.js`   | 7     | default props, custom props, route objects         |
-| `useDataState.test.js` | 6     | initial state, reactivity, loading flow            |
-| `SearchInput.test.js`  | 4     | default props, custom props, emits                 |
-| `AddButton.test.js`    | 4     | label prop, click event, component rendering       |
+| File                   | Tests | Coverage                                                    |
+| ---------------------- | ----- | ----------------------------------------------------------- |
+| `validation.test.js`   | 31    | required, email, url, hexColor, dateAfter                   |
+| `crudHelpers.test.js`  | 27    | createDataLoader, createSaveHandler, deleteHandler          |
+| `tableHelpers.test.js` | 21    | stringSorter, numberSorter, dateSorter, dateRange           |
+| `fileHelpers.test.js`  | 22    | convertToWebP, blobToWebPFile, formatFileSize, validateFile |
+| `useTheme.test.js`     | 17    | getStoredTheme, setStoredTheme, createThemeConfig           |
+| `dateHelpers.test.js`  | 16    | toMonthFormat, fromMonthFormat, toDateFormat                |
+| `useModal.test.js`     | 14    | openModal, closeModal, openEditModal, resetForm             |
+| `Login.test.js`        | 11    | initial state, handleLogin, form state management           |
+| `ModalFooter.test.js`  | 9     | default props, editing states, events, loading              |
+| `BackToTop.test.js`    | 8     | scroll behavior, scrollToTop, lifecycle hooks               |
+| `auth.test.js`         | 7     | login/logout success/failure, initial state                 |
+| `BackButton.test.js`   | 6     | default props, custom props, route objects                  |
+| `useDataState.test.js` | 6     | initial state, reactivity, loading flow                     |
+| `SearchInput.test.js`  | 4     | default props, custom props, emits                          |
+| `AddButton.test.js`    | 4     | label prop, click event, component rendering                |
 
 ## Key Testing Patterns
 
@@ -102,6 +103,38 @@ openModal()
 expect(form.value).toEqual(defaultValues)
 ```
 
+### Mocking Browser APIs (Image, Canvas)
+
+For image processing tests, jsdom doesn't support actual image loading or canvas
+operations. Use mocks:
+
+```javascript
+// Mock Image class - must be constructor function, not arrow function
+window.Image = function () {
+  this.width = 100
+  this.height = 100
+  this.onload = null
+  const self = this
+  Object.defineProperty(this, 'src', {
+    set() {
+      setTimeout(() => self.onload?.(), 0)
+    },
+  })
+}
+
+// Mock Canvas
+const mockCanvas = {
+  width: 0,
+  height: 0,
+  getContext: vi.fn(() => ({ drawImage: vi.fn() })),
+  toBlob: vi.fn((callback) => callback(new Blob(['mock'], { type: 'image/webp' }))),
+}
+vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+  if (tag === 'canvas') return mockCanvas
+  return document.createElement(tag)
+})
+```
+
 ## Test Categories
 
 ### Utility Functions (`src/utils/`)
@@ -110,6 +143,7 @@ expect(form.value).toEqual(defaultValues)
 - Date formatting and parsing (toMonthFormat, fromMonthFormat, toDateFormat)
 - CRUD helpers (createDataLoader, createSaveHandler, createDeleteHandler)
 - Table helpers (string/number/date sorters, date range renderer)
+- File helpers (WebP conversion, file size formatting, file validation)
 - String normalization
 
 ### Composables (`src/composables/`)
@@ -144,7 +178,8 @@ src/
 │   ├── validation.test.js
 │   ├── dateHelpers.test.js
 │   ├── crudHelpers.test.js
-│   └── tableHelpers.test.js
+│   ├── tableHelpers.test.js
+│   └── fileHelpers.test.js   # WebP conversion, file validation
 ├── composables/
 │   ├── useModal.test.js
 │   ├── useDataState.test.js
