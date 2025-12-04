@@ -65,11 +65,11 @@ const props = defineProps({
   },
   outputFormat: {
     type: String,
-    default: 'image/jpeg', // or 'image/png'
+    default: 'image/webp', // WebP for better compression, or 'image/jpeg'/'image/png'
   },
   outputQuality: {
     type: Number,
-    default: 0.9, // 0.0 to 1.0
+    default: 0.85, // 0.0 to 1.0 (0.85 is good balance for WebP)
   },
 })
 
