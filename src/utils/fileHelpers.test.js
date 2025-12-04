@@ -129,6 +129,45 @@ describe('fileHelpers', () => {
       expect(mockCanvas.width).toBe(50)
       expect(mockCanvas.height).toBe(50)
     })
+
+    // Verify maxHeight option resizes canvas while maintaining aspect ratio
+    it('resizes image when maxHeight is provided', async () => {
+      const jpegFile = new window.File(['test'], 'test.jpg', { type: 'image/jpeg' })
+
+      await convertToWebP(jpegFile, { maxHeight: 50 })
+
+      // Canvas should be resized to 50x50 (maintaining aspect ratio from 100x100)
+      expect(mockCanvas.width).toBe(50)
+      expect(mockCanvas.height).toBe(50)
+    })
+
+    // Error path: image fails to load
+    it('rejects when image fails to load', async () => {
+      // Override Image mock to trigger onerror instead of onload
+      window.Image = function () {
+        this.onerror = null
+        const self = this
+        Object.defineProperty(this, 'src', {
+          set() {
+            setTimeout(() => self.onerror?.(), 0)
+          },
+          get() {
+            return ''
+          },
+        })
+      }
+
+      const jpegFile = new window.File(['test'], 'test.jpg', { type: 'image/jpeg' })
+      await expect(convertToWebP(jpegFile)).rejects.toThrow('Failed to load image')
+    })
+
+    // Error path: canvas.toBlob returns null
+    it('rejects when canvas fails to create blob', async () => {
+      mockCanvas.toBlob = vi.fn((callback) => callback(null))
+
+      const jpegFile = new window.File(['test'], 'test.jpg', { type: 'image/jpeg' })
+      await expect(convertToWebP(jpegFile)).rejects.toThrow('Failed to convert image to WebP')
+    })
   })
 
   /**

@@ -25,14 +25,14 @@ task test:coverage
 
 ## Test Files
 
-15 test files, 203 tests
+15 test files, 206 tests
 
 | File                   | Tests | Coverage                                                    |
 | ---------------------- | ----- | ----------------------------------------------------------- |
 | `validation.test.js`   | 31    | required, email, url, hexColor, dateAfter                   |
 | `crudHelpers.test.js`  | 27    | createDataLoader, createSaveHandler, deleteHandler          |
+| `fileHelpers.test.js`  | 25    | convertToWebP, blobToWebPFile, formatFileSize, validateFile |
 | `tableHelpers.test.js` | 21    | stringSorter, numberSorter, dateSorter, dateRange           |
-| `fileHelpers.test.js`  | 22    | convertToWebP, blobToWebPFile, formatFileSize, validateFile |
 | `useTheme.test.js`     | 17    | getStoredTheme, setStoredTheme, createThemeConfig           |
 | `dateHelpers.test.js`  | 16    | toMonthFormat, fromMonthFormat, toDateFormat                |
 | `useModal.test.js`     | 14    | openModal, closeModal, openEditModal, resetForm             |

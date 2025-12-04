@@ -44,8 +44,13 @@ export default {
 
     // Convert images to WebP for better compression (except documents)
     if (fileType !== 'document' && file.type?.startsWith('image/')) {
-      const webpBlob = await convertToWebP(file, { quality: 0.85 })
-      fileToUpload = blobToWebPFile(webpBlob, file.name)
+      try {
+        const webpBlob = await convertToWebP(file, { quality: 0.85 })
+        fileToUpload = blobToWebPFile(webpBlob, file.name)
+      } catch (error) {
+        console.warn('WebP conversion failed, uploading original file:', error)
+        // Fall back to original file
+      }
     }
 
     const formData = new window.FormData()
