@@ -39,14 +39,19 @@ export function useTokenRefresh() {
     statusCheckTimer = setInterval(async () => {
       if (isIdle() && authStore.isAuthenticated) {
         logger.debug('User idle, refreshing token')
-        await refreshToken()
+        try {
+          await refreshToken()
+        } catch (error) {
+          logger.error('Idle token refresh failed', { error: error.message })
+        }
       }
     }, STATUS_CHECK_INTERVAL_MS)
   }
 
   function start() {
     activeInstanceCount++
-    if (typeof window !== 'undefined') {
+    // Only add listeners once (first instance)
+    if (activeInstanceCount === 1 && typeof window !== 'undefined') {
       window.addEventListener('mousemove', updateActivity)
       window.addEventListener('keypress', updateActivity)
       window.addEventListener('click', updateActivity)

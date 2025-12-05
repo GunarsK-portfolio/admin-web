@@ -25,26 +25,26 @@ task test:coverage
 
 ## Test Files
 
-16 test files, 218 tests
+16 test files, 219 tests
 
-| File                   | Tests | Coverage                                                    |
-| ---------------------- | ----- | ----------------------------------------------------------- |
-| `validation.test.js`   | 31    | required, email, url, hexColor, dateAfter                   |
-| `crudHelpers.test.js`  | 27    | createDataLoader, createSaveHandler, deleteHandler          |
-| `fileHelpers.test.js`  | 25    | convertToWebP, blobToWebPFile, formatFileSize, validateFile |
-| `tableHelpers.test.js` | 21    | stringSorter, numberSorter, dateSorter, dateRange           |
-| `useTheme.test.js`     | 17    | getStoredTheme, setStoredTheme, createThemeConfig           |
-| `dateHelpers.test.js`  | 16    | toMonthFormat, fromMonthFormat, toDateFormat                |
-| `useModal.test.js`     | 14    | openModal, closeModal, openEditModal, resetForm             |
-| `Login.test.js`        | 11    | initial state, handleLogin, form state management           |
-| `tokenRefresh.test.js` | 10    | refreshToken, 401 interceptor, request queueing             |
-| `ModalFooter.test.js`  | 9     | default props, editing states, events, loading              |
-| `auth.test.js`         | 9     | login/logout, checkAuthStatus, cookie-based auth flow       |
-| `BackToTop.test.js`    | 8     | scroll behavior, scrollToTop, lifecycle hooks               |
-| `BackButton.test.js`   | 6     | default props, custom props, route objects                  |
-| `useDataState.test.js` | 6     | initial state, reactivity, loading flow                     |
-| `SearchInput.test.js`  | 4     | default props, custom props, emits                          |
-| `AddButton.test.js`    | 4     | label prop, click event, component rendering                |
+| File                   | Tests | Coverage                                                         |
+| ---------------------- | ----- | ---------------------------------------------------------------- |
+| `validation.test.js`   | 31    | required, email, url, hexColor, dateAfter                        |
+| `crudHelpers.test.js`  | 27    | createDataLoader, createSaveHandler, deleteHandler               |
+| `fileHelpers.test.js`  | 25    | convertToWebP, blobToWebPFile, formatFileSize, validateFile      |
+| `tableHelpers.test.js` | 21    | stringSorter, numberSorter, dateSorter, dateRange                |
+| `useTheme.test.js`     | 17    | getStoredTheme, setStoredTheme, createThemeConfig                |
+| `dateHelpers.test.js`  | 16    | toMonthFormat, fromMonthFormat, toDateFormat                     |
+| `useModal.test.js`     | 14    | openModal, closeModal, openEditModal, resetForm                  |
+| `Login.test.js`        | 11    | initial state, handleLogin, form state management                |
+| `tokenRefresh.test.js` | 11    | refreshToken, 401 interceptor, request queueing, duplicate guard |
+| `ModalFooter.test.js`  | 9     | default props, editing states, events, loading                   |
+| `auth.test.js`         | 9     | login/logout, checkAuthStatus, cookie-based auth flow            |
+| `BackToTop.test.js`    | 8     | scroll behavior, scrollToTop, lifecycle hooks                    |
+| `BackButton.test.js`   | 6     | default props, custom props, route objects                       |
+| `useDataState.test.js` | 6     | initial state, reactivity, loading flow                          |
+| `SearchInput.test.js`  | 4     | default props, custom props, emits                               |
+| `AddButton.test.js`    | 4     | label prop, click event, component rendering                     |
 
 ## Key Testing Patterns
 

@@ -199,5 +199,16 @@ describe('tokenRefresh', () => {
       await expect(errorHandler(error)).rejects.toEqual(error)
       expect(authApi.post).not.toHaveBeenCalled()
     })
+
+    it('does not register duplicate interceptors on same instance', () => {
+      const mockAxios = axios.create()
+
+      add401Interceptor(mockAxios)
+      add401Interceptor(mockAxios)
+      add401Interceptor(mockAxios)
+
+      // Only one interceptor should be registered
+      expect(mockAxios.interceptors.response.handlers.length).toBe(1)
+    })
   })
 })

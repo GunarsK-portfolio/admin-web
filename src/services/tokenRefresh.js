@@ -4,6 +4,7 @@ import { authApi } from './authApi'
 let isRefreshing = false
 let failedQueue = []
 let onAuthFailureCallback = null
+const registeredInstances = new WeakSet()
 
 // For testing only
 export function __resetState() {
@@ -47,6 +48,11 @@ export async function refreshToken() {
 
 // Add 401 interceptor to any axios instance
 export function add401Interceptor(axiosInstance) {
+  if (registeredInstances.has(axiosInstance)) {
+    return
+  }
+  registeredInstances.add(axiosInstance)
+
   axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
