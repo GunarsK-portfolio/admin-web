@@ -1,92 +1,29 @@
-import { ref, onUnmounted } from 'vue'
-import authService from '../services/auth'
+import { onUnmounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { refreshToken, setAuthFailureCallback } from '../services/tokenRefresh'
 import { logger } from '../utils/logger'
 
-// Shared state across all instances
-let refreshTimer = null
+// Shared state
 let statusCheckTimer = null
 let lastActivity = Date.now()
 const IDLE_THRESHOLD_MS = 30000 // 30 seconds
 const STATUS_CHECK_INTERVAL_MS = 30000 // 30 seconds
-const REFRESH_THRESHOLD_SECONDS = 60 // Refresh when < 60 seconds remaining
 
 export function useTokenRefresh() {
   const authStore = useAuthStore()
-  const ttl = ref(null)
 
-  // Update last activity timestamp
+  // Set auth failure callback to logout
+  setAuthFailureCallback(() => authStore.logout())
+
   function updateActivity() {
     lastActivity = Date.now()
   }
 
-  // Check if user is idle
   function isIdle() {
     return Date.now() - lastActivity > IDLE_THRESHOLD_MS
   }
 
-  // Handle TTL from response header or API call
-  async function handleTTL(ttlSeconds) {
-    ttl.value = ttlSeconds
-
-    if (ttlSeconds <= 0) {
-      // Token expired, logout
-      await authStore.logout()
-      return
-    }
-
-    if (ttlSeconds < REFRESH_THRESHOLD_SECONDS) {
-      // Token expiring soon, refresh immediately
-      logger.info('Token expiring soon, refreshing now', { ttlSeconds })
-      await refreshToken()
-    }
-  }
-
-  // Refresh the access token
-  async function refreshToken() {
-    try {
-      const response = await authService.refresh()
-      // Server sets new cookies - no localStorage needed
-
-      // Update TTL and reschedule checks
-      if (response.data.expires_in) {
-        await handleTTL(response.data.expires_in)
-      }
-
-      logger.info('Token refreshed successfully', {
-        expiresIn: response.data.expires_in,
-      })
-      return true
-    } catch (error) {
-      logger.error('Token refresh failed', {
-        error: error.message,
-        status: error.response?.status,
-      })
-      await authStore.logout()
-      return false
-    }
-  }
-
-  // Check token status via API (for idle users)
-  async function checkTokenStatus() {
-    try {
-      const response = await authService.tokenStatus()
-      if (response.data.valid) {
-        await handleTTL(response.data.ttl_seconds)
-      } else {
-        logger.warn('Token no longer valid')
-        await authStore.logout()
-      }
-    } catch (error) {
-      logger.warn('Token status check failed, attempting refresh', {
-        error: error.message,
-      })
-      // If status check fails, try to refresh
-      await refreshToken()
-    }
-  }
-
-  // Periodic status check for idle users
+  // Periodic token refresh for idle users
   function scheduleStatusCheck() {
     if (statusCheckTimer) {
       clearInterval(statusCheckTimer)
@@ -94,48 +31,23 @@ export function useTokenRefresh() {
 
     statusCheckTimer = setInterval(async () => {
       if (isIdle() && authStore.isAuthenticated) {
-        logger.debug('User idle, checking token status')
-        await checkTokenStatus()
+        logger.debug('User idle, refreshing token')
+        await refreshToken()
       }
     }, STATUS_CHECK_INTERVAL_MS)
   }
 
-  // Extract TTL from response headers (opportunistic check)
-  function extractTTLFromHeaders(response) {
-    const ttlHeader = response.headers['x-token-ttl']
-    if (ttlHeader) {
-      const ttlSeconds = parseInt(ttlHeader, 10)
-      if (!isNaN(ttlSeconds)) {
-        handleTTL(ttlSeconds)
-      }
-    }
-  }
-
-  // Start monitoring
   function start() {
-    // Track user activity
     if (typeof window !== 'undefined') {
       window.addEventListener('mousemove', updateActivity)
       window.addEventListener('keypress', updateActivity)
       window.addEventListener('click', updateActivity)
       window.addEventListener('scroll', updateActivity)
     }
-
-    // Start periodic status checks
     scheduleStatusCheck()
-
-    // Initial check if already logged in
-    if (authStore.isAuthenticated) {
-      checkTokenStatus()
-    }
   }
 
-  // Stop monitoring
   function stop() {
-    if (refreshTimer) {
-      clearTimeout(refreshTimer)
-      refreshTimer = null
-    }
     if (statusCheckTimer) {
       clearInterval(statusCheckTimer)
       statusCheckTimer = null
@@ -148,16 +60,11 @@ export function useTokenRefresh() {
     }
   }
 
-  // Cleanup on unmount
   onUnmounted(() => {
     stop()
   })
 
   return {
-    ttl,
-    refreshToken,
-    checkTokenStatus,
-    extractTTLFromHeaders,
     start,
     stop,
   }

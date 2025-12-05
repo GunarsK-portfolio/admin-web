@@ -56,7 +56,6 @@ import {
 } from 'naive-ui'
 import { MoonOutline, SunnyOutline } from '@vicons/ionicons5'
 import BackToTop from './components/shared/BackToTop.vue'
-import { setupResponseInterceptor } from './services/api'
 import { useTokenRefresh } from './composables/useTokenRefresh'
 import { useAuthStore } from './stores/auth'
 import { THEMES, getStoredTheme, setStoredTheme, createThemeConfig } from './composables/useTheme'
@@ -87,10 +86,7 @@ function toggleTheme() {
 const tokenRefresh = useTokenRefresh()
 
 onMounted(() => {
-  // Setup axios interceptor to read TTL headers
-  setupResponseInterceptor(tokenRefresh.handleTTL)
-
-  // Start token monitoring
+  // Start token monitoring (idle refresh)
   tokenRefresh.start()
 
   // Listen for logout events from other tabs
