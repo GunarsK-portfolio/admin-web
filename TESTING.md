@@ -25,7 +25,7 @@ task test:coverage
 
 ## Test Files
 
-15 test files, 208 tests
+16 test files, 218 tests
 
 | File                   | Tests | Coverage                                                    |
 | ---------------------- | ----- | ----------------------------------------------------------- |
@@ -37,6 +37,7 @@ task test:coverage
 | `dateHelpers.test.js`  | 16    | toMonthFormat, fromMonthFormat, toDateFormat                |
 | `useModal.test.js`     | 14    | openModal, closeModal, openEditModal, resetForm             |
 | `Login.test.js`        | 11    | initial state, handleLogin, form state management           |
+| `tokenRefresh.test.js` | 10    | refreshToken, 401 interceptor, request queueing             |
 | `ModalFooter.test.js`  | 9     | default props, editing states, events, loading              |
 | `auth.test.js`         | 9     | login/logout, checkAuthStatus, cookie-based auth flow       |
 | `BackToTop.test.js`    | 8     | scroll behavior, scrollToTop, lifecycle hooks               |
@@ -152,6 +153,10 @@ vi.spyOn(document, 'createElement').mockImplementation((tag) => {
 - `useDataState` - List view data state
 - `useTheme` - Theme detection, storage, and configuration
 
+### Services (`src/services/`)
+
+- `tokenRefresh` - Token refresh mechanism, 401 interceptor, request queueing
+
 ### Stores (`src/stores/`)
 
 - `auth` - Authentication state, login/logout flows
@@ -184,6 +189,8 @@ src/
 │   ├── useModal.test.js
 │   ├── useDataState.test.js
 │   └── useTheme.test.js
+├── services/
+│   └── tokenRefresh.test.js  # Token refresh, 401 interceptor
 ├── stores/
 │   └── auth.test.js
 ├── views/
