@@ -60,6 +60,7 @@
             </n-space>
           </div>
           <n-upload
+            v-if="canEdit(Resource.MINIATURES)"
             v-model:file-list="coverImageFileList"
             :custom-request="handleCoverImageUpload"
             :before-upload="validateCoverImage"
@@ -101,7 +102,13 @@
     </n-form>
 
     <template #footer>
-      <ModalFooter :loading="saving" :editing="editing" @cancel="closeModal" @save="handleSave" />
+      <ModalFooter
+        :loading="saving"
+        :editing="editing"
+        :can-save="canEdit(Resource.MINIATURES)"
+        @cancel="closeModal"
+        @save="handleSave"
+      />
     </template>
   </n-modal>
 
@@ -133,7 +140,7 @@ import {
   NText,
   NButton,
 } from 'naive-ui'
-import { CreateOutline, TrashOutline, CloudUploadOutline } from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline, CloudUploadOutline, EyeOutline } from '@vicons/ionicons5'
 import miniaturesService from '../../services/miniatures'
 import filesService from '../../services/files'
 import { required, validateForm } from '../../utils/validation'
@@ -159,7 +166,7 @@ import ImageCropperModal from '../shared/ImageCropperModal.vue'
 
 // Services
 const { message, dialog } = useViewServices()
-const { canEdit, canDelete, Resource } = usePermissions()
+const { canRead, canEdit, canDelete, Resource } = usePermissions()
 
 // Data state
 const { data: themes, loading, search } = useDataState()
@@ -319,6 +326,9 @@ const columns = computed(() => {
   ]
 
   const actions = []
+  if (canRead(Resource.MINIATURES) && !canEdit(Resource.MINIATURES)) {
+    actions.push({ icon: EyeOutline, onClick: handleEdit, label: 'View theme' })
+  }
   if (canEdit(Resource.MINIATURES)) {
     actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit theme' })
   }

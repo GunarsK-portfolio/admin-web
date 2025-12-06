@@ -98,6 +98,7 @@
         <ModalFooter
           :loading="savingSkill"
           :editing="editingSkill"
+          :can-save="canEdit(Resource.SKILLS)"
           @cancel="closeSkillModal"
           @save="handleSaveSkill"
         />
@@ -144,6 +145,7 @@
         <ModalFooter
           :loading="savingType"
           :editing="editingType"
+          :can-save="canEdit(Resource.SKILLS)"
           @cancel="closeTypeModal"
           @save="handleSaveType"
         />
@@ -171,7 +173,7 @@ import {
   NCollapse,
   NCollapseItem,
 } from 'naive-ui'
-import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline, EyeOutline } from '@vicons/ionicons5'
 import BackButton from '../components/shared/BackButton.vue'
 import SearchInput from '../components/shared/SearchInput.vue'
 import AddButton from '../components/shared/AddButton.vue'
@@ -186,7 +188,7 @@ import { createSearchFilter } from '../utils/filterHelpers'
 import { createDataLoader, createSaveHandler, createDeleteHandler } from '../utils/crudHelpers'
 
 const { message, dialog } = useViewServices()
-const { canEdit, canDelete, Resource } = usePermissions()
+const { canRead, canEdit, canDelete, Resource } = usePermissions()
 
 // Skills state
 const skills = ref([])
@@ -371,6 +373,9 @@ const skillColumns = computed(() => {
   ]
 
   const actions = []
+  if (canRead(Resource.SKILLS) && !canEdit(Resource.SKILLS)) {
+    actions.push({ icon: EyeOutline, onClick: handleEditSkill, label: 'View skill' })
+  }
   if (canEdit(Resource.SKILLS)) {
     actions.push({ icon: CreateOutline, onClick: handleEditSkill, label: 'Edit skill' })
   }
@@ -412,6 +417,9 @@ const typeColumns = computed(() => {
   ]
 
   const actions = []
+  if (canRead(Resource.SKILLS) && !canEdit(Resource.SKILLS)) {
+    actions.push({ icon: EyeOutline, onClick: handleEditType, label: 'View skill type' })
+  }
   if (canEdit(Resource.SKILLS)) {
     actions.push({ icon: CreateOutline, onClick: handleEditType, label: 'Edit skill type' })
   }

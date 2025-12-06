@@ -93,7 +93,13 @@
       </n-form>
 
       <template #footer>
-        <ModalFooter :loading="saving" :editing="editing" @cancel="closeModal" @save="handleSave" />
+        <ModalFooter
+          :loading="saving"
+          :editing="editing"
+          :can-save="canEdit(Resource.EXPERIENCE)"
+          @cancel="closeModal"
+          @save="handleSave"
+        />
       </template>
     </n-modal>
   </div>
@@ -119,7 +125,7 @@ import {
   NGrid,
   NFormItemGi,
 } from 'naive-ui'
-import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline, EyeOutline } from '@vicons/ionicons5'
 import BackButton from '../components/shared/BackButton.vue'
 import SearchInput from '../components/shared/SearchInput.vue'
 import AddButton from '../components/shared/AddButton.vue'
@@ -136,7 +142,7 @@ import { createSearchFilter } from '../utils/filterHelpers'
 import { createDataLoader, createSaveHandler, createDeleteHandler } from '../utils/crudHelpers'
 
 const { message, dialog } = useViewServices()
-const { canEdit, canDelete, Resource } = usePermissions()
+const { canRead, canEdit, canDelete, Resource } = usePermissions()
 const { data: experiences, loading, search } = useDataState()
 const { showModal, editing, form, formRef, openModal, closeModal, openEditModal, resetForm } =
   useModal({
@@ -231,6 +237,9 @@ const columns = computed(() => {
   ]
 
   const actions = []
+  if (canRead(Resource.EXPERIENCE) && !canEdit(Resource.EXPERIENCE)) {
+    actions.push({ icon: EyeOutline, onClick: handleEdit, label: 'View work experience' })
+  }
   if (canEdit(Resource.EXPERIENCE)) {
     actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit work experience' })
   }

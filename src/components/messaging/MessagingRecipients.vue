@@ -35,7 +35,13 @@
     </n-form>
 
     <template #footer>
-      <ModalFooter :loading="saving" :editing="editing" @cancel="closeModal" @save="handleSave" />
+      <ModalFooter
+        :loading="saving"
+        :editing="editing"
+        :can-save="canEdit(Resource.RECIPIENTS)"
+        @cancel="closeModal"
+        @save="handleSave"
+      />
     </template>
   </n-modal>
 </template>
@@ -53,7 +59,7 @@ import {
   NSwitch,
   NTag,
 } from 'naive-ui'
-import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline, EyeOutline } from '@vicons/ionicons5'
 import messagingService from '../../services/messaging'
 import { required, email, validateForm } from '../../utils/validation'
 import { createActionsRenderer, stringSorter, dateSorter } from '../../utils/tableHelpers'
@@ -69,7 +75,7 @@ import AddButton from '../shared/AddButton.vue'
 import ModalFooter from '../shared/ModalFooter.vue'
 
 const { message, dialog } = useViewServices()
-const { canEdit, canDelete, Resource } = usePermissions()
+const { canRead, canEdit, canDelete, Resource } = usePermissions()
 
 const { data: recipients, loading, search } = useDataState()
 
@@ -162,6 +168,9 @@ const columns = computed(() => {
   ]
 
   const actions = []
+  if (canRead(Resource.RECIPIENTS) && !canEdit(Resource.RECIPIENTS)) {
+    actions.push({ icon: EyeOutline, onClick: handleEdit, label: 'View recipient' })
+  }
   if (canEdit(Resource.RECIPIENTS)) {
     actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit recipient' })
   }

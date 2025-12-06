@@ -1,7 +1,7 @@
 <template>
   <n-space justify="end">
-    <n-button @click="$emit('cancel')">Cancel</n-button>
-    <n-button type="primary" :loading="loading" @click="$emit('save')">
+    <n-button @click="$emit('cancel')">{{ canSave ? 'Cancel' : 'Close' }}</n-button>
+    <n-button v-if="canSave" type="primary" :loading="loading" @click="$emit('save')">
       {{ editing ? 'Update' : 'Create' }}
     </n-button>
   </n-space>
@@ -18,6 +18,10 @@ defineProps({
   editing: {
     type: [Object, null],
     default: null,
+  },
+  canSave: {
+    type: Boolean,
+    default: true,
   },
 })
 

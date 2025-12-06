@@ -136,6 +136,7 @@
                   </n-space>
                 </div>
                 <n-upload
+                  v-if="canEdit(Resource.PROJECTS)"
                   v-model:file-list="imageFileList"
                   :custom-request="handleImageUpload"
                   :before-upload="createFileValidator(FILE_VALIDATION.IMAGE, message)"
@@ -265,7 +266,13 @@
       </n-form>
 
       <template #footer>
-        <ModalFooter :loading="saving" :editing="editing" @cancel="closeModal" @save="handleSave" />
+        <ModalFooter
+          :loading="saving"
+          :editing="editing"
+          :can-save="canEdit(Resource.PROJECTS)"
+          @cancel="closeModal"
+          @save="handleSave"
+        />
       </template>
     </n-modal>
   </div>
@@ -299,7 +306,7 @@ import {
   NCollapse,
   NCollapseItem,
 } from 'naive-ui'
-import { CreateOutline, TrashOutline, CloudUploadOutline } from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline, CloudUploadOutline, EyeOutline } from '@vicons/ionicons5'
 import BackButton from '../components/shared/BackButton.vue'
 import SearchInput from '../components/shared/SearchInput.vue'
 import AddButton from '../components/shared/AddButton.vue'
@@ -329,7 +336,7 @@ import { usePermissions } from '../composables/usePermissions'
 
 // Services
 const { message, dialog } = useViewServices()
-const { canEdit, canDelete, Resource } = usePermissions()
+const { canRead, canEdit, canDelete, Resource } = usePermissions()
 
 // Data state
 const { data: projects, loading, search } = useDataState()
@@ -562,6 +569,9 @@ const columns = computed(() => {
   ]
 
   const actions = []
+  if (canRead(Resource.PROJECTS) && !canEdit(Resource.PROJECTS)) {
+    actions.push({ icon: EyeOutline, onClick: handleEdit, label: 'View project' })
+  }
   if (canEdit(Resource.PROJECTS)) {
     actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit project' })
   }

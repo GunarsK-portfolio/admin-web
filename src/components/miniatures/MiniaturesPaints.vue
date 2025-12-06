@@ -50,7 +50,13 @@
     </n-form>
 
     <template #footer>
-      <ModalFooter :loading="saving" :editing="editing" @cancel="closeModal" @save="handleSave" />
+      <ModalFooter
+        :loading="saving"
+        :editing="editing"
+        :can-save="canEdit(Resource.MINIATURES)"
+        @cancel="closeModal"
+        @save="handleSave"
+      />
     </template>
   </n-modal>
 </template>
@@ -70,7 +76,7 @@ import {
   NSelect,
   NColorPicker,
 } from 'naive-ui'
-import { CreateOutline, TrashOutline } from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline, EyeOutline } from '@vicons/ionicons5'
 import miniaturesService from '../../services/miniatures'
 import { required, hexColor, validateForm } from '../../utils/validation'
 import { createActionsRenderer, stringSorter } from '../../utils/tableHelpers'
@@ -86,7 +92,7 @@ import ModalFooter from '../shared/ModalFooter.vue'
 
 // Services
 const { message, dialog } = useViewServices()
-const { canEdit, canDelete, Resource } = usePermissions()
+const { canRead, canEdit, canDelete, Resource } = usePermissions()
 
 // Data state
 const { data: paints, loading, search } = useDataState()
@@ -204,6 +210,9 @@ const columns = computed(() => {
   ]
 
   const actions = []
+  if (canRead(Resource.MINIATURES) && !canEdit(Resource.MINIATURES)) {
+    actions.push({ icon: EyeOutline, onClick: handleEdit, label: 'View paint' })
+  }
   if (canEdit(Resource.MINIATURES)) {
     actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit paint' })
   }
