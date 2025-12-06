@@ -80,6 +80,7 @@ export function createDataLoader(options) {
  * @param {Function} options.resetForm - Form reset function
  * @param {Function} [options.transformPayload] - Optional payload transformation
  * @param {Function} [options.validateForm] - Form validation function
+ * @param {Function} [options.checkPermission] - Optional permission check function, returns false to block
  * @returns {Function} Async save handler function
  *
  * @example
@@ -118,6 +119,7 @@ export function createSaveHandler(options) {
     resetForm,
     transformPayload,
     validateForm,
+    checkPermission,
   } = options
 
   if (
@@ -137,6 +139,11 @@ export function createSaveHandler(options) {
   }
 
   return async () => {
+    if (checkPermission && !checkPermission()) {
+      message.error(`You do not have permission to save this ${entityName}`)
+      return
+    }
+
     if (validateForm && !(await validateForm(formRef))) return
 
     saving.value = true
@@ -181,6 +188,7 @@ export function createSaveHandler(options) {
  * @param {Function} options.message - Naive UI message instance
  * @param {Function} options.onSuccess - Callback after successful delete (e.g., reload data)
  * @param {Function} [options.getConfirmText] - Function to get confirmation text from item
+ * @param {Function} [options.checkPermission] - Optional permission check function, returns false to block
  * @returns {Function} Delete handler function
  *
  * @example
@@ -198,7 +206,8 @@ export function createDeleteHandler(options) {
     throw new Error('createDeleteHandler: options object is required')
   }
 
-  const { dialog, service, entityName, message, onSuccess, getConfirmText } = options
+  const { dialog, service, entityName, message, onSuccess, getConfirmText, checkPermission } =
+    options
 
   if (!dialog || !service || !entityName || !message || !onSuccess) {
     throw new Error(
@@ -207,6 +216,11 @@ export function createDeleteHandler(options) {
   }
 
   return (item) => {
+    if (checkPermission && !checkPermission()) {
+      message.error(`You do not have permission to delete this ${entityName}`)
+      return
+    }
+
     // Validate item has ID
     if (!item?.id) {
       logger.error(`Cannot delete ${entityName}: missing ID`)

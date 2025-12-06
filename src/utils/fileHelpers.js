@@ -180,6 +180,7 @@ export function createFileValidator(config, message) {
  * @param {string} options.fileIdField - Form field name for file ID (e.g., 'imageFileId', 'avatarFileId')
  * @param {string} options.fileObjectField - Editing object field name (e.g., 'imageFile', 'avatarFile')
  * @param {Function} options.logger - Logger instance for tracking operations
+ * @param {Function} [options.checkPermission] - Optional permission check function, returns true if allowed
  * @returns {Function} Upload handler function compatible with Naive UI
  *
  * @example
@@ -194,6 +195,7 @@ export function createFileValidator(config, message) {
  *   fileIdField: 'imageFileId',
  *   fileObjectField: 'imageFile',
  *   logger,
+ *   checkPermission: () => canEdit(Resource.PROJECTS),
  * })
  */
 export function createFileUploadHandler(options) {
@@ -208,9 +210,14 @@ export function createFileUploadHandler(options) {
     fileIdField,
     fileObjectField,
     logger,
+    checkPermission,
   } = options
 
   return async ({ file }) => {
+    if (checkPermission && !checkPermission()) {
+      message.error('You do not have permission to upload files')
+      return false
+    }
     uploading.value = true
     try {
       const response = await service(file.file, fileType)
@@ -257,6 +264,7 @@ export function createFileUploadHandler(options) {
  * @param {string} options.fileObjectField - Editing object field name (e.g., 'imageFile', 'avatarFile')
  * @param {string} options.entityName - Entity name for logging (e.g., 'image', 'avatar', 'resume')
  * @param {Function} options.logger - Logger instance for tracking operations
+ * @param {Function} [options.checkPermission] - Optional permission check function, returns true if allowed
  * @returns {Function} Async delete handler function
  *
  * @example
@@ -270,6 +278,7 @@ export function createFileUploadHandler(options) {
  *   fileObjectField: 'imageFile',
  *   entityName: 'image',
  *   logger,
+ *   checkPermission: () => canEdit(Resource.PROJECTS),
  * })
  */
 export function createFileDeleteHandler(options) {
@@ -283,9 +292,14 @@ export function createFileDeleteHandler(options) {
     fileObjectField,
     entityName,
     logger,
+    checkPermission,
   } = options
 
   return async () => {
+    if (checkPermission && !checkPermission()) {
+      message.error('You do not have permission to delete files')
+      return
+    }
     const fileId = form.value[fileIdField] || editing.value?.[fileObjectField]?.id
     if (!fileId) {
       if (logger) {

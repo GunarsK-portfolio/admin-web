@@ -6,7 +6,7 @@
         placeholder="Search projects..."
         aria-label="Search miniature projects"
       />
-      <AddButton label="Add Project" @click="openModal" />
+      <AddButton v-if="canEdit(Resource.MINIATURES)" label="Add Project" @click="openModal" />
     </n-space>
 
     <n-spin :show="loading" aria-label="Loading miniature projects">
@@ -149,7 +149,7 @@
                     height="120"
                     width="120"
                   />
-                  <div class="image-actions">
+                  <div v-if="canDelete(Resource.MINIATURES)" class="image-actions">
                     <n-button
                       size="small"
                       type="error"
@@ -239,12 +239,14 @@ import { createFileValidator, FILE_VALIDATION } from '../../utils/fileHelpers'
 import { useViewServices } from '../../composables/useViewServices'
 import { useModal } from '../../composables/useModal'
 import { useDataState } from '../../composables/useDataState'
+import { usePermissions } from '../../composables/usePermissions'
 import SearchInput from '../shared/SearchInput.vue'
 import AddButton from '../shared/AddButton.vue'
 import ModalFooter from '../shared/ModalFooter.vue'
 
 // Services
 const { message, dialog } = useViewServices()
+const { canEdit, canDelete, Resource } = usePermissions()
 
 // Data state
 const { data: projects, loading, search } = useDataState()
@@ -402,6 +404,7 @@ const handleSave = createSaveHandler({
   onSuccess: loadProjects,
   resetForm,
   validateForm,
+  checkPermission: () => canEdit(Resource.MINIATURES),
 })
 
 const handleDelete = createDeleteHandler({
@@ -411,6 +414,7 @@ const handleDelete = createDeleteHandler({
   message,
   onSuccess: loadProjects,
   getConfirmText: (project) => `"${project.name}"`,
+  checkPermission: () => canDelete(Resource.MINIATURES),
 })
 
 // Image handlers
@@ -434,6 +438,10 @@ async function refreshProject(projectId) {
 
 async function handleImageUpload({ file }) {
   if (!editing.value) return
+  if (!canEdit(Resource.MINIATURES)) {
+    message.error('You do not have permission to upload images')
+    return
+  }
 
   uploadingImage.value = true
   try {
@@ -459,6 +467,10 @@ async function handleImageUpload({ file }) {
 }
 
 async function handleDeleteImage(imageId) {
+  if (!canDelete(Resource.MINIATURES)) {
+    message.error('You do not have permission to delete images')
+    return
+  }
   deletingImage.value = imageId
   try {
     await miniaturesService.deleteProjectImage(imageId)
@@ -474,26 +486,42 @@ async function handleDeleteImage(imageId) {
   }
 }
 
-const columns = [
-  { title: 'Title', key: 'name', sorter: stringSorter('name') },
-  { title: 'Theme', key: 'theme.name', render: (row) => row.theme?.name ?? '—' },
-  { title: 'Scale', key: 'scale' },
-  { title: 'Difficulty', key: 'difficulty' },
-  {
-    title: 'Completed',
-    key: 'completedDate',
-    render: (row) => toDateFormat(row.completedDate, 'N/A'),
-  },
-  { title: 'Order', key: 'displayOrder', width: 80, sorter: numberSorter('displayOrder') },
-  {
-    title: 'Actions',
-    key: 'actions',
-    render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEdit, label: 'Edit project' },
-      { icon: TrashOutline, onClick: handleDelete, type: 'error', label: 'Delete project' },
-    ]),
-  },
-]
+const columns = computed(() => {
+  const cols = [
+    { title: 'Title', key: 'name', sorter: stringSorter('name') },
+    { title: 'Theme', key: 'theme.name', render: (row) => row.theme?.name ?? '—' },
+    { title: 'Scale', key: 'scale' },
+    { title: 'Difficulty', key: 'difficulty' },
+    {
+      title: 'Completed',
+      key: 'completedDate',
+      render: (row) => toDateFormat(row.completedDate, 'N/A'),
+    },
+    { title: 'Order', key: 'displayOrder', width: 80, sorter: numberSorter('displayOrder') },
+  ]
+
+  const actions = []
+  if (canEdit(Resource.MINIATURES)) {
+    actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit project' })
+  }
+  if (canDelete(Resource.MINIATURES)) {
+    actions.push({
+      icon: TrashOutline,
+      onClick: handleDelete,
+      type: 'error',
+      label: 'Delete project',
+    })
+  }
+  if (actions.length > 0) {
+    cols.push({
+      title: 'Actions',
+      key: 'actions',
+      render: createActionsRenderer(actions),
+    })
+  }
+
+  return cols
+})
 
 onMounted(() => {
   loadProjects()

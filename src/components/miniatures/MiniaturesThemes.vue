@@ -6,7 +6,7 @@
         placeholder="Search themes..."
         aria-label="Search miniature themes"
       />
-      <AddButton label="Add Theme" @click="openModal" />
+      <AddButton v-if="canEdit(Resource.MINIATURES)" label="Add Theme" @click="openModal" />
     </n-space>
 
     <n-spin :show="loading" aria-label="Loading themes">
@@ -151,6 +151,7 @@ import { logger } from '../../utils/logger'
 import { useViewServices } from '../../composables/useViewServices'
 import { useModal } from '../../composables/useModal'
 import { useDataState } from '../../composables/useDataState'
+import { usePermissions } from '../../composables/usePermissions'
 import SearchInput from '../shared/SearchInput.vue'
 import AddButton from '../shared/AddButton.vue'
 import ModalFooter from '../shared/ModalFooter.vue'
@@ -158,6 +159,7 @@ import ImageCropperModal from '../shared/ImageCropperModal.vue'
 
 // Services
 const { message, dialog } = useViewServices()
+const { canEdit, canDelete, Resource } = usePermissions()
 
 // Data state
 const { data: themes, loading, search } = useDataState()
@@ -220,6 +222,10 @@ function handleCoverImageUpload({ file }) {
 
 // Handle cropped image upload
 async function handleCoverImageCrop(croppedBlob) {
+  if (!canEdit(Resource.MINIATURES)) {
+    message.error('You do not have permission to upload images')
+    return
+  }
   uploadingCoverImage.value = true
   showCropperModal.value = false
 
@@ -266,6 +272,7 @@ const handleRemoveCoverImage = createFileDeleteHandler({
   fileObjectField: 'coverImageFile',
   entityName: 'cover image',
   logger,
+  checkPermission: () => canEdit(Resource.MINIATURES),
 })
 
 const validateCoverImage = createFileValidator(FILE_VALIDATION.IMAGE, message)
@@ -291,6 +298,7 @@ const handleSave = createSaveHandler({
     coverImageId: formData.coverImageId ?? undefined,
     displayOrder: formData.displayOrder || 0,
   }),
+  checkPermission: () => canEdit(Resource.MINIATURES),
 })
 
 const handleDelete = createDeleteHandler({
@@ -300,21 +308,38 @@ const handleDelete = createDeleteHandler({
   message,
   onSuccess: loadThemes,
   getConfirmText: (theme) => `"${theme.name}"`,
+  checkPermission: () => canDelete(Resource.MINIATURES),
 })
 
-const columns = [
-  { title: 'Name', key: 'name', sorter: stringSorter('name') },
-  { title: 'Description', key: 'description' },
-  { title: 'Order', key: 'displayOrder', width: 100, sorter: numberSorter('displayOrder') },
-  {
-    title: 'Actions',
-    key: 'actions',
-    render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEdit, label: 'Edit theme' },
-      { icon: TrashOutline, onClick: handleDelete, type: 'error', label: 'Delete theme' },
-    ]),
-  },
-]
+const columns = computed(() => {
+  const cols = [
+    { title: 'Name', key: 'name', sorter: stringSorter('name') },
+    { title: 'Description', key: 'description' },
+    { title: 'Order', key: 'displayOrder', width: 100, sorter: numberSorter('displayOrder') },
+  ]
+
+  const actions = []
+  if (canEdit(Resource.MINIATURES)) {
+    actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit theme' })
+  }
+  if (canDelete(Resource.MINIATURES)) {
+    actions.push({
+      icon: TrashOutline,
+      onClick: handleDelete,
+      type: 'error',
+      label: 'Delete theme',
+    })
+  }
+  if (actions.length > 0) {
+    cols.push({
+      title: 'Actions',
+      key: 'actions',
+      render: createActionsRenderer(actions),
+    })
+  }
+
+  return cols
+})
 
 onMounted(() => {
   loadThemes()

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { Resource, Level } from '../constants/permissions'
 
 const routes = [
   {
@@ -18,43 +19,68 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: () => import('../views/Profile.vue'),
-    meta: { requiresAuth: true, title: 'Profile' },
+    meta: { requiresAuth: true, title: 'Profile', resource: Resource.PROFILE, level: Level.READ },
   },
   {
     path: '/skills',
     name: 'Skills',
     component: () => import('../views/Skills.vue'),
-    meta: { requiresAuth: true, title: 'Skills' },
+    meta: { requiresAuth: true, title: 'Skills', resource: Resource.SKILLS, level: Level.READ },
   },
   {
     path: '/work-experience',
     name: 'WorkExperience',
     component: () => import('../views/WorkExperience.vue'),
-    meta: { requiresAuth: true, title: 'Work Experience' },
+    meta: {
+      requiresAuth: true,
+      title: 'Work Experience',
+      resource: Resource.EXPERIENCE,
+      level: Level.READ,
+    },
   },
   {
     path: '/certifications',
     name: 'Certifications',
     component: () => import('../views/Certifications.vue'),
-    meta: { requiresAuth: true, title: 'Certifications' },
+    meta: {
+      requiresAuth: true,
+      title: 'Certifications',
+      resource: Resource.CERTIFICATIONS,
+      level: Level.READ,
+    },
   },
   {
     path: '/miniatures',
     name: 'Miniatures',
     component: () => import('../views/Miniatures.vue'),
-    meta: { requiresAuth: true, title: 'Miniatures' },
+    meta: {
+      requiresAuth: true,
+      title: 'Miniatures',
+      resource: Resource.MINIATURES,
+      level: Level.READ,
+    },
   },
   {
     path: '/portfolio-projects',
     name: 'PortfolioProjects',
     component: () => import('../views/PortfolioProjects.vue'),
-    meta: { requiresAuth: true, title: 'Portfolio Projects' },
+    meta: {
+      requiresAuth: true,
+      title: 'Portfolio Projects',
+      resource: Resource.PROJECTS,
+      level: Level.READ,
+    },
   },
   {
     path: '/messaging',
     name: 'Messaging',
     component: () => import('../views/Messaging.vue'),
-    meta: { requiresAuth: true, title: 'Messaging' },
+    meta: {
+      requiresAuth: true,
+      title: 'Messaging',
+      resource: Resource.MESSAGES,
+      level: Level.READ,
+    },
   },
   {
     path: '/403',
@@ -93,6 +119,14 @@ router.beforeEach(async (to, _from, next) => {
       const isValid = await authStore.checkAuthStatus()
       if (!isValid) {
         next('/login')
+        return
+      }
+    }
+
+    // Check resource permission if route requires it
+    if (to.meta.resource && to.meta.level) {
+      if (!authStore.hasPermission(to.meta.resource, to.meta.level)) {
+        next('/403')
         return
       }
     }

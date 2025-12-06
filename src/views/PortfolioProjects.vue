@@ -16,7 +16,7 @@
               placeholder="Search projects by title, category, role..."
               aria-label="Search portfolio projects"
             />
-            <AddButton label="Add Project" @click="openModal" />
+            <AddButton v-if="canEdit(Resource.PROJECTS)" label="Add Project" @click="openModal" />
           </n-space>
 
           <n-spin :show="loading" aria-label="Loading projects">
@@ -325,9 +325,11 @@ import { logger } from '../utils/logger'
 import { useViewServices } from '../composables/useViewServices'
 import { useModal } from '../composables/useModal'
 import { useDataState } from '../composables/useDataState'
+import { usePermissions } from '../composables/usePermissions'
 
 // Services
 const { message, dialog } = useViewServices()
+const { canEdit, canDelete, Resource } = usePermissions()
 
 // Data state
 const { data: projects, loading, search } = useDataState()
@@ -471,6 +473,7 @@ const handleImageUpload = createFileUploadHandler({
   fileIdField: 'imageFileId',
   fileObjectField: 'imageFile',
   logger,
+  checkPermission: () => canEdit(Resource.PROJECTS),
 })
 
 const handleRemoveImage = createFileDeleteHandler({
@@ -483,6 +486,7 @@ const handleRemoveImage = createFileDeleteHandler({
   fileObjectField: 'imageFile',
   entityName: 'image',
   logger,
+  checkPermission: () => canEdit(Resource.PROJECTS),
 })
 
 const handleSave = createSaveHandler({
@@ -520,6 +524,7 @@ const handleSave = createSaveHandler({
     technologies: (formData.technologies ?? []).map((id) => ({ id })),
     displayOrder: formData.displayOrder ?? 0,
   }),
+  checkPermission: () => canEdit(Resource.PROJECTS),
 })
 
 const handleDelete = createDeleteHandler({
@@ -529,39 +534,56 @@ const handleDelete = createDeleteHandler({
   message,
   onSuccess: loadProjects,
   getConfirmText: (project) => `"${project.title}"`,
+  checkPermission: () => canDelete(Resource.PROJECTS),
 })
 
-const columns = [
-  { title: 'Title', key: 'title', sorter: stringSorter('title'), width: 200 },
-  { title: 'Category', key: 'category', width: 150 },
-  { title: 'Role', key: 'role', width: 150 },
-  {
-    title: 'Period',
-    key: 'period',
-    width: 150,
-    render: (row) => {
-      const start = toDateFormat(row.startDate, 'N/A')
-      const end = row.isOngoing ? 'Present' : toDateFormat(row.endDate, 'N/A')
-      return `${start} - ${end}`
+const columns = computed(() => {
+  const cols = [
+    { title: 'Title', key: 'title', sorter: stringSorter('title'), width: 200 },
+    { title: 'Category', key: 'category', width: 150 },
+    { title: 'Role', key: 'role', width: 150 },
+    {
+      title: 'Period',
+      key: 'period',
+      width: 150,
+      render: (row) => {
+        const start = toDateFormat(row.startDate, 'N/A')
+        const end = row.isOngoing ? 'Present' : toDateFormat(row.endDate, 'N/A')
+        return `${start} - ${end}`
+      },
     },
-  },
-  {
-    title: 'Featured',
-    key: 'featured',
-    width: 90,
-    render: (row) => (row.featured ? '⭐' : '—'),
-  },
-  { title: 'Order', key: 'displayOrder', width: 80, sorter: numberSorter('displayOrder') },
-  {
-    title: 'Actions',
-    key: 'actions',
-    width: 120,
-    render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEdit, label: 'Edit project' },
-      { icon: TrashOutline, onClick: handleDelete, type: 'error', label: 'Delete project' },
-    ]),
-  },
-]
+    {
+      title: 'Featured',
+      key: 'featured',
+      width: 90,
+      render: (row) => (row.featured ? '⭐' : '—'),
+    },
+    { title: 'Order', key: 'displayOrder', width: 80, sorter: numberSorter('displayOrder') },
+  ]
+
+  const actions = []
+  if (canEdit(Resource.PROJECTS)) {
+    actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit project' })
+  }
+  if (canDelete(Resource.PROJECTS)) {
+    actions.push({
+      icon: TrashOutline,
+      onClick: handleDelete,
+      type: 'error',
+      label: 'Delete project',
+    })
+  }
+  if (actions.length > 0) {
+    cols.push({
+      title: 'Actions',
+      key: 'actions',
+      width: 120,
+      render: createActionsRenderer(actions),
+    })
+  }
+
+  return cols
+})
 
 onMounted(() => {
   loadProjects()

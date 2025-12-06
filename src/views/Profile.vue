@@ -15,7 +15,7 @@
               <n-input
                 v-model:value="formData.name"
                 placeholder="Enter your full name"
-                :disabled="saving"
+                :disabled="saving || !canEdit(Resource.PROFILE)"
               />
             </n-form-item>
 
@@ -23,7 +23,7 @@
               <n-input
                 v-model:value="formData.title"
                 placeholder="e.g., Senior Software Engineer"
-                :disabled="saving"
+                :disabled="saving || !canEdit(Resource.PROFILE)"
               />
             </n-form-item>
 
@@ -33,7 +33,7 @@
                 type="textarea"
                 placeholder="Brief description about yourself"
                 :autosize="{ minRows: 3, maxRows: 6 }"
-                :disabled="saving"
+                :disabled="saving || !canEdit(Resource.PROFILE)"
               />
             </n-form-item>
           </n-card>
@@ -43,7 +43,7 @@
               <n-input
                 v-model:value="formData.email"
                 placeholder="contact@example.com"
-                :disabled="saving"
+                :disabled="saving || !canEdit(Resource.PROFILE)"
               />
             </n-form-item>
 
@@ -51,7 +51,7 @@
               <n-input
                 v-model:value="formData.phone"
                 placeholder="+1 (555) 123-4567"
-                :disabled="saving"
+                :disabled="saving || !canEdit(Resource.PROFILE)"
               />
             </n-form-item>
 
@@ -59,7 +59,7 @@
               <n-input
                 v-model:value="formData.location"
                 placeholder="City, Country"
-                :disabled="saving"
+                :disabled="saving || !canEdit(Resource.PROFILE)"
               />
             </n-form-item>
 
@@ -67,7 +67,7 @@
               <n-input
                 v-model:value="formData.github"
                 placeholder="https://github.com/username"
-                :disabled="saving"
+                :disabled="saving || !canEdit(Resource.PROFILE)"
               />
             </n-form-item>
 
@@ -75,7 +75,7 @@
               <n-input
                 v-model:value="formData.linkedin"
                 placeholder="https://linkedin.com/in/username"
-                :disabled="saving"
+                :disabled="saving || !canEdit(Resource.PROFILE)"
               />
             </n-form-item>
           </n-card>
@@ -101,6 +101,7 @@
                         }})
                       </n-text>
                       <n-button
+                        v-if="canEdit(Resource.PROFILE)"
                         type="error"
                         size="small"
                         :loading="deletingAvatar"
@@ -114,6 +115,7 @@
                     </n-space>
                   </div>
                   <n-upload
+                    v-if="canEdit(Resource.PROFILE)"
                     v-model:file-list="avatarFileList"
                     :custom-request="handleAvatarSelect"
                     :before-upload="createFileValidator(FILE_VALIDATION.IMAGE, message)"
@@ -174,6 +176,7 @@
                           View Resume
                         </n-button>
                         <n-button
+                          v-if="canEdit(Resource.PROFILE)"
                           type="error"
                           size="small"
                           :loading="deletingResume"
@@ -188,6 +191,7 @@
                     </n-space>
                   </div>
                   <n-upload
+                    v-if="canEdit(Resource.PROFILE)"
                     v-model:file-list="resumeFileList"
                     :custom-request="handleResumeUpload"
                     :before-upload="createFileValidator(FILE_VALIDATION.DOCUMENT, message)"
@@ -215,7 +219,7 @@
             </n-grid-item>
           </n-grid>
 
-          <n-space>
+          <n-space v-if="canEdit(Resource.PROFILE)">
             <n-button type="primary" :loading="saving" @click="handleSave">
               <template #icon>
                 <n-icon><SaveOutline /></n-icon>
@@ -269,6 +273,7 @@ import {
 } from '@vicons/ionicons5'
 import BackButton from '../components/shared/BackButton.vue'
 import { useViewServices } from '../composables/useViewServices'
+import { usePermissions } from '../composables/usePermissions'
 import profileService from '../services/profile'
 import filesService from '../services/files'
 import { logger } from '../utils/logger'
@@ -279,6 +284,7 @@ import { addSourceToFileUrl } from '../utils/fileUrl'
 import ImageCropperModal from '../components/shared/ImageCropperModal.vue'
 
 const { message } = useViewServices()
+const { canEdit, Resource } = usePermissions()
 const formRef = ref(null)
 
 const loading = ref(false)
@@ -341,6 +347,10 @@ const loadProfile = createDataLoader({
 })
 
 async function handleSave() {
+  if (!canEdit(Resource.PROFILE)) {
+    message.error('You do not have permission to edit the profile')
+    return
+  }
   if (!(await validateForm(formRef))) return
 
   saving.value = true
@@ -359,6 +369,10 @@ async function handleSave() {
 }
 
 async function handleDeleteAvatar() {
+  if (!canEdit(Resource.PROFILE)) {
+    message.error('You do not have permission to delete the avatar')
+    return
+  }
   deletingAvatar.value = true
   try {
     await profileService.deleteProfileAvatar()
@@ -377,6 +391,10 @@ async function handleDeleteAvatar() {
 }
 
 async function handleDeleteResume() {
+  if (!canEdit(Resource.PROFILE)) {
+    message.error('You do not have permission to delete the resume')
+    return
+  }
   deletingResume.value = true
   try {
     await profileService.deleteProfileResume()
