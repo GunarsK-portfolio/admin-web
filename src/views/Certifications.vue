@@ -16,7 +16,11 @@
               placeholder="Search by name, issuer, or credential ID..."
               aria-label="Search certifications"
             />
-            <AddButton label="Add Certification" @click="openModal" />
+            <AddButton
+              v-if="canEdit(Resource.CERTIFICATIONS)"
+              label="Add Certification"
+              @click="openModal"
+            />
           </n-space>
 
           <n-spin :show="loading" aria-label="Loading certifications">
@@ -97,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, h, onMounted } from 'vue'
+import { ref, computed, h, onMounted } from 'vue'
 import {
   NSpace,
   NPageHeader,
@@ -127,6 +131,7 @@ import { createDataLoader, createSaveHandler, createDeleteHandler } from '../uti
 import { useViewServices } from '../composables/useViewServices'
 import { useModal } from '../composables/useModal'
 import { useDataState } from '../composables/useDataState'
+import { usePermissions } from '../composables/usePermissions'
 import BackButton from '../components/shared/BackButton.vue'
 import SearchInput from '../components/shared/SearchInput.vue'
 import AddButton from '../components/shared/AddButton.vue'
@@ -134,6 +139,7 @@ import ModalFooter from '../components/shared/ModalFooter.vue'
 
 // Services
 const { message, dialog } = useViewServices()
+const { canEdit, canDelete, Resource } = usePermissions()
 
 // Data state
 const { data: certifications, loading, search } = useDataState()
@@ -261,32 +267,48 @@ const handleDelete = createDeleteHandler({
   getConfirmText: (cert) => `"${cert.name}"`,
 })
 
-const columns = [
-  { title: 'Name', key: 'name', sorter: stringSorter('name') },
-  { title: 'Issuer', key: 'issuer', sorter: stringSorter('issuer') },
-  {
-    title: 'Issue Date',
-    key: 'issueDate',
-    sorter: dateSorter('issueDate'),
-    render: (row) => toDateFormat(row.issueDate),
-  },
-  {
-    title: 'Expiry Date',
-    key: 'expiryDate',
-    sorter: dateSorter('expiryDate'),
-    render: (row) => toDateFormat(row.expiryDate, 'N/A'),
-  },
-  { title: 'Status', key: 'status', render: renderExpiryStatus },
-  { title: 'Credential', key: 'credential', render: renderCredentialLink },
-  {
-    title: 'Actions',
-    key: 'actions',
-    render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEdit, label: 'Edit certification' },
-      { icon: TrashOutline, onClick: handleDelete, type: 'error', label: 'Delete certification' },
-    ]),
-  },
-]
+const columns = computed(() => {
+  const cols = [
+    { title: 'Name', key: 'name', sorter: stringSorter('name') },
+    { title: 'Issuer', key: 'issuer', sorter: stringSorter('issuer') },
+    {
+      title: 'Issue Date',
+      key: 'issueDate',
+      sorter: dateSorter('issueDate'),
+      render: (row) => toDateFormat(row.issueDate),
+    },
+    {
+      title: 'Expiry Date',
+      key: 'expiryDate',
+      sorter: dateSorter('expiryDate'),
+      render: (row) => toDateFormat(row.expiryDate, 'N/A'),
+    },
+    { title: 'Status', key: 'status', render: renderExpiryStatus },
+    { title: 'Credential', key: 'credential', render: renderCredentialLink },
+  ]
+
+  const actions = []
+  if (canEdit(Resource.CERTIFICATIONS)) {
+    actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit certification' })
+  }
+  if (canDelete(Resource.CERTIFICATIONS)) {
+    actions.push({
+      icon: TrashOutline,
+      onClick: handleDelete,
+      type: 'error',
+      label: 'Delete certification',
+    })
+  }
+  if (actions.length > 0) {
+    cols.push({
+      title: 'Actions',
+      key: 'actions',
+      render: createActionsRenderer(actions),
+    })
+  }
+
+  return cols
+})
 
 onMounted(() => {
   loadCertifications()

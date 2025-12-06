@@ -6,7 +6,7 @@
         placeholder="Search by name, manufacturer, type, or color..."
         aria-label="Search paints"
       />
-      <AddButton label="Add Paint" @click="openModal" />
+      <AddButton v-if="canEdit(Resource.MINIATURES)" label="Add Paint" @click="openModal" />
     </n-space>
 
     <n-spin :show="loading" aria-label="Loading paints">
@@ -56,7 +56,7 @@
 </template>
 
 <script setup>
-import { ref, h, onMounted } from 'vue'
+import { ref, computed, h, onMounted } from 'vue'
 import { PAINT_TYPE_OPTIONS, PAINT_TYPE_COLORS } from '@/constants/miniatures'
 import {
   NSpace,
@@ -79,12 +79,14 @@ import { createDataLoader, createSaveHandler, createDeleteHandler } from '../../
 import { useViewServices } from '../../composables/useViewServices'
 import { useModal } from '../../composables/useModal'
 import { useDataState } from '../../composables/useDataState'
+import { usePermissions } from '../../composables/usePermissions'
 import SearchInput from '../shared/SearchInput.vue'
 import AddButton from '../shared/AddButton.vue'
 import ModalFooter from '../shared/ModalFooter.vue'
 
 // Services
 const { message, dialog } = useViewServices()
+const { canEdit, canDelete, Resource } = usePermissions()
 
 // Data state
 const { data: paints, loading, search } = useDataState()
@@ -190,21 +192,37 @@ const handleDelete = createDeleteHandler({
   getConfirmText: (paint) => `"${paint.name}" by ${paint.manufacturer}`,
 })
 
-const columns = [
-  { title: 'Color', key: 'color', width: 80, render: renderColorSwatch },
-  { title: 'Name', key: 'name', sorter: stringSorter('name') },
-  { title: 'Manufacturer', key: 'manufacturer', sorter: stringSorter('manufacturer') },
-  { title: 'Type', key: 'paintType', sorter: stringSorter('paintType'), render: renderPaintType },
-  { title: 'Hex Code', key: 'colorHex', sorter: stringSorter('colorHex') },
-  {
-    title: 'Actions',
-    key: 'actions',
-    render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEdit, label: 'Edit paint' },
-      { icon: TrashOutline, onClick: handleDelete, type: 'error', label: 'Delete paint' },
-    ]),
-  },
-]
+const columns = computed(() => {
+  const cols = [
+    { title: 'Color', key: 'color', width: 80, render: renderColorSwatch },
+    { title: 'Name', key: 'name', sorter: stringSorter('name') },
+    { title: 'Manufacturer', key: 'manufacturer', sorter: stringSorter('manufacturer') },
+    { title: 'Type', key: 'paintType', sorter: stringSorter('paintType'), render: renderPaintType },
+    { title: 'Hex Code', key: 'colorHex', sorter: stringSorter('colorHex') },
+  ]
+
+  const actions = []
+  if (canEdit(Resource.MINIATURES)) {
+    actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit paint' })
+  }
+  if (canDelete(Resource.MINIATURES)) {
+    actions.push({
+      icon: TrashOutline,
+      onClick: handleDelete,
+      type: 'error',
+      label: 'Delete paint',
+    })
+  }
+  if (actions.length > 0) {
+    cols.push({
+      title: 'Actions',
+      key: 'actions',
+      render: createActionsRenderer(actions),
+    })
+  }
+
+  return cols
+})
 
 onMounted(() => {
   loadPaints()

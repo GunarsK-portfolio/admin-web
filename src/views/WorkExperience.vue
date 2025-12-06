@@ -15,7 +15,11 @@
               v-model="search"
               placeholder="Search by company, position, or description..."
             />
-            <AddButton label="Add Experience" @click="openModal" />
+            <AddButton
+              v-if="canEdit(Resource.EXPERIENCE)"
+              label="Add Experience"
+              @click="openModal"
+            />
           </n-space>
 
           <n-spin :show="loading" aria-label="Loading work experience">
@@ -96,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, h, onMounted, watch } from 'vue'
+import { ref, computed, h, onMounted, watch } from 'vue'
 import {
   NSpace,
   NPageHeader,
@@ -123,6 +127,7 @@ import ModalFooter from '../components/shared/ModalFooter.vue'
 import { useViewServices } from '../composables/useViewServices'
 import { useDataState } from '../composables/useDataState'
 import { useModal } from '../composables/useModal'
+import { usePermissions } from '../composables/usePermissions'
 import workExperienceService from '../services/work-experience'
 import { required, dateAfter, validateForm } from '../utils/validation'
 import { createActionsRenderer, createDateRangeRenderer, stringSorter } from '../utils/tableHelpers'
@@ -131,6 +136,7 @@ import { createSearchFilter } from '../utils/filterHelpers'
 import { createDataLoader, createSaveHandler, createDeleteHandler } from '../utils/crudHelpers'
 
 const { message, dialog } = useViewServices()
+const { canEdit, canDelete, Resource } = usePermissions()
 const { data: experiences, loading, search } = useDataState()
 const { showModal, editing, form, formRef, openModal, closeModal, openEditModal, resetForm } =
   useModal({
@@ -214,20 +220,36 @@ const handleDelete = createDeleteHandler({
   getConfirmText: (exp) => `"${exp.position} at ${exp.company}"`,
 })
 
-const columns = [
-  { title: 'Company', key: 'company', sorter: stringSorter('company') },
-  { title: 'Position', key: 'position', sorter: stringSorter('position') },
-  { title: 'Period', key: 'period', render: createDateRangeRenderer() },
-  { title: 'Status', key: 'status', render: renderStatus },
-  {
-    title: 'Actions',
-    key: 'actions',
-    render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEdit, label: 'Edit work experience' },
-      { icon: TrashOutline, onClick: handleDelete, type: 'error', label: 'Delete work experience' },
-    ]),
-  },
-]
+const columns = computed(() => {
+  const cols = [
+    { title: 'Company', key: 'company', sorter: stringSorter('company') },
+    { title: 'Position', key: 'position', sorter: stringSorter('position') },
+    { title: 'Period', key: 'period', render: createDateRangeRenderer() },
+    { title: 'Status', key: 'status', render: renderStatus },
+  ]
+
+  const actions = []
+  if (canEdit(Resource.EXPERIENCE)) {
+    actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit work experience' })
+  }
+  if (canDelete(Resource.EXPERIENCE)) {
+    actions.push({
+      icon: TrashOutline,
+      onClick: handleDelete,
+      type: 'error',
+      label: 'Delete work experience',
+    })
+  }
+  if (actions.length > 0) {
+    cols.push({
+      title: 'Actions',
+      key: 'actions',
+      render: createActionsRenderer(actions),
+    })
+  }
+
+  return cols
+})
 
 // Clear end date when "Currently working here" is checked
 watch(

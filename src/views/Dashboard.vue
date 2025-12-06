@@ -4,31 +4,31 @@
       <h2 class="dashboard-title">Content Management</h2>
 
       <n-grid :cols="3" :x-gap="24" :y-gap="24" responsive="screen">
-        <n-grid-item>
+        <n-grid-item v-if="canRead(Resource.PROFILE)">
           <n-card>
             <h3 class="card-title">Profile</h3>
             <p class="card-description">Manage your personal information and bio</p>
             <div class="card-actions">
               <n-button type="primary" size="small" @click="router.push({ name: 'Profile' })">
-                Edit Profile
+                {{ canEdit(Resource.PROFILE) ? 'Edit Profile' : 'View Profile' }}
               </n-button>
             </div>
           </n-card>
         </n-grid-item>
 
-        <n-grid-item>
+        <n-grid-item v-if="canRead(Resource.SKILLS)">
           <n-card>
             <h3 class="card-title">Skills</h3>
             <p class="card-description">Manage your skills and skill categories</p>
             <div class="card-actions">
               <n-button type="primary" size="small" @click="router.push({ name: 'Skills' })">
-                Manage
+                {{ canEdit(Resource.SKILLS) ? 'Manage' : 'View' }}
               </n-button>
             </div>
           </n-card>
         </n-grid-item>
 
-        <n-grid-item>
+        <n-grid-item v-if="canRead(Resource.EXPERIENCE)">
           <n-card>
             <h3 class="card-title">Work Experience</h3>
             <p class="card-description">Add, edit, or remove work experience entries</p>
@@ -38,13 +38,13 @@
                 size="small"
                 @click="router.push({ name: 'WorkExperience' })"
               >
-                Manage
+                {{ canEdit(Resource.EXPERIENCE) ? 'Manage' : 'View' }}
               </n-button>
             </div>
           </n-card>
         </n-grid-item>
 
-        <n-grid-item>
+        <n-grid-item v-if="canRead(Resource.CERTIFICATIONS)">
           <n-card>
             <h3 class="card-title">Certifications</h3>
             <p class="card-description">Manage your professional certifications</p>
@@ -54,13 +54,13 @@
                 size="small"
                 @click="router.push({ name: 'Certifications' })"
               >
-                Manage
+                {{ canEdit(Resource.CERTIFICATIONS) ? 'Manage' : 'View' }}
               </n-button>
             </div>
           </n-card>
         </n-grid-item>
 
-        <n-grid-item>
+        <n-grid-item v-if="canRead(Resource.PROJECTS)">
           <n-card>
             <h3 class="card-title">Portfolio Projects</h3>
             <p class="card-description">Manage your professional software projects</p>
@@ -70,31 +70,31 @@
                 size="small"
                 @click="router.push({ name: 'PortfolioProjects' })"
               >
-                Manage
+                {{ canEdit(Resource.PROJECTS) ? 'Manage' : 'View' }}
               </n-button>
             </div>
           </n-card>
         </n-grid-item>
 
-        <n-grid-item>
+        <n-grid-item v-if="canRead(Resource.MINIATURES)">
           <n-card>
             <h3 class="card-title">Miniatures</h3>
             <p class="card-description">Manage projects, themes, and paint collection</p>
             <div class="card-actions">
               <n-button type="primary" size="small" @click="router.push({ name: 'Miniatures' })">
-                Manage
+                {{ canEdit(Resource.MINIATURES) ? 'Manage' : 'View' }}
               </n-button>
             </div>
           </n-card>
         </n-grid-item>
 
-        <n-grid-item>
+        <n-grid-item v-if="canRead(Resource.MESSAGES)">
           <n-card>
             <h3 class="card-title">Messaging</h3>
             <p class="card-description">Manage contact form recipients and view messages</p>
             <div class="card-actions">
               <n-button type="primary" size="small" @click="router.push({ name: 'Messaging' })">
-                Manage
+                {{ canEdit(Resource.MESSAGES) ? 'Manage' : 'View' }}
               </n-button>
             </div>
           </n-card>
@@ -107,8 +107,10 @@
 <script setup>
 import { NGrid, NGridItem, NCard, NButton } from 'naive-ui'
 import { useViewServices } from '../composables/useViewServices'
+import { usePermissions } from '../composables/usePermissions'
 
 const { router } = useViewServices()
+const { canRead, canEdit, Resource } = usePermissions()
 </script>
 
 <style scoped>

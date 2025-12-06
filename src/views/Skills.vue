@@ -11,7 +11,11 @@
           <n-space vertical :size="16">
             <n-space justify="space-between">
               <SearchInput v-model="skillsSearch" placeholder="Search skills..." />
-              <AddButton label="Add Skill" @click="openSkillModal" />
+              <AddButton
+                v-if="canEdit(Resource.SKILLS)"
+                label="Add Skill"
+                @click="openSkillModal"
+              />
             </n-space>
 
             <n-spin :show="loadingSkills" aria-label="Loading skills">
@@ -30,7 +34,11 @@
           <n-space vertical :size="16">
             <n-space justify="space-between">
               <SearchInput v-model="typesSearch" placeholder="Search skill types..." />
-              <AddButton label="Add Skill Type" @click="openTypeModal" />
+              <AddButton
+                v-if="canEdit(Resource.SKILLS)"
+                label="Add Skill Type"
+                @click="openTypeModal"
+              />
             </n-space>
 
             <n-spin :show="loadingTypes" aria-label="Loading skill types">
@@ -170,6 +178,7 @@ import AddButton from '../components/shared/AddButton.vue'
 import ModalFooter from '../components/shared/ModalFooter.vue'
 import { useViewServices } from '../composables/useViewServices'
 import { useModal } from '../composables/useModal'
+import { usePermissions } from '../composables/usePermissions'
 import skillsService from '../services/skills'
 import { required, requiredNumber, validateForm } from '../utils/validation'
 import { stringSorter, createActionsRenderer } from '../utils/tableHelpers'
@@ -177,6 +186,7 @@ import { createSearchFilter } from '../utils/filterHelpers'
 import { createDataLoader, createSaveHandler, createDeleteHandler } from '../utils/crudHelpers'
 
 const { message, dialog } = useViewServices()
+const { canEdit, canDelete, Resource } = usePermissions()
 
 // Skills state
 const skills = ref([])
@@ -333,60 +343,92 @@ const handleDeleteType = createDeleteHandler({
 })
 
 // Skills table columns
-const skillColumns = [
-  {
-    title: 'Skill',
-    key: 'skill',
-    sorter: stringSorter('skill'),
-  },
-  {
-    title: 'Type',
-    key: 'skillType',
-    render: (row) => row.skillType?.name || 'N/A',
-  },
-  {
-    title: 'Visible',
-    key: 'isVisible',
-    render: (row) => (row.isVisible ? 'Yes' : 'No'),
-  },
-  {
-    title: 'Order',
-    key: 'displayOrder',
-  },
-  {
-    title: 'Actions',
-    key: 'actions',
-    render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEditSkill, label: 'Edit skill' },
-      { icon: TrashOutline, onClick: handleDeleteSkill, type: 'error', label: 'Delete skill' },
-    ]),
-  },
-]
+const skillColumns = computed(() => {
+  const cols = [
+    {
+      title: 'Skill',
+      key: 'skill',
+      sorter: stringSorter('skill'),
+    },
+    {
+      title: 'Type',
+      key: 'skillType',
+      render: (row) => row.skillType?.name || 'N/A',
+    },
+    {
+      title: 'Visible',
+      key: 'isVisible',
+      render: (row) => (row.isVisible ? 'Yes' : 'No'),
+    },
+    {
+      title: 'Order',
+      key: 'displayOrder',
+    },
+  ]
+
+  const actions = []
+  if (canEdit(Resource.SKILLS)) {
+    actions.push({ icon: CreateOutline, onClick: handleEditSkill, label: 'Edit skill' })
+  }
+  if (canDelete(Resource.SKILLS)) {
+    actions.push({
+      icon: TrashOutline,
+      onClick: handleDeleteSkill,
+      type: 'error',
+      label: 'Delete skill',
+    })
+  }
+  if (actions.length > 0) {
+    cols.push({
+      title: 'Actions',
+      key: 'actions',
+      render: createActionsRenderer(actions),
+    })
+  }
+
+  return cols
+})
 
 // Skill Types table columns
-const typeColumns = [
-  {
-    title: 'Name',
-    key: 'name',
-    sorter: stringSorter('name'),
-  },
-  {
-    title: 'Description',
-    key: 'description',
-  },
-  {
-    title: 'Order',
-    key: 'displayOrder',
-  },
-  {
-    title: 'Actions',
-    key: 'actions',
-    render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEditType, label: 'Edit skill type' },
-      { icon: TrashOutline, onClick: handleDeleteType, type: 'error', label: 'Delete skill type' },
-    ]),
-  },
-]
+const typeColumns = computed(() => {
+  const cols = [
+    {
+      title: 'Name',
+      key: 'name',
+      sorter: stringSorter('name'),
+    },
+    {
+      title: 'Description',
+      key: 'description',
+    },
+    {
+      title: 'Order',
+      key: 'displayOrder',
+    },
+  ]
+
+  const actions = []
+  if (canEdit(Resource.SKILLS)) {
+    actions.push({ icon: CreateOutline, onClick: handleEditType, label: 'Edit skill type' })
+  }
+  if (canDelete(Resource.SKILLS)) {
+    actions.push({
+      icon: TrashOutline,
+      onClick: handleDeleteType,
+      type: 'error',
+      label: 'Delete skill type',
+    })
+  }
+  if (actions.length > 0) {
+    cols.push({
+      title: 'Actions',
+      key: 'actions',
+      render: createActionsRenderer(actions),
+    })
+  }
+
+  return cols
+})
 
 const skillsPagination = { pageSize: 10 }
 const typesPagination = { pageSize: 10 }

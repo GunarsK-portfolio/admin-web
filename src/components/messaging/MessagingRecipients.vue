@@ -6,7 +6,7 @@
         placeholder="Search recipients..."
         aria-label="Search recipients"
       />
-      <AddButton label="Add Recipient" @click="openModal" />
+      <AddButton v-if="canEdit(Resource.RECIPIENTS)" label="Add Recipient" @click="openModal" />
     </n-space>
 
     <n-spin :show="loading" aria-label="Loading recipients">
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, h, onMounted } from 'vue'
+import { ref, computed, h, onMounted } from 'vue'
 import {
   NSpace,
   NSpin,
@@ -63,11 +63,13 @@ import { createDataLoader, createSaveHandler, createDeleteHandler } from '../../
 import { useViewServices } from '../../composables/useViewServices'
 import { useModal } from '../../composables/useModal'
 import { useDataState } from '../../composables/useDataState'
+import { usePermissions } from '../../composables/usePermissions'
 import SearchInput from '../shared/SearchInput.vue'
 import AddButton from '../shared/AddButton.vue'
 import ModalFooter from '../shared/ModalFooter.vue'
 
 const { message, dialog } = useViewServices()
+const { canEdit, canDelete, Resource } = usePermissions()
 
 const { data: recipients, loading, search } = useDataState()
 
@@ -129,42 +131,58 @@ const handleDelete = createDeleteHandler({
   getConfirmText: (recipient) => `"${recipient.email}"`,
 })
 
-const columns = [
-  {
-    title: 'Email',
-    key: 'email',
-    sorter: stringSorter('email'),
-  },
-  {
-    title: 'Name',
-    key: 'name',
-    render: (row) => row.name || '—',
-  },
-  {
-    title: 'Status',
-    key: 'isActive',
-    render: (row) =>
-      h(
-        NTag,
-        { type: row.isActive ? 'success' : 'warning', size: 'small' },
-        { default: () => (row.isActive ? 'Active' : 'Inactive') }
-      ),
-  },
-  {
-    title: 'Created',
-    key: 'createdAt',
-    sorter: dateSorter('createdAt'),
-    render: (row) => toDateFormat(row.createdAt),
-  },
-  {
-    title: 'Actions',
-    key: 'actions',
-    render: createActionsRenderer([
-      { icon: CreateOutline, onClick: handleEdit, label: 'Edit recipient' },
-      { icon: TrashOutline, onClick: handleDelete, type: 'error', label: 'Delete recipient' },
-    ]),
-  },
-]
+const columns = computed(() => {
+  const cols = [
+    {
+      title: 'Email',
+      key: 'email',
+      sorter: stringSorter('email'),
+    },
+    {
+      title: 'Name',
+      key: 'name',
+      render: (row) => row.name || '—',
+    },
+    {
+      title: 'Status',
+      key: 'isActive',
+      render: (row) =>
+        h(
+          NTag,
+          { type: row.isActive ? 'success' : 'warning', size: 'small' },
+          { default: () => (row.isActive ? 'Active' : 'Inactive') }
+        ),
+    },
+    {
+      title: 'Created',
+      key: 'createdAt',
+      sorter: dateSorter('createdAt'),
+      render: (row) => toDateFormat(row.createdAt),
+    },
+  ]
+
+  const actions = []
+  if (canEdit(Resource.RECIPIENTS)) {
+    actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit recipient' })
+  }
+  if (canDelete(Resource.RECIPIENTS)) {
+    actions.push({
+      icon: TrashOutline,
+      onClick: handleDelete,
+      type: 'error',
+      label: 'Delete recipient',
+    })
+  }
+  if (actions.length > 0) {
+    cols.push({
+      title: 'Actions',
+      key: 'actions',
+      render: createActionsRenderer(actions),
+    })
+  }
+
+  return cols
+})
 
 onMounted(() => {
   loadRecipients()

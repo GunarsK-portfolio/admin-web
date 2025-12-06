@@ -3,18 +3,33 @@ import { ref } from 'vue'
 import authService from '../services/auth'
 import router from '../router'
 import { logger, setUserContext, clearUserContext } from '../utils/logger'
+import { Level, LevelValues } from '../constants/permissions'
 
 export const useAuthStore = defineStore('auth', () => {
   // Auth state - no longer tied to localStorage tokens
   const isAuthenticated = ref(false)
+  const scopes = ref({})
+
+  function hasPermission(resource, required) {
+    const userLevel = scopes.value[resource] || Level.NONE
+    return LevelValues[userLevel] >= LevelValues[required]
+  }
+
+  const canRead = (resource) => hasPermission(resource, Level.READ)
+  const canEdit = (resource) => hasPermission(resource, Level.EDIT)
+  const canDelete = (resource) => hasPermission(resource, Level.DELETE)
 
   async function checkAuthStatus() {
     try {
       const response = await authService.tokenStatus()
       isAuthenticated.value = response.data.valid
+      if (response.data.valid && response.data.scopes) {
+        scopes.value = response.data.scopes
+      }
       return response.data.valid
     } catch (error) {
       isAuthenticated.value = false
+      scopes.value = {}
       // Log for observability - helps debug auth issues
       logger.warn('Auth status check failed', {
         error: error.message,
@@ -28,6 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await authService.login(username, password)
       isAuthenticated.value = true
+      scopes.value = response.data.scopes || {}
 
       logger.info('User logged in successfully', {
         expiresIn: response.data.expires_in,
@@ -61,6 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
       })
     } finally {
       isAuthenticated.value = false
+      scopes.value = {}
       clearUserContext()
       router.push('/login')
     }
@@ -68,6 +85,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     isAuthenticated,
+    scopes,
+    hasPermission,
+    canRead,
+    canEdit,
+    canDelete,
     checkAuthStatus,
     login,
     logout,
