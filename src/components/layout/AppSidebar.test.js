@@ -123,32 +123,32 @@ describe('AppSidebar', () => {
   })
 
   describe('desktop sidebar', () => {
-    it('shows desktop sidebar when not mobile', () => {
+    it('uses non-mobile mode when isMobile is false', () => {
       const wrapper = createWrapper({ isMobile: false })
-      expect(wrapper.find('.app-sider-stub').exists() || wrapper.vm.isMobile === false).toBe(true)
+      // v-if="!isMobile" on NLayoutSider means sider is used for desktop
+      expect(wrapper.vm.isMobile).toBe(false)
+      // Menu options should be available
+      expect(wrapper.vm.menuOptions.length).toBeGreaterThan(0)
     })
 
-    it('shows full title when not collapsed', () => {
-      const wrapper = createWrapper({ collapsed: false })
-      // Text content check - component is stubbed but we verify prop
-      expect(wrapper.vm.collapsed).toBe(false)
-    })
-
-    it('shows abbreviated title when collapsed', () => {
+    it('passes collapsed prop correctly', () => {
       const wrapper = createWrapper({ collapsed: true })
       expect(wrapper.vm.collapsed).toBe(true)
     })
   })
 
   describe('mobile drawer', () => {
-    it('shows mobile drawer when isMobile', () => {
+    it('uses mobile mode when isMobile is true', () => {
       const wrapper = createWrapper({ isMobile: true })
+      // v-if="isMobile" on NDrawer and mobile header
       expect(wrapper.vm.isMobile).toBe(true)
+      // Menu options should still be available
+      expect(wrapper.vm.menuOptions.length).toBeGreaterThan(0)
     })
 
-    it('shows mobile header when isMobile', () => {
-      const wrapper = createWrapper({ isMobile: true })
-      expect(wrapper.vm.isMobile).toBe(true)
+    it('accepts drawerOpen prop for mobile drawer state', () => {
+      const wrapper = createWrapper({ isMobile: true, drawerOpen: true })
+      expect(wrapper.vm.drawerOpen).toBe(true)
     })
   })
 
@@ -190,29 +190,24 @@ describe('AppSidebar', () => {
   })
 
   describe('emits', () => {
-    it('emits update:collapsed when sidebar collapses', async () => {
-      const wrapper = createWrapper()
+    it('emits update:drawerOpen when handleMobileMenuSelect is called', async () => {
+      const wrapper = createWrapper({ isMobile: true, drawerOpen: true })
 
-      await wrapper.vm.$emit('update:collapsed', true)
-
-      expect(wrapper.emitted('update:collapsed')).toBeTruthy()
-      expect(wrapper.emitted('update:collapsed')[0]).toEqual([true])
-    })
-
-    it('emits update:drawerOpen when drawer state changes', async () => {
-      const wrapper = createWrapper({ isMobile: true })
-
-      await wrapper.vm.$emit('update:drawerOpen', true)
+      wrapper.vm.handleMobileMenuSelect('Profile')
 
       expect(wrapper.emitted('update:drawerOpen')).toBeTruthy()
+      expect(wrapper.emitted('update:drawerOpen')[0]).toEqual([false])
     })
 
-    it('emits toggle-theme when theme button clicked', async () => {
+    it('defines update:collapsed as an emittable event', () => {
       const wrapper = createWrapper()
+      // The component defines this emit - verify it's in the emits list
+      expect(wrapper.vm.$options.emits).toContain('update:collapsed')
+    })
 
-      await wrapper.vm.$emit('toggle-theme')
-
-      expect(wrapper.emitted('toggle-theme')).toBeTruthy()
+    it('defines toggle-theme as an emittable event', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.$options.emits).toContain('toggle-theme')
     })
   })
 

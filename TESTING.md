@@ -25,7 +25,7 @@ task test:coverage
 
 ## Test Files
 
-19 test files, 318 tests
+19 test files, 317 tests
 
 | File                        | Tests | Coverage                                                                  |
 | --------------------------- | ----- | ------------------------------------------------------------------------- |
@@ -34,8 +34,8 @@ task test:coverage
 | `auth.test.js`              | 32    | login/logout, checkAuthStatus, scopes, hasPermission, canRead/Edit/Delete |
 | `validation.test.js`        | 31    | required, email, url, hexColor, dateAfter                                 |
 | `fileHelpers.test.js`       | 25    | convertToWebP, blobToWebPFile, formatFileSize, validateFile               |
-| `AppSidebar.test.js`        | 22    | navigation, menu options, mobile/desktop modes, permissions               |
 | `tableHelpers.test.js`      | 21    | stringSorter, numberSorter, dateSorter, dateRange                         |
+| `AppSidebar.test.js`        | 21    | navigation, menu options, mobile/desktop modes, permissions               |
 | `useTheme.test.js`          | 17    | getStoredTheme, setStoredTheme, createThemeConfig                         |
 | `dateHelpers.test.js`       | 16    | toMonthFormat, fromMonthFormat, toDateFormat                              |
 | `ImageCropperModal.test.js` | 15    | props, visibility sync, stencil selection, crop/cancel handling           |
