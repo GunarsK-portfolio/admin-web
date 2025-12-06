@@ -438,6 +438,10 @@ async function refreshProject(projectId) {
 
 async function handleImageUpload({ file }) {
   if (!editing.value) return
+  if (!canEdit(Resource.MINIATURES)) {
+    message.error('You do not have permission to upload images')
+    return
+  }
 
   uploadingImage.value = true
   try {
@@ -463,6 +467,10 @@ async function handleImageUpload({ file }) {
 }
 
 async function handleDeleteImage(imageId) {
+  if (!canDelete(Resource.MINIATURES)) {
+    message.error('You do not have permission to delete images')
+    return
+  }
   deletingImage.value = imageId
   try {
     await miniaturesService.deleteProjectImage(imageId)

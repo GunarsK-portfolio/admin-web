@@ -96,7 +96,7 @@
 
   <!-- Mobile Header -->
   <n-layout-header v-if="isMobile" bordered class="mobile-header">
-    <n-button quaternary @click="emit('update:drawerOpen', true)">
+    <n-button quaternary aria-label="Open navigation menu" @click="emit('update:drawerOpen', true)">
       <template #icon>
         <n-icon size="24"><MenuOutline /></n-icon>
       </template>
@@ -246,12 +246,11 @@ function handleMobileMenuSelect(key) {
 
 <style scoped>
 .app-sider {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
 }
 
 .sider-header {

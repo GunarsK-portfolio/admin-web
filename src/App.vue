@@ -54,8 +54,8 @@ import { THEMES, getStoredTheme, setStoredTheme, createThemeConfig } from './com
 
 const authStore = useAuthStore()
 
-// Sidebar state
-const sidebarCollapsed = ref(false)
+// Sidebar state (collapsed by default)
+const sidebarCollapsed = ref(true)
 const mobileDrawerOpen = ref(false)
 
 // Mobile detection
