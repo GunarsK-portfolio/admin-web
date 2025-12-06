@@ -25,26 +25,29 @@ task test:coverage
 
 ## Test Files
 
-16 test files, 248 tests
+19 test files, 316 tests
 
-| File                   | Tests | Coverage                                                                  |
-| ---------------------- | ----- | ------------------------------------------------------------------------- |
-| `auth.test.js`         | 32    | login/logout, checkAuthStatus, scopes, hasPermission, canRead/Edit/Delete |
-| `validation.test.js`   | 31    | required, email, url, hexColor, dateAfter                                 |
-| `crudHelpers.test.js`  | 33    | createDataLoader, createSaveHandler, deleteHandler, checkPermission       |
-| `fileHelpers.test.js`  | 25    | convertToWebP, blobToWebPFile, formatFileSize, validateFile               |
-| `tableHelpers.test.js` | 21    | stringSorter, numberSorter, dateSorter, dateRange                         |
-| `useTheme.test.js`     | 17    | getStoredTheme, setStoredTheme, createThemeConfig                         |
-| `dateHelpers.test.js`  | 16    | toMonthFormat, fromMonthFormat, toDateFormat                              |
-| `useModal.test.js`     | 14    | openModal, closeModal, openEditModal, resetForm                           |
-| `Login.test.js`        | 11    | initial state, handleLogin, form state management                         |
-| `tokenRefresh.test.js` | 11    | refreshToken, 401 interceptor, request queueing, duplicate guard          |
-| `ModalFooter.test.js`  | 9     | default props, editing states, events, loading                            |
-| `BackToTop.test.js`    | 8     | scroll behavior, scrollToTop, lifecycle hooks                             |
-| `BackButton.test.js`   | 6     | default props, custom props, route objects                                |
-| `useDataState.test.js` | 6     | initial state, reactivity, loading flow                                   |
-| `SearchInput.test.js`  | 4     | default props, custom props, emits                                        |
-| `AddButton.test.js`    | 4     | label prop, click event, component rendering                              |
+| File                        | Tests | Coverage                                                                  |
+| --------------------------- | ----- | ------------------------------------------------------------------------- |
+| `crudHelpers.test.js`       | 33    | createDataLoader, createSaveHandler, deleteHandler, checkPermission       |
+| `useErrorHandler.test.js`   | 33    | handleError, 401/403/404/500, network errors, retry mechanism             |
+| `auth.test.js`              | 32    | login/logout, checkAuthStatus, scopes, hasPermission, canRead/Edit/Delete |
+| `validation.test.js`        | 31    | required, email, url, hexColor, dateAfter                                 |
+| `fileHelpers.test.js`       | 25    | convertToWebP, blobToWebPFile, formatFileSize, validateFile               |
+| `tableHelpers.test.js`      | 21    | stringSorter, numberSorter, dateSorter, dateRange                         |
+| `AppSidebar.test.js`        | 20    | navigation, menu options, mobile/desktop modes, permissions               |
+| `useTheme.test.js`          | 17    | getStoredTheme, setStoredTheme, createThemeConfig                         |
+| `dateHelpers.test.js`       | 16    | toMonthFormat, fromMonthFormat, toDateFormat                              |
+| `ImageCropperModal.test.js` | 15    | props, visibility sync, stencil selection, crop/cancel handling           |
+| `useModal.test.js`          | 14    | openModal, closeModal, openEditModal, resetForm                           |
+| `Login.test.js`             | 11    | initial state, handleLogin, form state management                         |
+| `tokenRefresh.test.js`      | 11    | refreshToken, 401 interceptor, request queueing, duplicate guard          |
+| `ModalFooter.test.js`       | 9     | default props, editing states, events, loading                            |
+| `BackToTop.test.js`         | 8     | scroll behavior, scrollToTop, lifecycle hooks                             |
+| `BackButton.test.js`        | 6     | default props, custom props, route objects                                |
+| `useDataState.test.js`      | 6     | initial state, reactivity, loading flow                                   |
+| `SearchInput.test.js`       | 4     | default props, custom props, emits                                        |
+| `AddButton.test.js`         | 4     | label prop, click event, component rendering                              |
 
 ## Key Testing Patterns
 
@@ -152,6 +155,7 @@ vi.spyOn(document, 'createElement').mockImplementation((tag) => {
 - `useModal` - Modal state and form management
 - `useDataState` - List view data state
 - `useTheme` - Theme detection, storage, and configuration
+- `useErrorHandler` - Error handling, HTTP status codes, retry mechanism, notifications
 - `usePermissions` - Permission checking wrapper (tested via auth store)
 
 ### Services (`src/services/`)
@@ -173,36 +177,42 @@ vi.spyOn(document, 'createElement').mockImplementation((tag) => {
 - `BackButton` - Navigation back button
 - `BackToTop` - Scroll-to-top button
 - `ModalFooter` - Modal save/cancel actions
+- `ImageCropperModal` - Image cropping with vue-advanced-cropper
+- `AppSidebar` - Navigation sidebar with permission-based menu
 
 ## Test Structure
 
 ```text
 src/
 ├── __tests__/
-│   └── setup.js              # Global test setup
+│   └── setup.js                  # Global test setup
 ├── utils/
 │   ├── validation.test.js
 │   ├── dateHelpers.test.js
 │   ├── crudHelpers.test.js
 │   ├── tableHelpers.test.js
-│   └── fileHelpers.test.js   # WebP conversion, file validation
+│   └── fileHelpers.test.js
 ├── composables/
 │   ├── useModal.test.js
 │   ├── useDataState.test.js
-│   └── useTheme.test.js
+│   ├── useTheme.test.js
+│   └── useErrorHandler.test.js
 ├── services/
-│   └── tokenRefresh.test.js  # Token refresh, 401 interceptor
+│   └── tokenRefresh.test.js
 ├── stores/
 │   └── auth.test.js
 ├── views/
 │   └── Login.test.js
 └── components/
+    ├── layout/
+    │   └── AppSidebar.test.js
     └── shared/
         ├── SearchInput.test.js
         ├── AddButton.test.js
         ├── BackButton.test.js
         ├── BackToTop.test.js
-        └── ModalFooter.test.js
+        ├── ModalFooter.test.js
+        └── ImageCropperModal.test.js
 ```
 
 ## Contributing Tests
