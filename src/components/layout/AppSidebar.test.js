@@ -190,7 +190,7 @@ describe('AppSidebar', () => {
   })
 
   describe('emits', () => {
-    it('emits update:drawerOpen when handleMobileMenuSelect is called', async () => {
+    it('emits update:drawerOpen when handleMobileMenuSelect is called', () => {
       const wrapper = createWrapper({ isMobile: true, drawerOpen: true })
 
       wrapper.vm.handleMobileMenuSelect('Profile')
@@ -199,15 +199,14 @@ describe('AppSidebar', () => {
       expect(wrapper.emitted('update:drawerOpen')[0]).toEqual([false])
     })
 
-    it('defines update:collapsed as an emittable event', () => {
+    it('declares all expected emits', () => {
       const wrapper = createWrapper()
-      // The component defines this emit - verify it's in the emits list
-      expect(wrapper.vm.$options.emits).toContain('update:collapsed')
-    })
+      const emits = wrapper.vm.$options.emits
 
-    it('defines toggle-theme as an emittable event', () => {
-      const wrapper = createWrapper()
-      expect(wrapper.vm.$options.emits).toContain('toggle-theme')
+      // Component should declare these emits for v-model bindings and events
+      expect(emits).toContain('update:collapsed')
+      expect(emits).toContain('update:drawerOpen')
+      expect(emits).toContain('toggle-theme')
     })
   })
 
