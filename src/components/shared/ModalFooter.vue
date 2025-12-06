@@ -16,7 +16,7 @@ defineProps({
     default: false,
   },
   editing: {
-    type: [Object, null],
+    type: Object,
     default: null,
   },
   canSave: {
