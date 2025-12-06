@@ -163,6 +163,8 @@ jobs:
         run: |
           echo "TEST_ADMIN_USERNAME=${{ secrets.TEST_ADMIN_USERNAME }}" > .env
           echo "TEST_ADMIN_PASSWORD=${{ secrets.TEST_ADMIN_PASSWORD }}" >> .env
+          echo "TEST_DEMO_USERNAME=${{ secrets.TEST_DEMO_USERNAME }}" >> .env
+          echo "TEST_DEMO_PASSWORD=${{ secrets.TEST_DEMO_PASSWORD }}" >> .env
           echo "TEST_ADMIN_WEB_URL=${{ env.ADMIN_WEB_URL }}" >> .env
           echo "TEST_ADMIN_API_URL=${{ env.ADMIN_API_URL }}" >> .env
           echo "TEST_AUTH_API_URL=${{ env.AUTH_SERVICE_URL }}" >> .env

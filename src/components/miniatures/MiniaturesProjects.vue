@@ -169,8 +169,9 @@
             </div>
             <n-empty v-else description="No images uploaded yet" size="small" />
 
-            <!-- Upload Section -->
+            <!-- Upload Section (only for users with edit permission) -->
             <n-upload
+              v-if="canEdit(Resource.MINIATURES)"
               v-model:file-list="fileList"
               :custom-request="handleImageUpload"
               :before-upload="validateImageFile"
@@ -197,7 +198,13 @@
     </n-form>
 
     <template #footer>
-      <ModalFooter :loading="saving" :editing="editing" @cancel="closeModal" @save="handleSave" />
+      <ModalFooter
+        :loading="saving"
+        :editing="editing"
+        :can-save="canEdit(Resource.MINIATURES)"
+        @cancel="closeModal"
+        @save="handleSave"
+      />
     </template>
   </n-modal>
 </template>
@@ -227,7 +234,7 @@ import {
   NIcon,
   NText,
 } from 'naive-ui'
-import { CreateOutline, TrashOutline, CloudUploadOutline } from '@vicons/ionicons5'
+import { CreateOutline, TrashOutline, CloudUploadOutline, EyeOutline } from '@vicons/ionicons5'
 import filesService from '../../services/files'
 import miniaturesService from '../../services/miniatures'
 import { required, validateForm } from '../../utils/validation'
@@ -246,7 +253,7 @@ import ModalFooter from '../shared/ModalFooter.vue'
 
 // Services
 const { message, dialog } = useViewServices()
-const { canEdit, canDelete, Resource } = usePermissions()
+const { canRead, canEdit, canDelete, Resource } = usePermissions()
 
 // Data state
 const { data: projects, loading, search } = useDataState()
@@ -501,6 +508,9 @@ const columns = computed(() => {
   ]
 
   const actions = []
+  if (canRead(Resource.MINIATURES) && !canEdit(Resource.MINIATURES)) {
+    actions.push({ icon: EyeOutline, onClick: handleEdit, label: 'View project' })
+  }
   if (canEdit(Resource.MINIATURES)) {
     actions.push({ icon: CreateOutline, onClick: handleEdit, label: 'Edit project' })
   }
