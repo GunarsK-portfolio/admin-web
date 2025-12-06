@@ -42,6 +42,11 @@ describe('auth store', () => {
       const store = useAuthStore()
       expect(store.isAuthenticated).toBe(false)
     })
+
+    it('starts with empty username', () => {
+      const store = useAuthStore()
+      expect(store.username).toBe('')
+    })
   })
 
   describe('checkAuthStatus', () => {
@@ -71,6 +76,17 @@ describe('auth store', () => {
       await store.checkAuthStatus()
 
       expect(store.scopes).toEqual(mockScopes)
+    })
+
+    it('stores username from token status response', async () => {
+      authService.tokenStatus.mockResolvedValue({
+        data: { valid: true, ttl_seconds: 600, username: 'testuser' },
+      })
+
+      const store = useAuthStore()
+      await store.checkAuthStatus()
+
+      expect(store.username).toBe('testuser')
     })
 
     it('sets authenticated to false when token is invalid', async () => {
@@ -103,6 +119,16 @@ describe('auth store', () => {
       await store.checkAuthStatus()
 
       expect(store.scopes).toEqual({})
+    })
+
+    it('clears username on error', async () => {
+      authService.tokenStatus.mockRejectedValue(new Error('Network error'))
+
+      const store = useAuthStore()
+      store.username = 'testuser'
+      await store.checkAuthStatus()
+
+      expect(store.username).toBe('')
     })
   })
 
@@ -140,6 +166,37 @@ describe('auth store', () => {
       await store.login('testuser', 'password123')
 
       expect(setUserContext).toHaveBeenCalledWith({ id: 1 })
+    })
+
+    it('stores username from login response', async () => {
+      authService.login.mockResolvedValue({
+        data: {
+          success: true,
+          expires_in: 3600,
+          user_id: 1,
+          username: 'johndoe',
+        },
+      })
+
+      const store = useAuthStore()
+      await store.login('johndoe', 'password123')
+
+      expect(store.username).toBe('johndoe')
+    })
+
+    it('falls back to login input when response has no username', async () => {
+      authService.login.mockResolvedValue({
+        data: {
+          success: true,
+          expires_in: 3600,
+          user_id: 1,
+        },
+      })
+
+      const store = useAuthStore()
+      await store.login('fallbackuser', 'password123')
+
+      expect(store.username).toBe('fallbackuser')
     })
 
     it('stores scopes from login response', async () => {
@@ -198,11 +255,13 @@ describe('auth store', () => {
 
       const store = useAuthStore()
       store.isAuthenticated = true
+      store.username = 'testuser'
       store.scopes = { profile: 'delete', skills: 'edit' }
 
       await store.logout()
 
       expect(store.isAuthenticated).toBe(false)
+      expect(store.username).toBe('')
       expect(store.scopes).toEqual({})
       expect(clearUserContext).toHaveBeenCalled()
       expect(router.push).toHaveBeenCalledWith('/login')

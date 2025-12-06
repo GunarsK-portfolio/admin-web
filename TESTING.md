@@ -25,13 +25,13 @@ task test:coverage
 
 ## Test Files
 
-16 test files, 237 tests
+16 test files, 248 tests
 
 | File                   | Tests | Coverage                                                                  |
 | ---------------------- | ----- | ------------------------------------------------------------------------- |
+| `auth.test.js`         | 32    | login/logout, checkAuthStatus, scopes, hasPermission, canRead/Edit/Delete |
 | `validation.test.js`   | 31    | required, email, url, hexColor, dateAfter                                 |
-| `crudHelpers.test.js`  | 27    | createDataLoader, createSaveHandler, deleteHandler                        |
-| `auth.test.js`         | 27    | login/logout, checkAuthStatus, scopes, hasPermission, canRead/Edit/Delete |
+| `crudHelpers.test.js`  | 33    | createDataLoader, createSaveHandler, deleteHandler, checkPermission       |
 | `fileHelpers.test.js`  | 25    | convertToWebP, blobToWebPFile, formatFileSize, validateFile               |
 | `tableHelpers.test.js` | 21    | stringSorter, numberSorter, dateSorter, dateRange                         |
 | `useTheme.test.js`     | 17    | getStoredTheme, setStoredTheme, createThemeConfig                         |
@@ -152,6 +152,7 @@ vi.spyOn(document, 'createElement').mockImplementation((tag) => {
 - `useModal` - Modal state and form management
 - `useDataState` - List view data state
 - `useTheme` - Theme detection, storage, and configuration
+- `usePermissions` - Permission checking wrapper (tested via auth store)
 
 ### Services (`src/services/`)
 

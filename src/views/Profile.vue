@@ -347,6 +347,10 @@ const loadProfile = createDataLoader({
 })
 
 async function handleSave() {
+  if (!canEdit(Resource.PROFILE)) {
+    message.error('You do not have permission to edit the profile')
+    return
+  }
   if (!(await validateForm(formRef))) return
 
   saving.value = true
@@ -365,6 +369,10 @@ async function handleSave() {
 }
 
 async function handleDeleteAvatar() {
+  if (!canEdit(Resource.PROFILE)) {
+    message.error('You do not have permission to delete the avatar')
+    return
+  }
   deletingAvatar.value = true
   try {
     await profileService.deleteProfileAvatar()
@@ -383,6 +391,10 @@ async function handleDeleteAvatar() {
 }
 
 async function handleDeleteResume() {
+  if (!canEdit(Resource.PROFILE)) {
+    message.error('You do not have permission to delete the resume')
+    return
+  }
   deletingResume.value = true
   try {
     await profileService.deleteProfileResume()

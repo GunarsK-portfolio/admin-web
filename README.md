@@ -8,6 +8,7 @@ Admin panel for managing portfolio content built with Vue.js.
 ## Features
 
 - User authentication (login/logout)
+- Role-based access control (RBAC) with resource-level permissions
 - Full CRUD for skills, work experience, certifications, portfolio projects,
   and miniatures
 - Messaging management (recipients CRUD, contact messages viewing)
@@ -61,6 +62,7 @@ admin-web/
 - `useModal` - Modal state management for CRUD operations
 - `useDataState` - Data list state (data, loading, search)
 - `useViewServices` - Common services (router, message, dialog)
+- `usePermissions` - RBAC permission checking (canRead, canEdit, canDelete)
 
 **Shared Components** (`src/components/shared/`):
 
@@ -71,7 +73,8 @@ admin-web/
 
 **CRUD Helpers** (`src/utils/`):
 
-- `crudHelpers` - Reusable data loaders and save/delete handlers
+- `crudHelpers` - Data loaders and save/delete handlers with permissions
+- `fileHelpers` - File upload/delete handlers with permissions
 - `validation` - Form validation rules
 - `tableHelpers` - Data table renderers and sorters
 - `filterHelpers` - Search filtering utilities
@@ -150,7 +153,7 @@ Unit tests use Vitest with Vue Test Utils. See [TESTING.md](TESTING.md) for deta
 
 See [.env.example](.env.example) for all available configuration options.
 
-## Authentication
+## Authentication & Authorization
 
 The app uses JWT tokens from auth-service:
 
@@ -161,6 +164,30 @@ The app uses JWT tokens from auth-service:
 5. Redirect to login on 401
 
 Auth logic is in `src/stores/auth.js` and `src/services/auth.js`.
+
+### Permission System
+
+The app implements role-based access control with three permission levels per resource:
+
+- **read** - View resources
+- **edit** - Create and update resources
+- **delete** - Delete resources
+
+Permissions are enforced at multiple levels:
+
+- **Navigation**: Sidebar menu items are shown/hidden based on read permissions
+- **UI Controls**: Edit/delete buttons are conditionally rendered
+- **Handlers**: CRUD helpers include `checkPermission` callbacks for defense-in-depth
+
+Use the `usePermissions` composable:
+
+```javascript
+const { canRead, canEdit, canDelete, Resource } = usePermissions()
+
+if (canEdit(Resource.SKILLS)) {
+  // Show edit button
+}
+```
 
 ## Development Server
 

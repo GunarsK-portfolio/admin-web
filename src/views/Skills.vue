@@ -291,6 +291,7 @@ const handleSaveSkill = createSaveHandler({
   onSuccess: loadSkills,
   resetForm: () => resetSkillForm(),
   validateForm,
+  checkPermission: () => canEdit(Resource.SKILLS),
 })
 
 const handleDeleteSkill = createDeleteHandler({
@@ -300,6 +301,7 @@ const handleDeleteSkill = createDeleteHandler({
   message,
   onSuccess: loadSkills,
   getConfirmText: (skill) => `"${skill.skill}"`,
+  checkPermission: () => canDelete(Resource.SKILLS),
 })
 
 function handleEditType(type) {
@@ -328,6 +330,7 @@ const handleSaveType = createSaveHandler({
   },
   resetForm: () => resetTypeForm(),
   validateForm,
+  checkPermission: () => canEdit(Resource.SKILLS),
 })
 
 const handleDeleteType = createDeleteHandler({
@@ -340,6 +343,7 @@ const handleDeleteType = createDeleteHandler({
     await loadSkills()
   },
   getConfirmText: (type) => `"${type.name}"? This may affect existing skills`,
+  checkPermission: () => canDelete(Resource.SKILLS),
 })
 
 // Skills table columns

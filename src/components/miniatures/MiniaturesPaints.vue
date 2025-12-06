@@ -181,6 +181,7 @@ const handleSave = createSaveHandler({
   onSuccess: loadPaints,
   resetForm: () => resetForm(),
   validateForm,
+  checkPermission: () => canEdit(Resource.MINIATURES),
 })
 
 const handleDelete = createDeleteHandler({
@@ -190,6 +191,7 @@ const handleDelete = createDeleteHandler({
   message,
   onSuccess: loadPaints,
   getConfirmText: (paint) => `"${paint.name}" by ${paint.manufacturer}`,
+  checkPermission: () => canDelete(Resource.MINIATURES),
 })
 
 const columns = computed(() => {

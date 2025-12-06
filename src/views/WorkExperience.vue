@@ -209,6 +209,7 @@ const handleSave = createSaveHandler({
     startDate: fromMonthFormat(formData.startDate),
     endDate: formData.isCurrent ? null : fromMonthFormat(formData.endDate),
   }),
+  checkPermission: () => canEdit(Resource.EXPERIENCE),
 })
 
 const handleDelete = createDeleteHandler({
@@ -218,6 +219,7 @@ const handleDelete = createDeleteHandler({
   message,
   onSuccess: loadExperience,
   getConfirmText: (exp) => `"${exp.position} at ${exp.company}"`,
+  checkPermission: () => canDelete(Resource.EXPERIENCE),
 })
 
 const columns = computed(() => {

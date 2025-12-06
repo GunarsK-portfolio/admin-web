@@ -149,7 +149,7 @@
                     height="120"
                     width="120"
                   />
-                  <div class="image-actions">
+                  <div v-if="canDelete(Resource.MINIATURES)" class="image-actions">
                     <n-button
                       size="small"
                       type="error"
@@ -404,6 +404,7 @@ const handleSave = createSaveHandler({
   onSuccess: loadProjects,
   resetForm,
   validateForm,
+  checkPermission: () => canEdit(Resource.MINIATURES),
 })
 
 const handleDelete = createDeleteHandler({
@@ -413,6 +414,7 @@ const handleDelete = createDeleteHandler({
   message,
   onSuccess: loadProjects,
   getConfirmText: (project) => `"${project.name}"`,
+  checkPermission: () => canDelete(Resource.MINIATURES),
 })
 
 // Image handlers

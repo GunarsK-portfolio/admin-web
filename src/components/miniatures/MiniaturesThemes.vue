@@ -222,6 +222,10 @@ function handleCoverImageUpload({ file }) {
 
 // Handle cropped image upload
 async function handleCoverImageCrop(croppedBlob) {
+  if (!canEdit(Resource.MINIATURES)) {
+    message.error('You do not have permission to upload images')
+    return
+  }
   uploadingCoverImage.value = true
   showCropperModal.value = false
 
@@ -268,6 +272,7 @@ const handleRemoveCoverImage = createFileDeleteHandler({
   fileObjectField: 'coverImageFile',
   entityName: 'cover image',
   logger,
+  checkPermission: () => canEdit(Resource.MINIATURES),
 })
 
 const validateCoverImage = createFileValidator(FILE_VALIDATION.IMAGE, message)
@@ -293,6 +298,7 @@ const handleSave = createSaveHandler({
     coverImageId: formData.coverImageId ?? undefined,
     displayOrder: formData.displayOrder || 0,
   }),
+  checkPermission: () => canEdit(Resource.MINIATURES),
 })
 
 const handleDelete = createDeleteHandler({
@@ -302,6 +308,7 @@ const handleDelete = createDeleteHandler({
   message,
   onSuccess: loadThemes,
   getConfirmText: (theme) => `"${theme.name}"`,
+  checkPermission: () => canDelete(Resource.MINIATURES),
 })
 
 const columns = computed(() => {

@@ -256,6 +256,7 @@ const handleSave = createSaveHandler({
     credentialUrl: formData.credentialUrl || undefined,
     expiryDate: formData.expiryDate || undefined,
   }),
+  checkPermission: () => canEdit(Resource.CERTIFICATIONS),
 })
 
 const handleDelete = createDeleteHandler({
@@ -265,6 +266,7 @@ const handleDelete = createDeleteHandler({
   message,
   onSuccess: loadCertifications,
   getConfirmText: (cert) => `"${cert.name}"`,
+  checkPermission: () => canDelete(Resource.CERTIFICATIONS),
 })
 
 const columns = computed(() => {

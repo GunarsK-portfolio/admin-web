@@ -473,6 +473,7 @@ const handleImageUpload = createFileUploadHandler({
   fileIdField: 'imageFileId',
   fileObjectField: 'imageFile',
   logger,
+  checkPermission: () => canEdit(Resource.PROJECTS),
 })
 
 const handleRemoveImage = createFileDeleteHandler({
@@ -485,6 +486,7 @@ const handleRemoveImage = createFileDeleteHandler({
   fileObjectField: 'imageFile',
   entityName: 'image',
   logger,
+  checkPermission: () => canEdit(Resource.PROJECTS),
 })
 
 const handleSave = createSaveHandler({
@@ -522,6 +524,7 @@ const handleSave = createSaveHandler({
     technologies: (formData.technologies ?? []).map((id) => ({ id })),
     displayOrder: formData.displayOrder ?? 0,
   }),
+  checkPermission: () => canEdit(Resource.PROJECTS),
 })
 
 const handleDelete = createDeleteHandler({
@@ -531,6 +534,7 @@ const handleDelete = createDeleteHandler({
   message,
   onSuccess: loadProjects,
   getConfirmText: (project) => `"${project.title}"`,
+  checkPermission: () => canDelete(Resource.PROJECTS),
 })
 
 const columns = computed(() => {

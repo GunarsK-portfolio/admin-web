@@ -270,6 +270,32 @@ describe('crudHelpers', () => {
       expect(savingDuringCall).toBe(true)
       expect(defaultOptions.saving.value).toBe(false)
     })
+
+    it('blocks save when checkPermission returns false', async () => {
+      defaultOptions.checkPermission = vi.fn().mockReturnValue(false)
+      const handler = createSaveHandler(defaultOptions)
+      await handler()
+
+      expect(defaultOptions.checkPermission).toHaveBeenCalled()
+      expect(defaultOptions.service.create).not.toHaveBeenCalled()
+      expect(mockMessage.error).toHaveBeenCalledWith('You do not have permission to save this item')
+    })
+
+    it('proceeds with save when checkPermission returns true', async () => {
+      defaultOptions.checkPermission = vi.fn().mockReturnValue(true)
+      const handler = createSaveHandler(defaultOptions)
+      await handler()
+
+      expect(defaultOptions.checkPermission).toHaveBeenCalled()
+      expect(defaultOptions.service.create).toHaveBeenCalled()
+    })
+
+    it('proceeds with save when checkPermission is not provided', async () => {
+      const handler = createSaveHandler(defaultOptions)
+      await handler()
+
+      expect(defaultOptions.service.create).toHaveBeenCalled()
+    })
   })
 
   describe('createDeleteHandler', () => {
@@ -368,6 +394,40 @@ describe('crudHelpers', () => {
       handler(null)
 
       expect(defaultOptions.dialog.warning).not.toHaveBeenCalled()
+    })
+
+    it('blocks delete when checkPermission returns false', () => {
+      defaultOptions.checkPermission = vi.fn().mockReturnValue(false)
+      const handler = createDeleteHandler(defaultOptions)
+      handler({ id: 1 })
+
+      expect(defaultOptions.checkPermission).toHaveBeenCalled()
+      expect(defaultOptions.dialog.warning).not.toHaveBeenCalled()
+      expect(mockMessage.error).toHaveBeenCalledWith(
+        'You do not have permission to delete this item'
+      )
+    })
+
+    it('proceeds with delete when checkPermission returns true', async () => {
+      defaultOptions.checkPermission = vi.fn().mockReturnValue(true)
+      const handler = createDeleteHandler(defaultOptions)
+      handler({ id: 1 })
+
+      expect(defaultOptions.checkPermission).toHaveBeenCalled()
+      expect(defaultOptions.dialog.warning).toHaveBeenCalled()
+
+      await dialogCallback()
+      expect(defaultOptions.service).toHaveBeenCalledWith(1)
+    })
+
+    it('proceeds with delete when checkPermission is not provided', async () => {
+      const handler = createDeleteHandler(defaultOptions)
+      handler({ id: 1 })
+
+      expect(defaultOptions.dialog.warning).toHaveBeenCalled()
+
+      await dialogCallback()
+      expect(defaultOptions.service).toHaveBeenCalledWith(1)
     })
   })
 })
