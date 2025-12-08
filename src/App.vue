@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :theme="currentTheme">
+  <n-config-provider :theme="currentTheme" :theme-overrides="currentThemeOverrides">
     <n-notification-provider>
       <n-message-provider>
         <n-dialog-provider>
@@ -51,6 +51,7 @@ import AppSidebar from './components/layout/AppSidebar.vue'
 import { useTokenRefresh } from './composables/useTokenRefresh'
 import { useAuthStore } from './stores/auth'
 import { THEMES, getStoredTheme, setStoredTheme, createThemeConfig } from './composables/useTheme'
+import { lightOverrides, darkOverrides } from './themes/portfolio'
 
 const authStore = useAuthStore()
 
@@ -74,18 +75,24 @@ const THEME_CONFIG = createThemeConfig({
   [THEMES.DARK]: darkTheme,
 })
 
+// Map theme codes to theme overrides
+const THEME_OVERRIDES = {
+  [THEMES.LIGHT]: lightOverrides,
+  [THEMES.DARK]: darkOverrides,
+}
+
 // Initialize theme code from localStorage
 const currentThemeCode = ref(getStoredTheme())
 
 // Computed properties
 const currentTheme = computed(() => THEME_CONFIG[currentThemeCode.value] || null)
+const currentThemeOverrides = computed(() => THEME_OVERRIDES[currentThemeCode.value] || null)
 const isDark = computed(() => currentThemeCode.value === THEMES.DARK)
 
 function toggleTheme() {
   const newTheme = currentThemeCode.value === THEMES.DARK ? THEMES.LIGHT : THEMES.DARK
   if (setStoredTheme(newTheme)) {
     currentThemeCode.value = newTheme
-    window.location.reload()
   }
 }
 
