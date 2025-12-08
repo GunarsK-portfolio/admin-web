@@ -9,9 +9,9 @@ const primary = {
   base: '#9E1B34',
   hover: '#B42A45',
   pressed: '#7A1528',
-  // Lighter variant for dark mode (better contrast)
-  light: '#C73E58',
-  lightHover: '#D4526A',
+  // Lighter variant for dark mode (WCAG 2.1 AA compliant - 3.5:1 contrast on #2A2928)
+  light: '#D4566C',
+  lightHover: '#E06B80',
 }
 
 /**
