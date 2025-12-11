@@ -29,7 +29,7 @@ ENV VITE_MESSAGING_API_URL=$VITE_MESSAGING_API_URL
 RUN npm run build
 
 # Production stage
-FROM nginx:1.29-alpine3.22
+FROM nginx:1.29-alpine3.23
 
 # Update Alpine packages including libpng security fixes (CVE-2025-65018, CVE-2025-64720)
 RUN apk update && apk upgrade --no-cache && rm -rf /var/cache/apk/*
