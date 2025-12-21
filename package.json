@@ -14,12 +14,12 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@tiptap/extension-link": "^3.13.0",
-    "@tiptap/extension-placeholder": "^3.13.0",
-    "@tiptap/markdown": "^3.13.0",
-    "@tiptap/pm": "^3.13.0",
-    "@tiptap/starter-kit": "^3.13.0",
-    "@tiptap/vue-3": "^3.13.0",
+    "@tiptap/extension-link": "^3.14.0",
+    "@tiptap/extension-placeholder": "^3.14.0",
+    "@tiptap/markdown": "^3.14.0",
+    "@tiptap/pm": "^3.14.0",
+    "@tiptap/starter-kit": "^3.14.0",
+    "@tiptap/vue-3": "^3.14.0",
     "@vicons/ionicons5": "^0.13.0",
     "axios": "^1.13.2",
     "naive-ui": "^2.43.2",
