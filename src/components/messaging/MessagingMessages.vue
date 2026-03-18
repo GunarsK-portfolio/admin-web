@@ -19,7 +19,10 @@
           {{ selectedMessage.subject }}
         </n-descriptions-item>
         <n-descriptions-item label="From">
-          {{ selectedMessage.name }} &lt;{{ selectedMessage.email }}&gt;
+          <template v-if="selectedMessage.name"
+            >{{ selectedMessage.name }} &lt;{{ selectedMessage.senderEmail }}&gt;</template
+          >
+          <template v-else>{{ selectedMessage.recipientEmail }}</template>
         </n-descriptions-item>
         <n-descriptions-item label="Status">
           <n-tag :type="getStatusType(selectedMessage.status)" size="small">
@@ -121,7 +124,7 @@ const columns = [
   {
     title: 'From',
     key: 'from',
-    render: (row) => `${row.name} <${row.email}>`,
+    render: (row) => (row.name ? `${row.name} <${row.senderEmail}>` : row.recipientEmail),
     ellipsis: { tooltip: true },
   },
   {
