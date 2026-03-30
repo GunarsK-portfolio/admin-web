@@ -21,9 +21,8 @@ jobs:
         run: |
           VERSION_ID=$(gh api \
             "/orgs/$ORG/packages/container/$IMAGE/versions" \
-            --paginate --jq --arg TAG "$TAG" \
-            'map(select(.metadata.container.tags != null and (.metadata.container.tags[] == $TAG)))
-            | if length > 0 then .[0].id else empty end')
+            --paginate --jq \
+            "[.[] | select(.metadata.container.tags != null and (.metadata.container.tags[] == \"$TAG\"))] | if length > 0 then .[0].id else empty end")
 
           if [ -n "$VERSION_ID" ]; then
             gh api --method DELETE "/orgs/$ORG/packages/container/$IMAGE/versions/$VERSION_ID"
