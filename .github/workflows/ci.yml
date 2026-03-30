@@ -134,7 +134,7 @@ jobs:
           else
             SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
             echo "tags=$IMAGE:latest,$IMAGE:sha-$SHORT_SHA" >> $GITHUB_OUTPUT
-            TAG="latest"
+            TAG="sha-$SHORT_SHA"
           fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
