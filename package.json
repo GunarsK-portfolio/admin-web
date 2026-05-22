@@ -21,7 +21,7 @@
     "@tiptap/starter-kit": "^3.23.6",
     "@tiptap/vue-3": "^3.23.6",
     "@vicons/ionicons5": "^0.13.0",
-    "axios": "^1.14.0",
+    "axios": "^1.16.1",
     "naive-ui": "^2.44.1",
     "pinia": "^3.0.4",
     "pino": "^10.3.1",
