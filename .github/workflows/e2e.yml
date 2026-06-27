@@ -26,82 +26,82 @@ jobs:
 
     steps:
       - name: Checkout admin-web
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: admin-web
 
       - name: Checkout infrastructure
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/infrastructure
           path: infrastructure
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout e2e-tests
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/e2e-tests
           path: e2e-tests
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout backend services
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/auth-service
           path: auth-service
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout admin-api
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/admin-api
           path: admin-api
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout files-api
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/files-api
           path: files-api
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout messaging-api
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/messaging-api
           path: messaging-api
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout messaging-service
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/messaging-service
           path: messaging-service
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout public-api
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/public-api
           path: public-api
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout public-web
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/public-web
           path: public-web
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout database
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/database
           path: database
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout portfolio-common
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/portfolio-common
           path: portfolio-common
