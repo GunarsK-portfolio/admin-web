@@ -35,7 +35,7 @@
     "@vitest/coverage-v8": "^4.1.9",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/test-utils": "^2.4.11",
-    "eslint": "^9.39.4",
+    "eslint": "^9.39.5",
     "eslint-plugin-vue": "^10.9.2",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
