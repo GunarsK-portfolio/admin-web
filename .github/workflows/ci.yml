@@ -127,16 +127,16 @@ jobs:
         id: meta
         run: |
           IMAGE="ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
-          echo "image=$IMAGE" >> $GITHUB_OUTPUT
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             TAG="pr-${{ github.event.pull_request.number }}"
-            echo "tags=$IMAGE:$TAG" >> $GITHUB_OUTPUT
+            echo "tags=$IMAGE:$TAG" >> "$GITHUB_OUTPUT"
           else
             SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-            echo "tags=$IMAGE:latest,$IMAGE:sha-$SHORT_SHA" >> $GITHUB_OUTPUT
+            echo "tags=$IMAGE:latest,$IMAGE:sha-$SHORT_SHA" >> "$GITHUB_OUTPUT"
             TAG="sha-$SHORT_SHA"
           fi
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
@@ -144,6 +144,8 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -153,13 +155,12 @@ jobs:
           image-ref: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
           format: 'sarif'
           output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          exit-code: '0'
           version: 'v0.72.0'
 
       - name: Upload Trivy results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
+        if: always() && github.event.repository.visibility == 'public'
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -169,7 +170,8 @@ jobs:
         with:
           image-ref: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
           format: 'table'
-          severity: 'CRITICAL,HIGH,MEDIUM'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
           version: 'v0.72.0'
 
   # Job 5: Secret scanning with TruffleHog
@@ -183,17 +185,35 @@ jobs:
           fetch-depth: 0 # Full history for scanning
 
       - name: Run TruffleHog
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.95.9
         with:
           path: ./
           base: ""
           head: ${{ github.ref }}
 
+  # Job 6: Workflow lint - Validate GitHub Actions workflows
+  workflow-lint:
+    name: Workflow Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install actionlint
+        env:
+          ACTIONLINT_VERSION: 1.7.12
+        run: |
+          BASE="https://raw.githubusercontent.com/rhysd/actionlint/v$ACTIONLINT_VERSION"
+          bash <(curl -s "$BASE/scripts/download-actionlint.bash") "$ACTIONLINT_VERSION" /tmp
+
+      - name: Run actionlint
+        run: /tmp/actionlint -color
+
   # Summary job - require all to pass
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [lint, test, build, security-audit, docker-publish-scan, secret-scan]
+    needs: [lint, test, build, security-audit, docker-publish-scan, secret-scan, workflow-lint]
     if: always()
     steps:
       - name: Check all jobs status

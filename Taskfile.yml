@@ -97,12 +97,18 @@ tasks:
 
   # CI/CD
   ci:all:
-    desc: Run all CI checks (format, lint:fix, test, build, security:audit, lint:markdown)
+    desc: Run all CI checks (format:check, lint, test, build, security:audit, lint:markdown)
     cmds:
-      - task: format
-      - task: lint:fix
+      - task: format:check
+      - task: lint
       - task: test
       - task: build
       - task: security:audit
       - task: lint:markdown
       - echo "All CI checks passed!"
+
+  ci:fix:
+    desc: Auto-fix all fixable issues (format, lint:fix)
+    cmds:
+      - task: format
+      - task: lint:fix

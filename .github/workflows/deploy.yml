@@ -23,6 +23,9 @@ jobs:
   deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.event.repository.name }}-production-deployment
+      cancel-in-progress: false
 
     steps:
       - name: Checkout code
@@ -45,9 +48,9 @@ jobs:
         id: version
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "version=manual-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+            echo "version=manual-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
           else
-            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build Docker image with build args
@@ -60,7 +63,7 @@ jobs:
             --build-arg VITE_AUTH_URL=${{ secrets.VITE_AUTH_URL }} \
             --build-arg VITE_FILES_API_URL=${{ secrets.VITE_FILES_API_URL }} \
             --build-arg VITE_MESSAGING_API_URL=${{ secrets.VITE_MESSAGING_API_URL }} \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
             .
 
       - name: Run Trivy vulnerability scanner
@@ -69,15 +72,23 @@ jobs:
           image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.version.outputs.version }}
           format: 'sarif'
           output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          exit-code: '0'
           version: 'v0.72.0'
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
+        if: always() && github.event.repository.visibility == 'public'
         with:
           sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy vulnerability scanner (table output)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.version.outputs.version }}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          version: 'v0.72.0'
 
       - name: Push Docker image to ECR
         if: success()
@@ -85,7 +96,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ steps.version.outputs.version }}
         run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Get Service ARN
         id: service-arn
@@ -101,9 +112,10 @@ jobs:
             exit 1
           fi
 
-          echo "arn=$SERVICE_ARN" >> $GITHUB_OUTPUT
+          echo "arn=$SERVICE_ARN" >> "$GITHUB_OUTPUT"
 
       - name: Update App Runner service with new image
+        id: update
         if: success()
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -122,36 +134,47 @@ jobs:
             --arg image "$IMAGE_URI" \
             '.ImageRepository.ImageIdentifier = $image')
 
-          aws apprunner update-service \
+          OPERATION_ID=$(aws apprunner update-service \
             --region ${{ env.AWS_REGION }} \
             --service-arn ${{ steps.service-arn.outputs.arn }} \
-            --source-configuration "$UPDATED_CONFIG"
-          echo "Deployment triggered for $APP_RUNNER_SERVICE with image tag $IMAGE_TAG"
+            --source-configuration "$UPDATED_CONFIG" \
+            --query 'OperationId' \
+            --output text)
+          if [ -z "$OPERATION_ID" ] || [ "$OPERATION_ID" = "None" ]; then
+            echo "Failed to obtain operation id from update-service"
+            exit 1
+          fi
+          echo "operation-id=$OPERATION_ID" >> "$GITHUB_OUTPUT"
+          echo "Deployment triggered for $APP_RUNNER_SERVICE with image tag $IMAGE_TAG (operation $OPERATION_ID)"
 
       - name: Wait for deployment
         if: success()
         run: |
-          echo "Waiting for deployment to complete..."
           SERVICE_ARN="${{ steps.service-arn.outputs.arn }}"
+          OPERATION_ID="${{ steps.update.outputs.operation-id }}"
+          echo "Waiting for operation $OPERATION_ID to complete..."
           MAX_ATTEMPTS=60
           ATTEMPT=0
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            STATUS=$(aws apprunner describe-service \
+            STATUS=$(aws apprunner list-operations \
               --region ${{ env.AWS_REGION }} \
               --service-arn "$SERVICE_ARN" \
-              --query 'Service.Status' \
+              --query "OperationSummaryList[?Id=='$OPERATION_ID'].Status | [0]" \
               --output text)
-            echo "Attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS: Status = $STATUS"
-            if [ "$STATUS" = "RUNNING" ]; then
-              echo "Deployment completed successfully"
-              exit 0
-            elif [ "$STATUS" = "CREATE_FAILED" ] || [ "$STATUS" = "DELETE_FAILED" ] || [ "$STATUS" = "UPDATE_FAILED" ] || [ "$STATUS" = "DELETED" ]; then
-              echo "Deployment failed with status: $STATUS"
-              exit 1
-            fi
-            # OPERATION_IN_PROGRESS, PAUSED, or other transient states - continue waiting
+            echo "Attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS: Operation status = $STATUS"
+            case "$STATUS" in
+              SUCCEEDED)
+                echo "Deployment completed successfully"
+                exit 0
+                ;;
+              FAILED | ROLLBACK_FAILED | ROLLBACK_SUCCEEDED)
+                echo "Deployment failed with operation status: $STATUS"
+                exit 1
+                ;;
+            esac
+            # PENDING, IN_PROGRESS, ROLLBACK_IN_PROGRESS, or not yet listed - keep waiting
             ATTEMPT=$((ATTEMPT + 1))
             sleep 10
           done
-          echo "Timeout waiting for deployment"
+          echo "Timeout waiting for operation $OPERATION_ID"
           exit 1
