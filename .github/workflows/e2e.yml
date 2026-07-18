@@ -161,19 +161,21 @@ jobs:
       - name: Create E2E .env
         working-directory: e2e-tests
         run: |
-          echo "TEST_ADMIN_USERNAME=${{ secrets.TEST_ADMIN_USERNAME }}" > .env
-          echo "TEST_ADMIN_PASSWORD=${{ secrets.TEST_ADMIN_PASSWORD }}" >> .env
-          echo "TEST_DEMO_USERNAME=${{ secrets.TEST_DEMO_USERNAME }}" >> .env
-          echo "TEST_DEMO_PASSWORD=${{ secrets.TEST_DEMO_PASSWORD }}" >> .env
-          echo "TEST_ADMIN_WEB_URL=${{ env.ADMIN_WEB_URL }}" >> .env
-          echo "TEST_ADMIN_API_URL=${{ env.ADMIN_API_URL }}" >> .env
-          echo "TEST_AUTH_API_URL=${{ env.AUTH_SERVICE_URL }}" >> .env
-          echo "TEST_PUBLIC_WEB_URL=${{ env.PUBLIC_WEB_URL }}" >> .env
-          echo "TEST_PUBLIC_API_URL=${{ env.PUBLIC_API_URL }}" >> .env
-          echo "TEST_HEADLESS=true" >> .env
-          echo "TEST_TIMEOUT=300000" >> .env
-          echo "TEST_BROWSER=chromium" >> .env
-          echo "TEST_IGNORE_HTTPS_ERRORS=true" >> .env
+          {
+            echo "TEST_ADMIN_USERNAME=${{ secrets.TEST_ADMIN_USERNAME }}"
+            echo "TEST_ADMIN_PASSWORD=${{ secrets.TEST_ADMIN_PASSWORD }}"
+            echo "TEST_DEMO_USERNAME=${{ secrets.TEST_DEMO_USERNAME }}"
+            echo "TEST_DEMO_PASSWORD=${{ secrets.TEST_DEMO_PASSWORD }}"
+            echo "TEST_ADMIN_WEB_URL=${{ env.ADMIN_WEB_URL }}"
+            echo "TEST_ADMIN_API_URL=${{ env.ADMIN_API_URL }}"
+            echo "TEST_AUTH_API_URL=${{ env.AUTH_SERVICE_URL }}"
+            echo "TEST_PUBLIC_WEB_URL=${{ env.PUBLIC_WEB_URL }}"
+            echo "TEST_PUBLIC_API_URL=${{ env.PUBLIC_API_URL }}"
+            echo "TEST_HEADLESS=true"
+            echo "TEST_TIMEOUT=300000"
+            echo "TEST_BROWSER=chromium"
+            echo "TEST_IGNORE_HTTPS_ERRORS=true"
+          } > .env
 
       - name: Run E2E tests
         working-directory: e2e-tests
