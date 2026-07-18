@@ -112,7 +112,7 @@ jobs:
             exit 1
           fi
 
-          echo "arn=$SERVICE_ARN" >> $GITHUB_OUTPUT
+          echo "arn=$SERVICE_ARN" >> "$GITHUB_OUTPUT"
 
       - name: Update App Runner service with new image
         id: update
