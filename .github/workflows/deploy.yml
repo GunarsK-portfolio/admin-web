@@ -73,7 +73,7 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '0'
-          version: 'v0.72.0'
+          version: 'v0.74.0'
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
@@ -88,7 +88,7 @@ jobs:
           format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
-          version: 'v0.72.0'
+          version: 'v0.74.0'
 
       - name: Push Docker image to ECR
         if: success()
